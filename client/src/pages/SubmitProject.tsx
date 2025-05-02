@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -34,8 +34,19 @@ const submitProjectSchema = z.object({
     .url("Please enter a valid URL")
     .startsWith("http", "URL must start with http:// or https://"),
   imageUrl: z.string()
-    .url("Please enter a valid image URL")
-    .startsWith("http", "URL must start with http:// or https://"),
+    .refine(val => {
+      // Allow URLs that start with http:// or https:// (remote images)
+      if (val.startsWith('http://') || val.startsWith('https://')) {
+        return true;
+      }
+      // Allow URLs that start with /uploads/ (local uploads)
+      if (val.startsWith('/uploads/')) {
+        return true;
+      }
+      return false;
+    }, {
+      message: "Please provide a valid image URL or upload an image"
+    }),
   tags: z.array(z.string())
     .min(1, "Please add at least 1 tag")
     .max(5, "Maximum 5 tags allowed"),
@@ -47,6 +58,8 @@ const SubmitProject = () => {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(submitProjectSchema),
@@ -86,10 +99,7 @@ const SubmitProject = () => {
     submitMutation.mutate(data);
   };
   
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0) return;
-    
-    const file = event.target.files[0];
+  const processFile = async (file: File) => {
     const fileSize = file.size / 1024 / 1024; // in MB
     
     // Validate file size (max 5MB)
@@ -99,7 +109,7 @@ const SubmitProject = () => {
         description: "Please select an image under 5MB",
         variant: "destructive"
       });
-      return;
+      return false;
     }
     
     // Validate file type
@@ -110,7 +120,7 @@ const SubmitProject = () => {
         description: "Please select a JPG, PNG, GIF, or WebP image",
         variant: "destructive"
       });
-      return;
+      return false;
     }
     
     setIsUploading(true);
@@ -138,6 +148,7 @@ const SubmitProject = () => {
         title: "Image uploaded",
         description: "Your image has been successfully uploaded."
       });
+      return true;
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -145,8 +156,45 @@ const SubmitProject = () => {
         description: "There was a problem uploading your image.",
         variant: "destructive"
       });
+      return false;
     } finally {
       setIsUploading(false);
+    }
+  };
+  
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+    
+    const file = event.target.files[0];
+    await processFile(file);
+  };
+  
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      await processFile(file);
+    }
+  };
+  
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
   
@@ -231,7 +279,12 @@ const SubmitProject = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Project Thumbnail</FormLabel>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div 
+                      className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${isDragging ? 'border-primary' : 'border-gray-300'} border-dashed rounded-md`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
                       {field.value ? (
                         <div className="space-y-1 text-center">
                           <img 
@@ -255,14 +308,16 @@ const SubmitProject = () => {
                           <Image className="mx-auto h-12 w-12 text-gray-400" />
                           <div className="flex text-sm text-gray-600">
                             <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/80">
-                              <span>Upload a file</span>
+                              <span onClick={triggerFileInput}>Upload a file</span>
                               <input 
+                                ref={fileInputRef}
                                 id="file-upload" 
                                 name="file-upload" 
                                 type="file" 
                                 className="sr-only" 
                                 onChange={handleImageUpload}
                                 disabled={isUploading}
+                                accept="image/jpeg,image/png,image/gif,image/webp"
                               />
                             </label>
                             <p className="pl-1">or drag and drop</p>

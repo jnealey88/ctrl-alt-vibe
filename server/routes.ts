@@ -130,7 +130,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: z.string().min(20).max(500),
         longDescription: z.string().optional(),
         projectUrl: z.string().url(),
-        imageUrl: z.string().url(),
+        imageUrl: z.string().refine(val => {
+          // Allow URLs that start with http:// or https:// (remote images)
+          if (val.startsWith('http://') || val.startsWith('https://')) {
+            return true;
+          }
+          // Allow URLs that start with /uploads/ (local uploads)
+          if (val.startsWith('/uploads/')) {
+            return true;
+          }
+          return false;
+        }, { message: "Please provide a valid image URL or upload an image" }),
         authorId: z.number(),
         tags: z.array(z.string()).min(1).max(5)
       });
