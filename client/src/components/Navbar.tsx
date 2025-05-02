@@ -155,12 +155,36 @@ const Navbar = () => {
                         {link.name}
                       </Link>
                     ))}
-                    
-                    <Link href="/submit">
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                        Submit Project
-                      </Button>
-                    </Link>
+
+                    {user ? (
+                      <>
+                        <Link href="/profile" className="text-gray-600 hover:text-primary py-2 text-base font-medium">
+                          My Profile
+                        </Link>
+                        <Link href="/submit">
+                          <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                            Submit Project
+                          </Button>
+                        </Link>
+                        <Button 
+                          onClick={() => logoutMutation.mutate()} 
+                          variant="outline" 
+                          className="w-full"
+                          disabled={logoutMutation.isPending}
+                        >
+                          {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/auth?tab=login">
+                          <Button variant="outline" className="w-full mb-2">Login</Button>
+                        </Link>
+                        <Link href="/auth?tab=register">
+                          <Button className="w-full">Sign Up</Button>
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>
