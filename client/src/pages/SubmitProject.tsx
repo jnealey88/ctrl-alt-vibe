@@ -71,15 +71,8 @@ const SubmitProject = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Fetch tags for AI tools
-  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{tags: string[]}>({ 
-    queryKey: ['/api/tags'],
-    queryFn: async () => {
-      const response = await fetch('/api/tags');
-      if (!response.ok) throw new Error("Failed to fetch AI tools tags");
-      return response.json();
-    },
-  });
+  // Fetch AI coding tools from database
+  const { tools, isLoading: isLoadingAiTools } = useCodingTools();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(submitProjectSchema),
@@ -279,10 +272,10 @@ const SubmitProject = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">None</SelectItem>
-                            {aiToolsData?.tags && aiToolsData.tags.length > 0 ? (
-                              aiToolsData.tags.filter(tag => tag && (tag.includes('AI') || tag.includes('Tool'))).map((tool: string) => (
-                                <SelectItem key={tool} value={tool || "other"}>
-                                  {tool}
+                            {tools && tools.length > 0 ? (
+                              tools.map((tool) => (
+                                <SelectItem key={tool.id} value={tool.name}>
+                                  {tool.name}
                                 </SelectItem>
                               ))
                             ) : (
