@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
+  role: text("role").default("user").notNull(), // Available roles: 'admin', 'user'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -228,6 +229,7 @@ export const userInsertSchema = createInsertSchema(users, {
   password: (schema) => schema.min(6, "Password must be at least 6 characters"),
   bio: (schema) => schema.optional(),
   avatarUrl: (schema) => schema.optional(),
+  role: (schema) => schema.optional(),
 });
 
 export const projectInsertSchema = createInsertSchema(projects, {
@@ -326,7 +328,9 @@ export type CodingTool = {
 };
 
 // Export types
-export type User = typeof users.$inferSelect;
+export type User = typeof users.$inferSelect & {
+  role: string; // Include the role in the User type
+};
 export type InsertUser = z.infer<typeof userInsertSchema>;
 export type InsertProject = z.infer<typeof projectInsertSchema>;
 export type InsertComment = z.infer<typeof commentInsertSchema>;

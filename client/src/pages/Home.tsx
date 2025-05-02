@@ -388,12 +388,12 @@ const Home = () => {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link href="/submit">
-            <Button className="px-8 py-3 rounded-md text-base font-medium inline-block">
+            <Button variant="default" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white sm:px-8 w-full">
               Submit Your Project
             </Button>
           </Link>
           <Link href="/browse">
-            <Button variant="outline" className="px-8 py-3 rounded-md text-base font-medium inline-block">
+            <Button variant="secondary" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary bg-white hover:bg-gray-50 sm:px-8 w-full mb-4 sm:mb-0">
               Browse Projects
             </Button>
           </Link>
