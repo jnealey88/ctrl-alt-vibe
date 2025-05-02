@@ -30,7 +30,7 @@ export function errorHandler(err: AppError, req: Request, res: Response, _next: 
   };
   
   // Log the structured error with full details
-  log(`ERROR: ${JSON.stringify(errorLog)}`, 'error');
+  logger.error(JSON.stringify(errorLog), 'error-handler');
   
   // Only expose necessary error details to the client
   const clientError = {
