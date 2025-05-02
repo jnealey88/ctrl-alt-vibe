@@ -2,6 +2,8 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
@@ -15,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
 
 function Router() {
   return (
@@ -39,6 +42,41 @@ function Router() {
 }
 
 function App() {
+  const { toast } = useToast();
+  const [hasShownTip, setHasShownTip] = useState(false);
+  
+  // This hook will trigger confetti when Ctrl+Alt+V or Cmd+Alt+V is pressed
+  const { triggerConfetti } = useKeyboardConfetti({
+    particleCount: 150,
+    spread: 90,
+    origin: { y: 0.5 }
+  });
+
+  // Show a hint about the keyboard shortcut occasionally
+  useEffect(() => {
+    // Check if the tip has been shown in this session
+    if (!hasShownTip) {
+      // Use a 1 in 4 chance to show the tip (25% chance)
+      const shouldShowTip = Math.random() < 0.25;
+      
+      if (shouldShowTip) {
+        // Wait 5 seconds before showing the tip
+        const timer = setTimeout(() => {
+          toast({
+            title: "Pro Tip",
+            description: "Try pressing Ctrl+Alt+V (or Cmd+Alt+V on Mac) for a fun surprise!",
+            duration: 5000
+          });
+          setHasShownTip(true);
+        }, 5000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        setHasShownTip(true); // Don't try again this session
+      }
+    }
+  }, [toast, hasShownTip]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
