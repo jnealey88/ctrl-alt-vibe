@@ -45,6 +45,11 @@ export const projects = pgTable("projects", {
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
+}, (table) => {
+  return {
+    // Case-insensitive index for tag name lookups
+    nameIdx: index("tags_name_idx").on(table.name),
+  };
 });
 
 // AI Coding Tools table
@@ -79,6 +84,13 @@ export const comments = pgTable("comments", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    projectIdIdx: index("comments_project_id_idx").on(table.projectId), // For fetching project comments
+    authorIdIdx: index("comments_author_id_idx").on(table.authorId), // For user's comment history
+    createdAtIdx: index("comments_created_at_idx").on(table.createdAt), // For sorting/pagination
+  };
 });
 
 // Comment replies
@@ -89,6 +101,13 @@ export const commentReplies = pgTable("comment_replies", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    commentIdIdx: index("comment_replies_comment_id_idx").on(table.commentId), // For comment-reply tree
+    authorIdIdx: index("comment_replies_author_id_idx").on(table.authorId), // For user's replies history
+    createdAtIdx: index("comment_replies_created_at_idx").on(table.createdAt), // For sorting
+  };
 });
 
 // Likes
