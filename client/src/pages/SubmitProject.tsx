@@ -361,7 +361,7 @@ const SubmitProject = () => {
               <div className="pt-4 border-t border-gray-200">
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-white py-3"
+                  className="w-full py-3"
                   disabled={submitMutation.isPending}
                 >
                   {submitMutation.isPending ? "Submitting..." : "Submit Project"}

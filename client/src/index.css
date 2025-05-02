@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     
-    --primary: 244 83% 67%;  /* #6366F1 - vibrant indigo */
+    --primary: 0 0% 7%;  /* #111111 - black */
     --primary-foreground: 210 40% 98%;
     
     --secondary: 329 86% 70%; /* #EC4899 - energetic pink */
@@ -54,8 +54,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 244 83% 67%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 0% 7%;  /* #111111 - black */
+    --primary-foreground: 210 40% 98%;
     
     --secondary: 329 86% 70%;
     --secondary-foreground: 222.2 47.4% 11.2%;
