@@ -290,6 +290,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Share project
+  app.post(`${apiPrefix}/projects/:id/share`, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const { platform } = req.body;
+      
+      if (!platform) {
+        return res.status(400).json({ message: "Platform is required" });
+      }
+      
+      // Track user ID if authenticated
+      const userId = req.isAuthenticated() ? req.user!.id : undefined;
+      
+      await storage.shareProject(projectId, platform, userId);
+      
+      // Get updated share count
+      const sharesCount = await storage.getProjectShares(projectId);
+      
+      res.status(200).json({ message: "Project shared successfully", sharesCount });
+    } catch (error) {
+      console.error("Error sharing project:", error);
+      res.status(500).json({ message: "Failed to share project" });
+    }
+  });
+  
+  // Get project share count
+  app.get(`${apiPrefix}/projects/:id/shares`, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const sharesCount = await storage.getProjectShares(projectId);
+      res.status(200).json({ sharesCount });
+    } catch (error) {
+      console.error("Error getting project shares:", error);
+      res.status(500).json({ message: "Failed to get project shares" });
+    }
+  });
+
   // Delete project
   app.delete(`${apiPrefix}/projects/:id`, async (req, res) => {
     try {

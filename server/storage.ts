@@ -20,7 +20,8 @@ import type {
   InsertComment, 
   InsertReply,
   CodingTool,
-  InsertCodingTool
+  InsertCodingTool,
+  InsertShare
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -589,6 +590,28 @@ export const storage = {
     await db.update(projects)
       .set({ viewsCount: sql`${projects.viewsCount} + 1` })
       .where(eq(projects.id, projectId));
+  },
+
+  // Project sharing
+  async shareProject(projectId: number, platform: string, userId?: number): Promise<void> {
+    // First create a share record
+    await db.insert(shares).values({
+      projectId,
+      userId: userId || null,
+      platform
+    });
+
+    // Then increment the share count on the project
+    await db.update(projects)
+      .set({ sharesCount: sql`${projects.sharesCount} + 1` })
+      .where(eq(projects.id, projectId));
+  },
+
+  async getProjectShares(projectId: number): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(shares)
+      .where(eq(shares.projectId, projectId));
+    return Number(result[0]?.count || 0);
   },
   
   // Comments
