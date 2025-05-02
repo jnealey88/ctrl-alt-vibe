@@ -13,6 +13,7 @@ import BrowseProjects from "@/pages/BrowseProjects";
 import AuthPage from "@/pages/auth-page";
 import ProfilePage from "@/pages/profile-page";
 import UserProfilePage from "@/pages/user-profile-page";
+import UsersPage from "@/pages/UsersPage";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -32,6 +33,7 @@ function Router() {
           <ProtectedRoute path="/projects/:id/edit" component={EditProject} />
           <ProtectedRoute path="/profile" component={ProfilePage} />
           <Route path="/profile/:username" component={UserProfilePage} />
+          <Route path="/users" component={UsersPage} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

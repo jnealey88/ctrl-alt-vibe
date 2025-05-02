@@ -108,7 +108,7 @@ export default function UsersPage() {
                       {profile.bio && <p className="text-sm text-muted-foreground line-clamp-3">{profile.bio}</p>}
                     </div>
                     <Button asChild variant="outline" className="w-full mt-2">
-                      <Link href={`/user/${profile.username}`}>View Profile</Link>
+                      <Link href={`/profile/${profile.username}`}>View Profile</Link>
                     </Button>
                   </div>
                 </CardContent>
