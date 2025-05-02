@@ -245,6 +245,7 @@ export function setupAuth(app: Express) {
       const limit = parseInt(req.query.limit as string) || 12;
       const search = req.query.search as string || "";
       const roleFilter = req.query.role as string || "";
+      const tagFilter = req.query.tag as string || "";
       const sort = req.query.sort as string || "newest";
       
       // Calculate offset
@@ -320,10 +321,14 @@ export function setupAuth(app: Express) {
         usersQuery = query;
       }
 
-      // If we need to filter by role, post-process the results
+      // Apply filters for role and tag
       let filteredUsers = usersQuery;
+      let filteredUserIds = new Set<number>();
+      let shouldFilter = false;
+      
+      // Get users who used the specific AI tool in their projects
       if (roleFilter) {
-        // Get users who used the specific tool in their projects
+        shouldFilter = true;
         const usersWithRole = await db.select({ authorId: projects.authorId })
           .from(projects)
           .where(sql`${projects.vibeCodingTool} = ${roleFilter}`)
@@ -331,8 +336,35 @@ export function setupAuth(app: Express) {
           .execute();
 
         const userIds = new Set(usersWithRole.map((user: { authorId: number }) => user.authorId));
+        // If this is the first filter, set filteredUserIds, otherwise intersect with existing
+        filteredUserIds = userIds;
+      }
+      
+      // Get users who have projects with the specified tag
+      if (tagFilter) {
+        shouldFilter = true;
+        const usersWithTag = await db.execute(sql`
+          SELECT DISTINCT p."authorId" as "authorId"
+          FROM ${projects} p
+          JOIN project_tags pt ON p.id = pt."projectId"
+          JOIN tags t ON pt."tagId" = t.id
+          WHERE LOWER(t.name) = LOWER(${tagFilter})
+        `);
         
-        // Filter users based on the role
+        const tagUserIds = new Set(usersWithTag.map((user: any) => user.authorId));
+        
+        // If roleFilter was also set, we need to find the intersection of both filters
+        if (filteredUserIds.size > 0) {
+          // Keep only IDs that exist in both sets
+          filteredUserIds = new Set([...filteredUserIds].filter(id => tagUserIds.has(id)));
+        } else {
+          // This is the first/only filter
+          filteredUserIds = tagUserIds;
+        }
+      }
+      
+      // Apply filters if needed
+      if (shouldFilter) {
         // Handle both types of user query results (with and without projectCount)
         if (sort === "activity") {
           // If we're using the activity sort, we have the projectCount field
@@ -344,24 +376,38 @@ export function setupAuth(app: Express) {
             createdAt: Date; 
             projectCount: number 
           }>;
-          filteredUsers = typedUsers.filter(user => userIds.has(user.id));
+          filteredUsers = typedUsers.filter(user => filteredUserIds.has(user.id));
         } else {
           // For other sorts, we're using the standard user fields
-          filteredUsers = usersQuery.filter((user: { id: number }) => userIds.has(user.id));
+          filteredUsers = usersQuery.filter((user: any) => filteredUserIds.has(user.id));
         }
 
         // Recalculate total count
-        const totalRoleUsers = await db.select({ count: sql<number>`count(DISTINCT ${projects.authorId})` })
-          .from(projects)
-          .where(sql`${projects.vibeCodingTool} = ${roleFilter}`)
-          .execute();
+        let totalFilteredUsers;
+        if (roleFilter && tagFilter) {
+          // For combined role and tag filter, count is just the size of the intersection
+          totalFilteredUsers = [{ count: filteredUserIds.size }];
+        } else if (roleFilter) {
+          totalFilteredUsers = await db.select({ count: sql<number>`count(DISTINCT ${projects.authorId})` })
+            .from(projects)
+            .where(sql`${projects.vibeCodingTool} = ${roleFilter}`)
+            .execute();
+        } else if (tagFilter) {
+          totalFilteredUsers = await db.execute(sql`
+            SELECT COUNT(DISTINCT p."authorId") as count
+            FROM ${projects} p
+            JOIN project_tags pt ON p.id = pt."projectId"
+            JOIN tags t ON pt."tagId" = t.id
+            WHERE LOWER(t.name) = LOWER(${tagFilter})
+          `);
+        }
         
-        countQuery = [{ count: totalRoleUsers[0]?.count || 0 }];
+        countQuery = totalFilteredUsers || [{ count: 0 }];
       }
 
       const totalCount = countQuery[0]?.count || 0;
       
-      // Return with pagination info (adjust for role filtering)
+      // Return with pagination info
       res.json({
         profiles: filteredUsers,
         pagination: {

@@ -74,11 +74,7 @@ const BrowseProjects = () => {
     },
   });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchQuery(inputSearch);
-    updateUrl(1, selectedTag, inputSearch, sortOption);
-  };
+  // Search now happens automatically with onChange event
 
   const clearSearch = () => {
     setInputSearch('');
@@ -126,30 +122,37 @@ const BrowseProjects = () => {
             {/* Search */}
             <div className="mb-6">
               <h3 className="font-medium mb-2">Search</h3>
-              <form onSubmit={handleSearch} className="flex gap-1 sm:gap-2">
-                <div className="relative flex-grow">
-                  <Input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={inputSearch}
-                    onChange={(e) => setInputSearch(e.target.value)}
-                    className="pr-8"
-                  />
-                  {inputSearch && (
-                    <button 
-                      type="button" 
-                      onClick={clearSearch}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-                <Button type="submit" size="sm" className="px-2 sm:px-3">
-                  <Search size={16} className="sm:mr-1" />
-                  <span className="hidden sm:inline">Search</span>
-                </Button>
-              </form>
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={inputSearch}
+                  onChange={(e) => {
+                    setInputSearch(e.target.value);
+                    if (e.target.value === "") {
+                      clearSearch();
+                    } else {
+                      // Add debounce for typing
+                      const timer = setTimeout(() => {
+                        setSearchQuery(e.target.value);
+                        updateUrl(1, selectedTag, e.target.value, sortOption);
+                      }, 300);
+                      return () => clearTimeout(timer);
+                    }
+                  }}
+                  className="pl-8 pr-8"
+                />
+                {inputSearch && (
+                  <button 
+                    type="button" 
+                    onClick={clearSearch}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
             </div>
             
             {/* Sort */}
