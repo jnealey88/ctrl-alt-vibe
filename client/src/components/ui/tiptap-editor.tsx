@@ -3,7 +3,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
-import CodeBlock from '@tiptap/extension-code-block';
 import { useCallback, useEffect } from 'react';
 import {
   Bold,
@@ -17,9 +16,6 @@ import {
   Code,
   Quote,
   Image as ImageIcon,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
   Undo,
   Redo,
 } from 'lucide-react';
@@ -40,7 +36,13 @@ export function TiptapEditor({
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: {
+          HTMLAttributes: {
+            class: 'bg-gray-100 rounded p-2 font-mono text-sm my-2',
+          },
+        },
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -51,11 +53,6 @@ export function TiptapEditor({
         placeholder,
       }),
       Image,
-      CodeBlock.configure({
-        HTMLAttributes: {
-          class: 'bg-gray-100 rounded p-2 font-mono text-sm my-2',
-        },
-      }),
     ],
     content,
     onUpdate: ({ editor }) => {
