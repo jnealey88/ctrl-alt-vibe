@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
-import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation, useParams } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,11 +18,23 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import TagSelector from "@/components/TagSelector";
-import { Upload, Image } from "lucide-react";
-import { projectInsertSchema } from "@shared/schema";
+import { Upload, Image, Loader2, AlertTriangle } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Modified schema for client-side validation
-const submitProjectSchema = z.object({
+const editProjectSchema = z.object({
   title: z.string()
     .min(3, "Title must be at least 3 characters")
     .max(100, "Title must be less than 100 characters"),
@@ -52,17 +64,32 @@ const submitProjectSchema = z.object({
     .max(5, "Maximum 5 tags allowed"),
 });
 
-type FormValues = z.infer<typeof submitProjectSchema>;
+type FormValues = z.infer<typeof editProjectSchema>;
 
-const SubmitProject = () => {
+const EditProject = () => {
+  const { id } = useParams<{ id: string }>();
+  const projectId = parseInt(id);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const { data: projectData, isLoading: isLoadingProject, error: projectError } = useQuery({
+    queryKey: [`/api/projects/${projectId}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/projects/${projectId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch project');
+      }
+      return response.json();
+    },
+  });
+  
   const form = useForm<FormValues>({
-    resolver: zodResolver(submitProjectSchema),
+    resolver: zodResolver(editProjectSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -73,30 +100,83 @@ const SubmitProject = () => {
     },
   });
   
-  const submitMutation = useMutation({
+  // Set form values when project data is loaded
+  useEffect(() => {
+    if (projectData?.project) {
+      const project = projectData.project;
+      form.reset({
+        title: project.title,
+        description: project.description,
+        longDescription: project.longDescription || "",
+        projectUrl: project.projectUrl,
+        imageUrl: project.imageUrl,
+        tags: project.tags,
+      });
+    }
+  }, [projectData, form]);
+  
+  // Check if the current user is the author of the project
+  const isAuthor = user && projectData?.project && user.id === projectData.project.author.id;
+  
+  const updateMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await apiRequest("POST", "/api/projects", data);
+      const response = await apiRequest("PUT", `/api/projects/${projectId}`, data);
       return response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Project submitted",
-        description: "Your project has been successfully submitted.",
+        title: "Project updated",
+        description: "Your project has been successfully updated.",
       });
-      setLocation(`/projects/${data.project.id}`);
+      // Invalidate project cache to refresh data
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setLocation(`/projects/${projectId}`);
     },
     onError: (error) => {
       console.error(error);
       toast({
         title: "Error",
-        description: "Failed to submit project. Please try again.",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/projects/${projectId}`);  
+      if (!response.ok) {
+        throw new Error('Failed to delete project');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Project deleted",
+        description: "Your project has been successfully deleted.",
+      });
+      // Invalidate projects cache to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setLocation("/");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
         variant: "destructive",
       });
     },
   });
   
   const onSubmit = (data: FormValues) => {
-    submitMutation.mutate(data);
+    updateMutation.mutate(data);
+  };
+  
+  const handleDelete = () => {
+    deleteMutation.mutate();
+    setDeleteDialogOpen(false);
   };
   
   const processFile = async (file: File) => {
@@ -198,12 +278,97 @@ const SubmitProject = () => {
     }
   };
   
+  if (isLoadingProject) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+          <p className="text-muted-foreground">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (projectError || !projectData?.project) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-[60vh]">
+        <Alert variant="destructive" className="w-full max-w-lg">
+          <AlertTriangle className="h-6 w-6" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Failed to load project. The project may not exist or you don't have permission to view it.
+          </AlertDescription>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => setLocation('/')}
+          >
+            Return to Home
+          </Button>
+        </Alert>
+      </div>
+    );
+  }
+  
+  if (!isAuthor) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-[60vh]">
+        <Alert variant="destructive" className="w-full max-w-lg">
+          <AlertTriangle className="h-6 w-6" />
+          <AlertTitle>Permission Denied</AlertTitle>
+          <AlertDescription>
+            You don't have permission to edit this project. Only the project creator can make changes.
+          </AlertDescription>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => setLocation(`/projects/${projectId}`)}
+          >
+            View Project
+          </Button>
+        </Alert>
+      </div>
+    );
+  }
+  
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white rounded-xl shadow-card overflow-hidden mb-16">
         <div className="p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-foreground font-space">Submit Your Project</h2>
+            <h2 className="text-2xl font-bold text-foreground font-space">Edit Project</h2>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  Delete Project
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your project
+                    and remove it from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deleteMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           
           <Form {...form}>
@@ -358,13 +523,21 @@ const SubmitProject = () => {
               />
               
               <div className="pt-4 border-t border-gray-200">
-                <Button 
-                  type="submit" 
-                  className="w-full py-3"
-                  disabled={submitMutation.isPending}
-                >
-                  {submitMutation.isPending ? "Submitting..." : "Submit Project"}
-                </Button>
+                <div className="flex justify-between">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setLocation(`/projects/${projectId}`)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
@@ -374,4 +547,4 @@ const SubmitProject = () => {
   );
 };
 
-export default SubmitProject;
+export default EditProject;

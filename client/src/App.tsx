@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
 import SubmitProject from "@/pages/SubmitProject";
+import EditProject from "@/pages/EditProject";
 import AuthPage from "@/pages/auth-page";
 import ProfilePage from "@/pages/profile-page";
 import UserProfilePage from "@/pages/user-profile-page";
@@ -23,6 +24,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/projects/:id" component={ProjectDetail} />
           <ProtectedRoute path="/submit" component={SubmitProject} />
+          <ProtectedRoute path="/projects/:id/edit" component={EditProject} />
           <ProtectedRoute path="/profile" component={ProfilePage} />
           <Route path="/profile/:username" component={UserProfilePage} />
           <Route path="/auth" component={AuthPage} />
