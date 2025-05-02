@@ -6,7 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { db } from "../db";
 import { users, projects } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc, asc } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "../db";
 import multer from "multer";
@@ -313,8 +313,8 @@ export function setupAuth(app: Express) {
           ...queryConfig,
           where: whereCondition,
           orderBy: sort === "oldest" 
-            ? [{ createdAt: "asc" }]
-            : [{ createdAt: "desc" }]
+            ? [asc(users.createdAt)]
+            : [desc(users.createdAt)]
         });
         
         usersQuery = query;
@@ -333,7 +333,22 @@ export function setupAuth(app: Express) {
         const userIds = new Set(usersWithRole.map((user: { authorId: number }) => user.authorId));
         
         // Filter users based on the role
-        filteredUsers = usersQuery.filter((user: { id: number }) => userIds.has(user.id));
+        // Handle both types of user query results (with and without projectCount)
+        if (sort === "activity") {
+          // If we're using the activity sort, we have the projectCount field
+          const typedUsers = usersQuery as Array<{ 
+            id: number; 
+            username: string; 
+            avatarUrl: string | null; 
+            bio: string | null; 
+            createdAt: Date; 
+            projectCount: number 
+          }>;
+          filteredUsers = typedUsers.filter(user => userIds.has(user.id));
+        } else {
+          // For other sorts, we're using the standard user fields
+          filteredUsers = usersQuery.filter((user: { id: number }) => userIds.has(user.id));
+        }
 
         // Recalculate total count
         const totalRoleUsers = await db.select({ count: sql<number>`count(DISTINCT ${projects.authorId})` })
