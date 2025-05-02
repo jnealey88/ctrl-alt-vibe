@@ -88,7 +88,7 @@ const SubmitProject = () => {
       longDescription: "",
       projectUrl: "",
       imageUrl: "",
-      vibeCodingTool: "",
+      vibeCodingTool: "none",
       tags: [],
     },
   });
@@ -277,10 +277,10 @@ const SubmitProject = () => {
                             <SelectValue placeholder="Select an AI tool" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {aiToolsData?.tags && aiToolsData.tags.length > 0 ? (
-                              aiToolsData.tags.filter(tag => tag.includes('AI') || tag.includes('Tool')).map((tool: string) => (
-                                <SelectItem key={tool} value={tool}>
+                              aiToolsData.tags.filter(tag => tag && (tag.includes('AI') || tag.includes('Tool'))).map((tool: string) => (
+                                <SelectItem key={tool} value={tool || "other"}>
                                   {tool}
                                 </SelectItem>
                               ))
