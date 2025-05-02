@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TipTap Editor Styles */
+.tiptap-editor {
+  min-height: 250px;
+  position: relative;
+  cursor: text;
+}
+
+.tiptap-editor .ProseMirror {
+  min-height: 250px;
+  outline: none;
+  width: 100%;
+  height: 100%;
+}
+
+.tiptap-editor .ProseMirror p {
+  margin-bottom: 0.75em;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 @layer base {
   :root {
     --background: 210 40% 98%;

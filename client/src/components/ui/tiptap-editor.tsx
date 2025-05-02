@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -229,43 +229,12 @@ export function TiptapEditor({
         </Button>
       </div>
       
-      <EditorContent editor={editor} className="p-4 prose prose-sm max-w-none min-h-[200px]" />
-      
-      {editor && (
-        <BubbleMenu 
+      <div className="tiptap-editor w-full" onClick={() => editor.commands.focus()}>
+        <EditorContent 
           editor={editor} 
-          tippyOptions={{ duration: 100 }}
-          className="bg-white shadow-lg border rounded-md overflow-hidden flex"
-        >
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={editor.isActive('bold') ? 'bg-gray-200' : ''}
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={editor.isActive('italic') ? 'bg-gray-200' : ''}
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={setLink}
-            className={editor.isActive('link') ? 'bg-gray-200' : ''}
-          >
-            <LinkIcon className="h-4 w-4" />
-          </Button>
-        </BubbleMenu>
-      )}
+          className="p-4 prose prose-sm max-w-none" 
+        />
+      </div>
     </div>
   );
 }
