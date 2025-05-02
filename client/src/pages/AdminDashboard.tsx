@@ -84,9 +84,9 @@ const AdminDashboard = () => {
         description: "You do not have permission to access the admin dashboard.",
         variant: "destructive",
       });
-      navigate("/");
+      setLocation("/");
     }
-  }, [user, authLoading, navigate, toast]);
+  }, [user, authLoading, setLocation, toast]);
 
   // Fetch users
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -243,7 +243,7 @@ const AdminDashboard = () => {
             <Shield className="h-16 w-16 mx-auto text-gray-400 mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Access Restricted</h2>
             <p className="text-gray-500 mb-4">You do not have permission to view this page.</p>
-            <Button onClick={() => navigate("/")}>Return to Homepage</Button>
+            <Button onClick={() => setLocation("/")}>Return to Homepage</Button>
           </div>
         )}
       </div>
