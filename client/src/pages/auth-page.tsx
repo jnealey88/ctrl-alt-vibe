@@ -27,9 +27,8 @@ const registerFormSchema = z.object({
 
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
-  const [_, search] = useLocation();
-  const urlParams = new URLSearchParams(search);
-  const tabFromUrl = urlParams.get("tab");
+  const [, search] = useLocation();
+  const tabFromUrl = new URLSearchParams(search).get("tab");
   
   const [activeTab, setActiveTab] = useState(tabFromUrl === "register" ? "register" : "login");
   const { toast } = useToast();
