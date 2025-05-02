@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import logger from '../utils/logger';
+import loggerModule from '../utils/logger';
 
 export interface AppError extends Error {
   status?: number;
@@ -13,47 +13,46 @@ export interface AppError extends Error {
  * and improved logging for debugging
  */
 export function errorHandler(err: AppError, req: Request, res: Response, _next: NextFunction) {
-  // Set default status code if not provided
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  // Determine the appropriate status code
+  const statusCode = err.statusCode || err.status || 500;
+  const errorCode = err.code || 'UNKNOWN_ERROR';
   
-  // Enhanced error logging with request context
-  const errorLog = {
-    timestamp: new Date().toISOString(),
-    status,
-    message,
-    path: req.path,
-    method: req.method,
-    ip: req.ip,
-    code: err.code,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  // Log error with appropriate level based on status code
+  const logLevel = statusCode >= 500 ? 'error' : 'warn';
+  logger(
+    `${req.method} ${req.originalUrl} - ${statusCode} - ${err.message}`,
+    logLevel,
+    'errorHandler'
+  );
+  
+  // Only log full error details (including stack trace) for server errors
+  if (statusCode >= 500) {
+    console.error(err);
+  }
+  
+  // Format the error response
+  const errorResponse = {
+    error: {
+      message: err.message || 'Internal Server Error',
+      code: errorCode,
+      status: statusCode
+    },
+    // Include additional data if available
+    ...(err.data && { data: err.data })
   };
   
-  // Log the structured error with full details
-  logger.error(JSON.stringify(errorLog), 'error-handler');
-  
-  // Only expose necessary error details to the client
-  const clientError = {
-    message,
-    code: err.code,
-    data: err.data,
-  };
-  
-  // Send the response
-  res.status(status).json(clientError);
+  // Send the response to the client
+  res.status(statusCode).json(errorResponse);
 }
 
 /**
  * 404 Not Found handler for all unmatched routes
  */
 export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
-  if (req.path.startsWith('/api')) {
+  if (!res.headersSent) {
     const err: AppError = new Error(`Not Found - ${req.originalUrl}`);
     err.status = 404;
     err.code = 'RESOURCE_NOT_FOUND';
     next(err);
-  } else {
-    // Let Vite or static file middleware handle non-API routes
-    next();
   }
 }

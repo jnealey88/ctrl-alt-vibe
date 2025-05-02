@@ -55,21 +55,29 @@ export async function trackQuery<T>(
  * @param repository The original repository object with database functions
  * @returns A wrapped version of the repository with performance tracking
  */
-export function createMonitoredRepository<T extends Record<string, any>>(repository: T): T {
-  const monitoredRepository = { ...repository };
+export function createMonitoredRepository(repository: Record<string, any>): typeof repository {
+  // Create a new object with the same prototype
+  const monitoredRepository = Object.create(Object.getPrototypeOf(repository));
   
-  // Wrap each function in the repository with tracking
-  for (const [key, value] of Object.entries(repository)) {
-    if (typeof value === 'function') {
-      monitoredRepository[key] = async (...args: any[]) => {
-        return trackQuery(
-          key, // Use the function name as the query name
-          () => value.apply(repository, args),
-          { functionName: key }
-        );
-      };
+  // Copy all properties
+  Object.getOwnPropertyNames(repository).forEach((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(repository, key);
+    if (descriptor) {
+      // If it's a function, wrap it with performance tracking
+      if (typeof repository[key] === 'function') {
+        monitoredRepository[key] = async (...args: any[]) => {
+          return trackQuery(
+            key, // Use the function name as the query name
+            () => repository[key].apply(repository, args),
+            { functionName: key }
+          );
+        };
+      } else {
+        // Otherwise just copy the property
+        Object.defineProperty(monitoredRepository, key, descriptor);
+      }
     }
-  }
+  });
   
   return monitoredRepository;
 }

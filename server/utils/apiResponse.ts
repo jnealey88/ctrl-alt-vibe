@@ -2,8 +2,6 @@
  * Utility for standardizing API responses
  */
 
-import logger from './logger';
-
 export type ApiResponseStatus = 'success' | 'error' | 'warning';
 
 export interface ApiResponseOptions {
@@ -31,6 +29,7 @@ export function successResponse<T = any>(options: ApiResponseOptions = {}): ApiR
     status: 'success',
     message: options.message,
     data: options.data,
+    code: options.code,
     meta: options.meta,
     timestamp: new Date().toISOString()
   };
@@ -41,16 +40,11 @@ export function successResponse<T = any>(options: ApiResponseOptions = {}): ApiR
  * @param options - Response options
  */
 export function errorResponse(options: ApiResponseOptions = {}): ApiResponse {
-  // Optionally log the error
-  if (options.message) {
-    logger.error(options.message, 'api-response');
-  }
-  
   return {
     status: 'error',
-    message: options.message || 'An unexpected error occurred',
+    message: options.message || 'An error occurred',
     data: options.data,
-    code: options.code || 'UNKNOWN_ERROR',
+    code: options.code || 'ERROR',
     meta: options.meta,
     timestamp: new Date().toISOString()
   };
@@ -61,14 +55,9 @@ export function errorResponse(options: ApiResponseOptions = {}): ApiResponse {
  * @param options - Response options
  */
 export function warningResponse<T = any>(options: ApiResponseOptions = {}): ApiResponse<T> {
-  // Optionally log the warning
-  if (options.message) {
-    logger.warn(options.message, 'api-response');
-  }
-  
   return {
     status: 'warning',
-    message: options.message,
+    message: options.message || 'Warning',
     data: options.data,
     code: options.code,
     meta: options.meta,
