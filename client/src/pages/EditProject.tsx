@@ -19,6 +19,13 @@ import {
   FormMessage,
   FormDescription
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
 import { Upload, Image, Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -79,6 +86,16 @@ const EditProject = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch AI tools
+  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{roles: string[]}>({ 
+    queryKey: ['/api/user-roles'],
+    queryFn: async () => {
+      const response = await fetch('/api/user-roles');
+      if (!response.ok) throw new Error("Failed to fetch AI tools");
+      return response.json();
+    },
+  });
   
   const { data: projectData, isLoading: isLoadingProject, error: projectError } = useQuery({
     queryKey: [`/api/projects/${projectId}`],
@@ -413,10 +430,33 @@ const EditProject = () => {
                   <FormItem>
                     <FormLabel>Vibe Coding Tool Used (Optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., ChatGPT, Claude, Gemini, etc." 
-                      />
+                      {isLoadingAiTools ? (
+                        <div className="flex items-center"> 
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <span className="text-sm text-muted-foreground">Loading tools...</span>
+                        </div>
+                      ) : (
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an AI tool" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {aiToolsData?.roles && aiToolsData.roles.length > 0 ? (
+                              aiToolsData.roles.map((tool) => (
+                                <SelectItem key={tool} value={tool}>
+                                  {tool}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="other">Other</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </FormControl>
                     <p className="text-sm text-gray-500">
                       Share which AI tool helped you create this project

@@ -263,10 +263,33 @@ const SubmitProject = () => {
                   <FormItem>
                     <FormLabel>Vibe Coding Tool Used (Optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., ChatGPT, Claude, Gemini, etc." 
-                      />
+                      {isLoadingAiTools ? (
+                        <div className="flex items-center"> 
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <span className="text-sm text-muted-foreground">Loading tools...</span>
+                        </div>
+                      ) : (
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an AI tool" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {aiToolsData?.roles && aiToolsData.roles.length > 0 ? (
+                              aiToolsData.roles.map((tool) => (
+                                <SelectItem key={tool} value={tool}>
+                                  {tool}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="other">Other</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </FormControl>
                     <p className="text-sm text-gray-500">
                       Share which AI tool helped you create this project
