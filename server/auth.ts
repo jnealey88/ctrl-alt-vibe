@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { db } from "../db";
-import { users } from "@shared/schema";
+import { users, projects } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "../db";
@@ -145,7 +145,7 @@ export function setupAuth(app: Express) {
     res.json(req.user);
   });
 
-  // Get user profile with their projects
+  // Get current user profile with their projects
   app.get("/api/profile", async (req, res) => {
     try {
       if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
@@ -154,13 +154,43 @@ export function setupAuth(app: Express) {
       
       // Get user's projects
       const userProjects = await db.query.projects.findMany({
-        where: eq(users.id, userId),
+        where: eq(projects.authorId, userId),
         orderBy: (projects, { desc }) => [desc(projects.createdAt)]
       });
       
       res.json({ user: req.user, projects: userProjects });
     } catch (error) {
       console.error("Error fetching profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  // Get user profile by username with their projects
+  app.get("/api/profile/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      
+      // Find the user by username
+      const user = await db.query.users.findFirst({
+        where: eq(users.username, username)
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get user's projects
+      const userProjects = await db.query.projects.findMany({
+        where: eq(projects.authorId, user.id),
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)]
+      });
+      
+      // Remove sensitive information
+      const { password, ...publicUserInfo } = user;
+      
+      res.json({ user: publicUserInfo, projects: userProjects });
+    } catch (error) {
+      console.error("Error fetching profile by username:", error);
       res.status(500).json({ message: "Failed to fetch profile" });
     }
   });

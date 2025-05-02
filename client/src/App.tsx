@@ -8,6 +8,7 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import SubmitProject from "@/pages/SubmitProject";
 import AuthPage from "@/pages/auth-page";
 import ProfilePage from "@/pages/profile-page";
+import UserProfilePage from "@/pages/user-profile-page";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -23,6 +24,7 @@ function Router() {
           <Route path="/projects/:id" component={ProjectDetail} />
           <ProtectedRoute path="/submit" component={SubmitProject} />
           <ProtectedRoute path="/profile" component={ProfilePage} />
+          <Route path="/profile/:username" component={UserProfilePage} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>
