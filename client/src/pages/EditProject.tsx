@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useCodingTools } from "@/hooks/use-coding-tools";
 import { useLocation, useParams } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -87,15 +88,8 @@ const EditProject = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Fetch tags for AI tools
-  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{tags: string[]}>({ 
-    queryKey: ['/api/tags'],
-    queryFn: async () => {
-      const response = await fetch('/api/tags');
-      if (!response.ok) throw new Error("Failed to fetch AI tools tags");
-      return response.json();
-    },
-  });
+  // Fetch AI coding tools from database
+  const { tools, isLoading: isLoadingAiTools } = useCodingTools();
   
   const { data: projectData, isLoading: isLoadingProject, error: projectError } = useQuery({
     queryKey: [`/api/projects/${projectId}`],
@@ -445,10 +439,10 @@ const EditProject = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">None</SelectItem>
-                            {aiToolsData?.tags && aiToolsData.tags.length > 0 ? (
-                              aiToolsData.tags.filter(tag => tag && (tag.includes('AI') || tag.includes('Tool'))).map((tool: string) => (
-                                <SelectItem key={tool} value={tool || "other"}>
-                                  {tool}
+                            {tools && tools.length > 0 ? (
+                              tools.map((tool) => (
+                                <SelectItem key={tool.id} value={tool.name}>
+                                  {tool.name}
                                 </SelectItem>
                               ))
                             ) : (
