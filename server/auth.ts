@@ -373,7 +373,7 @@ export function setupAuth(app: Express) {
           .where(whereCondition || sql`1=1`)
           .limit(limit)
           .offset(offset)
-          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${projects} WHERE ${projects.authorId} = ${users.id})`))
+          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${projects} WHERE "author_id" = ${users.id})`))
           .execute();
           
         usersQuery = activityQuery;
@@ -413,10 +413,10 @@ export function setupAuth(app: Express) {
       if (tagFilter) {
         shouldFilter = true;
         const usersWithTag = await db.execute(sql`
-          SELECT DISTINCT p."authorId" as "authorId"
+          SELECT DISTINCT p."author_id" as "authorId"
           FROM ${projects} p
-          JOIN project_tags pt ON p.id = pt."projectId"
-          JOIN tags t ON pt."tagId" = t.id
+          JOIN project_tags pt ON p.id = pt."project_id"
+          JOIN tags t ON pt."tag_id" = t.id
           WHERE LOWER(t.name) = LOWER(${tagFilter})
         `);
         
@@ -477,10 +477,10 @@ export function setupAuth(app: Express) {
             .execute();
         } else if (tagFilter) {
           totalFilteredUsers = await db.execute(sql`
-            SELECT COUNT(DISTINCT p."authorId") as count
+            SELECT COUNT(DISTINCT p."author_id") as count
             FROM ${projects} p
-            JOIN project_tags pt ON p.id = pt."projectId"
-            JOIN tags t ON pt."tagId" = t.id
+            JOIN project_tags pt ON p.id = pt."project_id"
+            JOIN tags t ON pt."tag_id" = t.id
             WHERE LOWER(t.name) = LOWER(${tagFilter})
           `);
         }
@@ -509,7 +509,7 @@ export function setupAuth(app: Express) {
           SELECT COUNT(*) AS count
           FROM ${likes} l
           JOIN ${projects} p ON l."project_id" = p.id
-          WHERE p."authorId" = ${user.id}
+          WHERE p."author_id" = ${user.id}
           AND l."comment_id" IS NULL
           AND l."reply_id" IS NULL
         `);
