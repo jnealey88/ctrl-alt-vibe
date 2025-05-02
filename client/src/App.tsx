@@ -7,6 +7,7 @@ import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
 import SubmitProject from "@/pages/SubmitProject";
 import EditProject from "@/pages/EditProject";
+import BrowseProjects from "@/pages/BrowseProjects";
 import AuthPage from "@/pages/auth-page";
 import ProfilePage from "@/pages/profile-page";
 import UserProfilePage from "@/pages/user-profile-page";
@@ -22,6 +23,7 @@ function Router() {
       <div className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/browse" component={BrowseProjects} />
           <Route path="/projects/:id" component={ProjectDetail} />
           <ProtectedRoute path="/submit" component={SubmitProject} />
           <ProtectedRoute path="/projects/:id/edit" component={EditProject} />

@@ -32,14 +32,15 @@ const Navbar = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setLocation(`/?search=${encodeURIComponent(searchQuery)}`);
+      setLocation(`/browse?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const navLinks = [
-    { name: "Discover", path: "/" },
-    { name: "Latest", path: "/?sort=latest" },
-    { name: "Popular", path: "/?sort=popular" }
+    { name: "Home", path: "/" },
+    { name: "Browse", path: "/browse" },
+    { name: "Latest", path: "/browse?sort=latest" },
+    { name: "Popular", path: "/browse?sort=popular" }
   ];
 
   return (
