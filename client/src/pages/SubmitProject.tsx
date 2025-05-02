@@ -241,6 +241,26 @@ const SubmitProject = () => {
               
               <FormField
                 control={form.control}
+                name="vibeCodingTool"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vibe Coding Tool Used (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="e.g., ChatGPT, Claude, Gemini, etc." 
+                      />
+                    </FormControl>
+                    <p className="text-sm text-gray-500">
+                      Share which AI tool helped you create this project
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -338,24 +358,6 @@ const SubmitProject = () => {
                         type="hidden" 
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="vibeCodingTool"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vibe Coding Tool Used</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="What AI tool helped you build this project? (e.g., ChatGPT, Claude, GitHub Copilot)"
-                      />
-                    </FormControl>
-                    <p className="text-sm text-gray-500">Share which AI coding assistant you used</p>
                     <FormMessage />
                   </FormItem>
                 )}
