@@ -219,67 +219,136 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Get user roles/roles for filtering profiles
+  app.get("/api/user-roles", async (req, res) => {
+    try {
+      // Get distinct roles from submitted projects
+      const result = await db.select({ role: sql<string>`DISTINCT(${projects.vibeCodingTool})` })
+        .from(projects)
+        .where(sql`${projects.vibeCodingTool} IS NOT NULL AND ${projects.vibeCodingTool} != ''`)
+        .execute();
+          
+      // Extract roles from result
+      const roles = result.map(item => item.role).filter(Boolean);
+          
+      res.json({ roles });
+    } catch (error) {
+      console.error('Error fetching user roles:', error);
+      res.status(500).json({ message: 'Failed to fetch user roles' });
+    }
+  });
+
   // Get list of all users/profiles
   app.get("/api/profiles", async (req, res) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 12;
       const search = req.query.search as string || "";
+      const roleFilter = req.query.role as string || "";
+      const sort = req.query.sort as string || "newest";
       
       // Calculate offset
       const offset = (page - 1) * limit;
 
-      // Use prepared statements approach with findMany to handle search and pagination
-      let usersQuery;
-      let countQuery;
-      
+      // Create a reusable query configuration
+      const queryConfig = {
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+          bio: true,
+          createdAt: true
+        },
+        limit,
+        offset
+      };
+
+      // Build the where condition based on filters
+      let whereCondition: any = undefined;
+
       if (search) {
-        // We're using a more compatible approach than LOWER() for better database support
-        usersQuery = await db.query.users.findMany({
-          where: sql`${users.username} LIKE ${`%${search}%`}`,
-          limit,
-          offset,
-          orderBy: (users, { desc }) => [desc(users.createdAt)],
-          columns: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            bio: true,
-            createdAt: true
-          }
-        });
-        
-        // Count for pagination
+        whereCondition = sql`${users.username} LIKE ${`%${search}%`}`;
+      }
+      
+      // Count query with the same where condition
+      let countQuery;
+      if (whereCondition) {
         countQuery = await db.select({ count: sql<number>`count(*)` })
           .from(users)
-          .where(sql`${users.username} LIKE ${`%${search}%`}`)
+          .where(whereCondition)
           .execute();
       } else {
-        // Without search, just get all profiles with pagination
-        usersQuery = await db.query.users.findMany({
-          limit, 
-          offset,
-          orderBy: (users, { desc }) => [desc(users.createdAt)],
-          columns: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            bio: true,
-            createdAt: true
-          }
-        });
-        
-        // Count all users
         countQuery = await db.select({ count: sql<number>`count(*)` })
           .from(users)
           .execute();
       }
       
+      // Determine sort order
+      let usersQuery;
+      
+      // Prepare the query based on sort option
+      if (sort === "activity") {
+        // For activity, sort by users with most projects
+        // We need to use a more complex query with raw SQL
+        const activityQuery = await db
+          .select({
+            id: users.id,
+            username: users.username,
+            avatarUrl: users.avatarUrl,
+            bio: users.bio,
+            createdAt: users.createdAt,
+            projectCount: sql<number>`(SELECT COUNT(*) FROM ${projects} WHERE ${projects.authorId} = ${users.id})`
+          })
+          .from(users)
+          .where(whereCondition || sql`1=1`)
+          .limit(limit)
+          .offset(offset)
+          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${projects} WHERE ${projects.authorId} = ${users.id})`))
+          .execute();
+          
+        usersQuery = activityQuery;
+      } else {
+        // For other sort options, use a simpler approach
+        const query = await db.query.users.findMany({
+          ...queryConfig,
+          where: whereCondition,
+          orderBy: sort === "oldest" 
+            ? [{ createdAt: "asc" }]
+            : [{ createdAt: "desc" }]
+        });
+        
+        usersQuery = query;
+      }
+
+      // If we need to filter by role, post-process the results
+      let filteredUsers = usersQuery;
+      if (roleFilter) {
+        // Get users who used the specific tool in their projects
+        const usersWithRole = await db.select({ authorId: projects.authorId })
+          .from(projects)
+          .where(sql`${projects.vibeCodingTool} = ${roleFilter}`)
+          .groupBy(projects.authorId)
+          .execute();
+
+        const userIds = new Set(usersWithRole.map((user: { authorId: number }) => user.authorId));
+        
+        // Filter users based on the role
+        filteredUsers = usersQuery.filter((user: { id: number }) => userIds.has(user.id));
+
+        // Recalculate total count
+        const totalRoleUsers = await db.select({ count: sql<number>`count(DISTINCT ${projects.authorId})` })
+          .from(projects)
+          .where(sql`${projects.vibeCodingTool} = ${roleFilter}`)
+          .execute();
+        
+        countQuery = [{ count: totalRoleUsers[0]?.count || 0 }];
+      }
+
       const totalCount = countQuery[0]?.count || 0;
       
-      // Return with pagination info
+      // Return with pagination info (adjust for role filtering)
       res.json({
-        profiles: usersQuery,
+        profiles: filteredUsers,
         pagination: {
           page,
           limit,
