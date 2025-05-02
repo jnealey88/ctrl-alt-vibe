@@ -525,16 +525,88 @@ export function setupAuth(app: Express) {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Get user's projects
+      // Current user ID for like/bookmark status
+      const currentUserId = req.isAuthenticated() ? req.user!.id : 0;
+      
+      // Get user's projects with relationship data
       const userProjects = await db.query.projects.findMany({
         where: eq(projects.authorId, user.id),
-        orderBy: (projects, { desc }) => [desc(projects.createdAt)]
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+        with: {
+          author: {
+            columns: {
+              id: true,
+              username: true,
+              avatarUrl: true
+            }
+          }
+        }
       });
+      
+      // Enhance projects with counts and tags
+      const projectsWithDetails = await Promise.all(
+        userProjects.map(async (project) => {
+          // Get tags for this project
+          const projectTagsResult = await db.query.projectTags.findMany({
+            where: eq(projectTags.projectId, project.id),
+            with: {
+              tag: true
+            }
+          });
+          const tagNames = projectTagsResult.map(pt => pt.tag.name);
+          
+          // Get likes count
+          const likesResult = await db.select({ count: count() })
+            .from(likes)
+            .where(and(
+              eq(likes.projectId, project.id),
+              isNull(likes.commentId),
+              isNull(likes.replyId)
+            ));
+          const likesCount = Number(likesResult[0]?.count || 0);
+          
+          // Check if current user has liked this project
+          const userLike = currentUserId ? await db.query.likes.findFirst({
+            where: and(
+              eq(likes.projectId, project.id),
+              eq(likes.userId, currentUserId),
+              isNull(likes.commentId),
+              isNull(likes.replyId)
+            )
+          }) : null;
+          
+          // Get comments count
+          const commentsResult = await db.select({ count: count() })
+            .from(comments)
+            .where(eq(comments.projectId, project.id));
+          const commentsCount = Number(commentsResult[0]?.count || 0);
+          
+          // Check if current user has bookmarked this project
+          const userBookmark = currentUserId ? await db.query.bookmarks.findFirst({
+            where: and(
+              eq(bookmarks.projectId, project.id),
+              eq(bookmarks.userId, currentUserId)
+            )
+          }) : null;
+          
+          return {
+            ...project,
+            tags: tagNames,
+            likesCount,
+            commentsCount,
+            isLiked: !!userLike,
+            isBookmarked: !!userBookmark,
+            // Convert Date objects to strings
+            createdAt: project.createdAt.toISOString(),
+            updatedAt: project.updatedAt.toISOString()
+          } as Project;
+        })
+      );
       
       // Remove sensitive information
       const { password, ...publicUserInfo } = user;
       
-      res.json({ user: publicUserInfo, projects: userProjects });
+      res.json({ user: publicUserInfo, projects: projectsWithDetails });
     } catch (error) {
       console.error("Error fetching profile by username:", error);
       res.status(500).json({ message: "Failed to fetch profile" });
