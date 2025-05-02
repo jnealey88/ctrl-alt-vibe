@@ -369,6 +369,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to fetch popular tags' });
     }
   });
+  
+  // Get all available tags
+  app.get(`${apiPrefix}/tags`, async (req, res) => {
+    try {
+      const tags = await storage.getAllTags();
+      res.json({ tags });
+    } catch (error) {
+      console.error('Error fetching all tags:', error);
+      res.status(500).json({ message: 'Failed to fetch all tags' });
+    }
+  });
 
   // File upload endpoint
   app.post(`${apiPrefix}/upload/image`, upload.single('image'), (req, res) => {

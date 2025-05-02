@@ -856,5 +856,133 @@ export const storage = {
     );
     
     return tagDetails.filter(name => name !== '');
+  },
+  
+  async getAllTags(): Promise<string[]> {
+    // Get all tags ordered alphabetically
+    const allTags = await db.query.tags.findMany({
+      orderBy: asc(tags.name)
+    });
+    
+    return allTags.map(tag => tag.name);
+  },
+  
+  async updateProject(projectId: number, projectData: Partial<InsertProject>, tagNames: string[]): Promise<Project | null> {
+    // Start a transaction to ensure everything is updated consistently
+    return await db.transaction(async (tx) => {
+      // Check if project exists and belongs to the authenticated user
+      const existingProject = await tx.query.projects.findFirst({
+        where: eq(projects.id, projectId),
+      });
+      
+      if (!existingProject) {
+        return null;
+      }
+      
+      // Update the project
+      await tx.update(projects)
+        .set(projectData)
+        .where(eq(projects.id, projectId));
+      
+      // Fetch the updated project
+      const [updatedProject] = await tx.select()
+        .from(projects)
+        .where(eq(projects.id, projectId));
+      
+      if (!updatedProject) {
+        return null;
+      }
+      
+      // Delete existing project tags
+      await tx.delete(projectTags)
+        .where(eq(projectTags.projectId, projectId));
+      
+      // Process new tags
+      for (const tagName of tagNames) {
+        // Check if tag exists or create it
+        let tagRecord = await tx.query.tags.findFirst({
+          where: eq(tags.name, tagName.toLowerCase())
+        });
+        
+        if (!tagRecord) {
+          [tagRecord] = await tx.insert(tags).values({ name: tagName.toLowerCase() }).returning();
+        }
+        
+        // Create project-tag relationship
+        await tx.insert(projectTags).values({
+          projectId: projectId,
+          tagId: tagRecord.id
+        });
+      }
+      
+      // Get the author details
+      const author = await tx.query.users.findFirst({
+        where: eq(users.id, updatedProject.authorId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true
+        }
+      });
+
+      // Return the project with additional client-side fields
+      return {
+        ...updatedProject,
+        author: author || {
+          id: updatedProject.authorId,
+          username: 'Anonymous',
+          avatarUrl: null
+        },
+        tags: tagNames,
+        likesCount: 0,
+        commentsCount: 0,
+        viewsCount: updatedProject.viewsCount,
+        isLiked: false,
+        isBookmarked: false,
+        // Convert Date to string
+        createdAt: updatedProject.createdAt.toISOString(),
+        updatedAt: updatedProject.updatedAt.toISOString()
+      } as Project;
+    });
+  },
+  
+  async deleteProject(projectId: number): Promise<boolean> {
+    return await db.transaction(async (tx) => {
+      try {
+        // Delete related data first
+        // Delete likes related to the project
+        await tx.delete(likes)
+          .where(eq(likes.projectId, projectId));
+          
+        // Delete bookmarks related to the project
+        await tx.delete(bookmarks)
+          .where(eq(bookmarks.projectId, projectId));
+        
+        // Delete comment replies related to comments on the project
+        await tx.delete(commentReplies)
+          .where(inArray(commentReplies.commentId, 
+            tx.select({ id: comments.id })
+              .from(comments)
+              .where(eq(comments.projectId, projectId))
+          ));
+        
+        // Delete comments on the project
+        await tx.delete(comments)
+          .where(eq(comments.projectId, projectId));
+        
+        // Delete project tags
+        await tx.delete(projectTags)
+          .where(eq(projectTags.projectId, projectId));
+        
+        // Finally, delete the project
+        await tx.delete(projects)
+          .where(eq(projects.id, projectId));
+        
+        return true;
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        return false;
+      }
+    });
   }
 };
