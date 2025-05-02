@@ -81,9 +81,19 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-async function getUserByUsername(username: string) {
+async function getUserByIdentifier(identifier: string) {
+  // First try to find by username (case insensitive)
+  const userByUsername = await db.query.users.findFirst({
+    where: sql`LOWER(${users.username}) = LOWER(${identifier})`
+  });
+  
+  if (userByUsername) {
+    return userByUsername;
+  }
+  
+  // If not found by username, try by email
   return await db.query.users.findFirst({
-    where: eq(users.username, username)
+    where: sql`LOWER(${users.email}) = LOWER(${identifier})`
   });
 }
 
@@ -142,7 +152,8 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        const user = await getUserByUsername(username);
+        // Find user by either username (case-insensitive) or email
+        const user = await getUserByIdentifier(username);
         if (!user || !(await comparePasswords(password, user.password))) {
           return done(null, false);
         } else {
@@ -166,9 +177,22 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await getUserByUsername(req.body.username);
-      if (existingUser) {
+      // Check if username already exists (case-insensitive)
+      const existingUserByUsername = await db.query.users.findFirst({
+        where: sql`LOWER(${users.username}) = LOWER(${req.body.username})`
+      });
+      
+      if (existingUserByUsername) {
         return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Check if email already exists (case-insensitive)
+      const existingUserByEmail = await db.query.users.findFirst({
+        where: sql`LOWER(${users.email}) = LOWER(${req.body.email})`
+      });
+      
+      if (existingUserByEmail) {
+        return res.status(400).json({ message: "Email already exists" });
       }
 
       const user = await createUser(req.body);
