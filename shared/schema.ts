@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -30,6 +30,15 @@ export const projects = pgTable("projects", {
   featured: boolean("featured").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Add indexes for commonly queried columns
+    titleIdx: index("title_idx").on(table.title), // For search by title
+    authorIdx: index("author_idx").on(table.authorId), // For filtering by author
+    featuredIdx: index("featured_idx").on(table.featured), // For featured projects page
+    createdAtIdx: index("created_at_idx").on(table.createdAt), // For sorting by date
+    viewsCountIdx: index("views_count_idx").on(table.viewsCount), // For trending projects
+  };
 });
 
 // Tags table
@@ -52,6 +61,14 @@ export const projectTags = pgTable("project_tags", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id).notNull(),
   tagId: integer("tag_id").references(() => tags.id).notNull(),
+}, (table) => {
+  return {
+    // Indexing both columns for efficient tag filtering
+    projectIdIdx: index("project_id_idx").on(table.projectId),
+    tagIdIdx: index("tag_id_idx").on(table.tagId),
+    // Composite index for when we query by both
+    projectTagIdx: index("project_tag_idx").on(table.projectId, table.tagId),
+  };
 });
 
 // Comments
@@ -82,6 +99,16 @@ export const likes = pgTable("likes", {
   replyId: integer("reply_id").references(() => commentReplies.id),
   userId: integer("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    projectIdIdx: index("likes_project_id_idx").on(table.projectId),
+    commentIdIdx: index("likes_comment_id_idx").on(table.commentId),
+    replyIdIdx: index("likes_reply_id_idx").on(table.replyId),
+    userIdIdx: index("likes_user_id_idx").on(table.userId),
+    // Composite indexes for common query patterns
+    userProjectIdx: index("likes_user_project_idx").on(table.userId, table.projectId),
+  };
 });
 
 // Bookmarks
@@ -90,6 +117,14 @@ export const bookmarks = pgTable("bookmarks", {
   projectId: integer("project_id").references(() => projects.id).notNull(),
   userId: integer("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    projectIdIdx: index("bookmarks_project_id_idx").on(table.projectId),
+    userIdIdx: index("bookmarks_user_id_idx").on(table.userId),
+    // Composite index for when we check if a user has bookmarked a project
+    userProjectIdx: index("bookmarks_user_project_idx").on(table.userId, table.projectId),
+  };
 });
 
 // Project shares
@@ -99,6 +134,14 @@ export const shares = pgTable("shares", {
   userId: integer("user_id").references(() => users.id), // Optional: track who shared (if logged in)
   platform: text("platform").notNull(), // e.g., 'twitter', 'facebook', 'linkedin', 'copy_link'
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    projectIdIdx: index("shares_project_id_idx").on(table.projectId),
+    userIdIdx: index("shares_user_id_idx").on(table.userId),
+    // Index for analytics by platform
+    platformIdx: index("shares_platform_idx").on(table.platform),
+  };
 });
 
 // Define relations
