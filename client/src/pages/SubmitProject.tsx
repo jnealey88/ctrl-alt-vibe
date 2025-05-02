@@ -70,12 +70,12 @@ const SubmitProject = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Fetch AI tools
-  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{roles: string[]}>({ 
-    queryKey: ['/api/user-roles'],
+  // Fetch tags for AI tools
+  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{tags: string[]}>({ 
+    queryKey: ['/api/tags'],
     queryFn: async () => {
-      const response = await fetch('/api/user-roles');
-      if (!response.ok) throw new Error("Failed to fetch AI tools");
+      const response = await fetch('/api/tags');
+      if (!response.ok) throw new Error("Failed to fetch AI tools tags");
       return response.json();
     },
   });
@@ -278,8 +278,8 @@ const SubmitProject = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="">None</SelectItem>
-                            {aiToolsData?.roles && aiToolsData.roles.length > 0 ? (
-                              aiToolsData.roles.map((tool) => (
+                            {aiToolsData?.tags && aiToolsData.tags.length > 0 ? (
+                              aiToolsData.tags.filter(tag => tag.includes('AI') || tag.includes('Tool')).map((tool: string) => (
                                 <SelectItem key={tool} value={tool}>
                                   {tool}
                                 </SelectItem>
