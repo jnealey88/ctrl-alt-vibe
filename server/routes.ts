@@ -10,6 +10,7 @@ import {
 } from "@shared/schema";
 import { setupAuth } from "./auth";
 import multer from "multer";
+import monitoringRoutes from "./routes/monitoring";
 import path from "path";
 import fs from "fs";
 
