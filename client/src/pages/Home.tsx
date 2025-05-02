@@ -19,7 +19,7 @@ const TrendingProjects = () => {
     <div className="mb-16">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Trending Projects</h2>
-        <Link href="/?sort=trending">
+        <Link href="/browse?sort=trending">
           <Button variant="ghost" className="flex items-center text-primary hover:text-primary/90">
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
@@ -135,7 +135,7 @@ const Home = () => {
           </p>
           <div className="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
             <div className="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
-              <Link href="/">
+              <Link href="/browse">
                 <Button variant="secondary" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary bg-white hover:bg-gray-50 sm:px-8 w-full">
                   Browse Projects
                 </Button>
@@ -157,7 +157,7 @@ const Home = () => {
           <p className="text-gray-500">Discover what the community is vibing with</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/">
+          <Link href="/browse">
             <Button 
               variant={activeTag === "all" ? "default" : "outline"}
               className="rounded-full text-sm"
@@ -168,7 +168,7 @@ const Home = () => {
           </Link>
           
           {popularTags.map(tag => (
-            <Link key={tag} href={`/?tag=${tag}`}>
+            <Link key={tag} href={`/browse?tag=${tag}`}>
               <Button 
                 variant={activeTag === tag ? "default" : "outline"}
                 className="rounded-full text-sm"
@@ -254,6 +254,19 @@ const Home = () => {
         </div>
       )}
 
+      {/* Explore More Projects CTA */}
+      <div className="flex flex-col items-center mb-16 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">Discover More AI-Powered Projects</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+          Browse our collection of AI-assisted coding projects, filter by tags, search for specific technologies, or sort by popularity.
+        </p>
+        <Link href="/browse">
+          <Button className="px-8 py-3" size="lg">
+            Explore Project Gallery
+          </Button>
+        </Link>
+      </div>
+      
       {/* Trending Projects Section is already shown at the top */}
 
       {/* Featured Project */}
@@ -261,7 +274,7 @@ const Home = () => {
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground font-space">Featured Project</h2>
-            <Link href="/?sort=featured" className="text-primary hover:text-primary/80 text-sm font-medium">
+            <Link href="/browse?sort=featured" className="text-primary hover:text-primary/80 text-sm font-medium">
               View All Featured <ArrowRight className="ml-1 h-4 w-4 inline" />
             </Link>
           </div>
@@ -379,9 +392,9 @@ const Home = () => {
               Submit Your Project
             </Button>
           </Link>
-          <Link href="/">
+          <Link href="/browse">
             <Button variant="outline" className="px-8 py-3 rounded-md text-base font-medium inline-block">
-              Learn More
+              Browse Projects
             </Button>
           </Link>
         </div>
