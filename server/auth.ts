@@ -21,6 +21,7 @@ declare global {
       email: string;
       bio?: string | null;
       avatarUrl?: string | null;
+      role: string;
       createdAt: Date;
       updatedAt: Date;
     }

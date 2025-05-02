@@ -20,7 +20,8 @@ import {
   Menu,
   Search,
   User,
-  LogOut
+  LogOut,
+  ShieldCheck
 } from "lucide-react";
 
 const Navbar = () => {
@@ -107,6 +108,13 @@ const Navbar = () => {
                           <User className="mr-2 h-4 w-4" /> Profile
                         </Link>
                       </DropdownMenuItem>
+                      {user.role === "admin" && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex w-full cursor-pointer">
+                            <ShieldCheck className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => logoutMutation.mutate()} className="cursor-pointer">
                         <LogOut className="mr-2 h-4 w-4" /> Logout
                       </DropdownMenuItem>
@@ -197,6 +205,11 @@ const Navbar = () => {
                         <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary py-2 text-base font-medium">
                           <User className="mr-2 h-5 w-5" /> My Profile
                         </Link>
+                        {user.role === "admin" && (
+                          <Link href="/admin" className="flex items-center text-gray-600 hover:text-primary py-2 text-base font-medium">
+                            <ShieldCheck className="mr-2 h-5 w-5" /> Admin Dashboard
+                          </Link>
+                        )}
                         <Link href="/submit" className="block w-full">
                           <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                             Submit Project
