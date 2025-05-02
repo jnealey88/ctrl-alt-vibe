@@ -38,20 +38,16 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
-                <a className="flex items-center">
-                  <span className="font-space font-bold text-2xl gradient-text">Ctrl Alt Vibe</span>
-                </a>
+              <Link href="/" className="flex items-center">
+                <span className="font-space font-bold text-2xl gradient-text">Ctrl Alt Vibe</span>
               </Link>
             </div>
             
             {!isMobile && (
               <div className="ml-6 flex space-x-8">
                 {navLinks.map((link) => (
-                  <Link key={link.name} href={link.path}>
-                    <a className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                      {link.name}
-                    </a>
+                  <Link key={link.name} href={link.path} className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                    {link.name}
                   </Link>
                 ))}
               </div>
@@ -122,10 +118,8 @@ const Navbar = () => {
                     </form>
                     
                     {navLinks.map((link) => (
-                      <Link key={link.name} href={link.path}>
-                        <a className="text-gray-600 hover:text-primary py-2 text-base font-medium">
-                          {link.name}
-                        </a>
+                      <Link key={link.name} href={link.path} className="text-gray-600 hover:text-primary py-2 text-base font-medium">
+                        {link.name}
                       </Link>
                     ))}
                     
