@@ -367,13 +367,23 @@ export const storage = {
         });
       }
       
+      // Get the author details
+      const author = await tx.query.users.findFirst({
+        where: eq(users.id, projectData.authorId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true
+        }
+      });
+
       // Return the project with additional client-side fields
       return {
         ...newProject,
-        author: {
+        author: author || {
           id: projectData.authorId,
-          username: 'current_user', // In a real application, this would come from the authenticated user
-          avatarUrl: '' // In a real application, this would come from the authenticated user
+          username: 'Anonymous',
+          avatarUrl: null
         },
         tags: tagNames,
         likesCount: 0,

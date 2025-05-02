@@ -86,7 +86,13 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
               </a>
             </Link>
             <p className="text-gray-500 text-sm mb-2">
-              by <Link href={`/?user=${project.author.username}`}><a className="text-primary hover:underline">{project.author.username}</a></Link>
+              by {project.author && project.author.username ? (
+                <Link href={`/?user=${project.author.username}`}>
+                  <a className="text-primary hover:underline">{project.author.username}</a>
+                </Link>
+              ) : (
+                <span className="text-primary">Anonymous</span>
+              )}
             </p>
           </div>
           <button
@@ -102,13 +108,17 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
         </div>
         <p className="text-gray-600 text-sm mb-4">{project.description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
-          {project.tags.map((tag) => (
-            <Link key={tag} href={`/?tag=${tag}`}>
-              <a className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">
-                {tag}
-              </a>
-            </Link>
-          ))}
+          {project.tags && project.tags.length > 0 ? (
+            project.tags.map((tag) => (
+              <Link key={tag} href={`/?tag=${tag}`}>
+                <a className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">
+                  {tag}
+                </a>
+              </Link>
+            ))
+          ) : (
+            <span className="text-gray-400 text-xs">No tags</span>
+          )}
         </div>
         <div className="flex justify-between items-center text-sm text-gray-500">
           <div className="flex items-center space-x-3">
