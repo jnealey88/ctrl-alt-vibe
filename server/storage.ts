@@ -510,7 +510,7 @@ export const storage = {
           username: 'Anonymous',
           avatarUrl: null
         },
-        tags: tagNames.map(tag => getProperCasedTag(tag)),
+        tags: uniqueTags.map(tag => getProperCasedTag(tag)),
         likesCount: 0,
         commentsCount: 0,
         viewsCount: 0,
@@ -975,7 +975,7 @@ export const storage = {
           username: 'Anonymous',
           avatarUrl: null
         },
-        tags: tagNames.map(tag => getProperCasedTag(tag)),
+        tags: uniqueTags.map(tag => getProperCasedTag(tag)),
         likesCount: 0,
         commentsCount: 0,
         viewsCount: updatedProject.viewsCount,
