@@ -105,12 +105,24 @@ export const storage = {
         sortOptions = { orderBy: [desc(projects.createdAt)] };
         break;
       default: // trending
-        // For trending, we could implement a more complex algorithm
-        // but for now, let's use a combination of views and creation date
+        // Use a more advanced ranking algorithm for trending projects
+        // combining views, likes, comments with time decay factor
         sortOptions = { 
           orderBy: [
-            desc(sql`(${projects.viewsCount} * 0.5 + 
-              EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400)`)
+            desc(sql`(
+              /* Base view score */
+              ${projects.viewsCount} * 0.5 + 
+              /* Number of likes factor - needs to be calculated via subquery */
+              (SELECT COUNT(*) FROM ${likes} 
+               WHERE ${likes.projectId} = ${projects.id} 
+                 AND ${likes.commentId} IS NULL 
+                 AND ${likes.replyId} IS NULL) * 5 +
+              /* Number of comments factor - needs to be calculated via subquery */
+              (SELECT COUNT(*) FROM ${comments} 
+               WHERE ${comments.projectId} = ${projects.id}) * 10 +
+              /* Recency factor - gives higher weight to newer projects */
+              EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3
+            )`)
           ] 
         };
     }
