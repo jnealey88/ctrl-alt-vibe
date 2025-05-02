@@ -40,8 +40,8 @@ interface QueryParams {
 export default function UsersPage() {
   const [location, setLocation] = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRole, setSelectedRole] = useState<string>("");
-  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>("all_tools");
+  const [selectedTag, setSelectedTag] = useState<string>("all_tags");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputSearch, setInputSearch] = useState<string>("");
   const [sortOption, setSortOption] = useState<string>("newest");
@@ -56,7 +56,10 @@ export default function UsersPage() {
     const pageParam = params.get('page');
 
     if (roleParam) setSelectedRole(roleParam);
+    else setSelectedRole('all_tools');
+    
     if (tagParam) setSelectedTag(tagParam);
+    else setSelectedTag('all_tags');
     if (searchParam) {
       setSearchQuery(searchParam);
       setInputSearch(searchParam);
@@ -77,8 +80,8 @@ export default function UsersPage() {
     ],
     queryFn: async () => {
       let url = `/api/profiles?page=${currentPage}`;
-      if (selectedRole) url += `&role=${encodeURIComponent(selectedRole)}`;
-      if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
+      if (selectedRole && selectedRole !== 'all_tools') url += `&role=${encodeURIComponent(selectedRole)}`;
+      if (selectedTag && selectedTag !== 'all_tags') url += `&tag=${encodeURIComponent(selectedTag)}`;
       if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
       if (sortOption) url += `&sort=${encodeURIComponent(sortOption)}`;
       
@@ -140,8 +143,8 @@ export default function UsersPage() {
   const updateUrl = (page: number, role: string, tag: string, search: string, sort: string) => {
     const params: QueryParams = {};
     if (page && page > 1) params.page = page;
-    if (role) params.role = role;
-    if (tag) params.tag = tag;
+    if (role && role !== 'all_tools') params.role = role;
+    if (tag && tag !== 'all_tags') params.tag = tag;
     if (search) params.search = search;
     if (sort && sort !== 'newest') params.sort = sort;
 
@@ -226,7 +229,7 @@ export default function UsersPage() {
                     <SelectValue placeholder="Select AI tool" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Tools</SelectItem>
+                    <SelectItem value="all_tools">All Tools</SelectItem>
                     {rolesData?.roles && rolesData.roles.length > 0 ? (
                       rolesData.roles.map((role) => (
                         <SelectItem key={role} value={role}>
@@ -255,7 +258,7 @@ export default function UsersPage() {
                     <SelectValue placeholder="Filter by project tag" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Tags</SelectItem>
+                    <SelectItem value="all_tags">All Tags</SelectItem>
                     {tagsData?.tags && tagsData.tags.length > 0 ? (
                       tagsData.tags.map((tag) => (
                         <SelectItem key={tag} value={tag}>
@@ -273,9 +276,9 @@ export default function UsersPage() {
         <div className="w-full md:w-3/4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold">
-              {selectedRole && selectedTag ? `Members using "${selectedRole}" with "${selectedTag}" projects` :
-               selectedRole ? `Members using "${selectedRole}"` : 
-               selectedTag ? `Members with "${selectedTag}" projects` :
+              {selectedRole !== 'all_tools' && selectedTag !== 'all_tags' ? `Members using "${selectedRole}" with "${selectedTag}" projects` :
+               selectedRole !== 'all_tools' ? `Members using "${selectedRole}"` : 
+               selectedTag !== 'all_tags' ? `Members with "${selectedTag}" projects` :
                searchQuery ? `Search results for "${searchQuery}"` : 
                sortOption === 'activity' ? 'Most Active Members' :
                sortOption === 'oldest' ? 'Founding Members' :
@@ -332,12 +335,12 @@ export default function UsersPage() {
               <p className="text-gray-500 mb-6">Try adjusting your filters or search terms.</p>
               <Button 
                 onClick={() => {
-                  setSelectedRole('');
-                  setSelectedTag('');
+                  setSelectedRole('all_tools');
+                  setSelectedTag('all_tags');
                   setSearchQuery('');
                   setInputSearch('');
                   setSortOption('newest');
-                  updateUrl(1, '', '', '', 'newest');
+                  updateUrl(1, 'all_tools', 'all_tags', '', 'newest');
                 }}
               >
                 Clear all filters
