@@ -6,7 +6,7 @@ import { Loader2, Camera, User, Mail, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import ProjectCard from "@/components/ProjectCard";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +58,7 @@ export default function ProfilePage() {
   });
 
   // Update form values when user data changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       form.reset({
         email: user.email,
@@ -118,7 +118,7 @@ export default function ProfilePage() {
     updateProfileMutation.mutate(values);
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
@@ -148,11 +148,41 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto py-10">
+      {/* Hidden file input for avatar upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarUpload}
+        className="hidden"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+      />
+
       {/* Profile header */}
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-10">
         <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-3xl font-bold uppercase text-primary">
-            {user?.username?.charAt(0)}
+          <div className="relative group">
+            <Avatar className="w-24 h-24 border-2 border-primary/10">
+              {profileData?.user?.avatarUrl ? (
+                <AvatarImage src={profileData.user.avatarUrl} alt={user?.username || "User avatar"} />
+              ) : (
+                <AvatarFallback className="text-3xl font-bold uppercase bg-primary/20 text-primary">
+                  {user?.username?.charAt(0)}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <Button
+              size="icon"
+              variant="outline"
+              className="absolute -bottom-2 -right-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={triggerFileInput}
+              disabled={isAvatarUploading}
+            >
+              {isAvatarUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
+            </Button>
           </div>
           <div>
             <h1 className="text-3xl font-bold mb-2">{user?.username}</h1>
@@ -160,6 +190,16 @@ export default function ProfilePage() {
             {profileData?.user?.bio && (
               <p className="max-w-md">{profileData.user.bio}</p>
             )}
+            <div className="mt-3">
+              <Button 
+                onClick={() => setIsEditDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                Edit Profile
+              </Button>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -204,6 +244,82 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Profile Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleProfileSubmit)} className="space-y-4 py-2">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </div>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="email@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Bio
+                      </div>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Tell us about yourself..."
+                        className="min-h-[100px]"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={updateProfileMutation.isPending}
+                >
+                  {updateProfileMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
