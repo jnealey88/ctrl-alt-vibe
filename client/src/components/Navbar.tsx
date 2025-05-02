@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   Sheet, 
   SheetContent, 
@@ -8,15 +9,24 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Bell,
   Menu,
-  Search
+  Search,
+  User,
+  LogOut
 } from "lucide-react";
 
 const Navbar = () => {
   const [_, setLocation] = useLocation();
   const isMobile = useMobile();
+  const { user, logoutMutation } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
@@ -69,27 +79,50 @@ const Navbar = () => {
                 />
               </form>
               
-              <Link href="/submit">
-                <Button className="ml-4 bg-primary hover:bg-primary/90 text-white">
-                  Submit Project
-                </Button>
-              </Link>
-              
-              <button className="ml-3 bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
-                <span className="sr-only">View notifications</span>
-                <Bell className="h-6 w-6" />
-              </button>
-              
-              <div className="ml-3 relative">
-                <button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                  <span className="sr-only">Open user menu</span>
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt="User profile"
-                  />
-                </button>
-              </div>
+              {user ? (
+                <>
+                  <Link href="/submit">
+                    <Button className="ml-4 bg-primary hover:bg-primary/90 text-white">
+                      Submit Project
+                    </Button>
+                  </Link>
+                  
+                  <button className="ml-3 bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <span className="sr-only">View notifications</span>
+                    <Bell className="h-6 w-6" />
+                  </button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="ml-3 bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <span className="sr-only">Open user menu</span>
+                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary">
+                          {user.username.charAt(0)}
+                        </div>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="flex w-full cursor-pointer">
+                          <User className="mr-2 h-4 w-4" /> Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => logoutMutation.mutate()} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" /> Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <div className="flex ml-4 space-x-2">
+                  <Link href="/auth?tab=login">
+                    <Button variant="outline">Login</Button>
+                  </Link>
+                  <Link href="/auth?tab=register">
+                    <Button>Sign Up</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
           

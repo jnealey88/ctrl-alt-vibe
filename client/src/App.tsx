@@ -6,8 +6,12 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
 import SubmitProject from "@/pages/SubmitProject";
+import AuthPage from "@/pages/auth-page";
+import ProfilePage from "@/pages/profile-page";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
   return (
@@ -17,7 +21,9 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/projects/:id" component={ProjectDetail} />
-          <Route path="/submit" component={SubmitProject} />
+          <ProtectedRoute path="/submit" component={SubmitProject} />
+          <ProtectedRoute path="/profile" component={ProfilePage} />
+          <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>
       </div>
@@ -29,8 +35,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
