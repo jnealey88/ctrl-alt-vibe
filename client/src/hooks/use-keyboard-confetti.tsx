@@ -69,14 +69,21 @@ export function useKeyboardConfetti(options: ConfettiOptions = {}) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Check for Ctrl+Alt+V (Windows/Linux) or Command+Alt+V (Mac)
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        event.altKey &&
-        event.key.toLowerCase() === 'v'
-      ) {
-        event.preventDefault();
-        triggerConfetti();
+      // Mac: Command+Ctrl+V, Windows/Linux: Ctrl+Alt+V
+      const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+      
+      if (isMac) {
+        // Mac shortcut: Command (metaKey) + Ctrl + V
+        if (event.metaKey && event.ctrlKey && event.key.toLowerCase() === 'v') {
+          event.preventDefault();
+          triggerConfetti();
+        }
+      } else {
+        // Windows/Linux: Ctrl + Alt + V
+        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'v') {
+          event.preventDefault();
+          triggerConfetti();
+        }
       }
     };
 

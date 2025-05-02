@@ -62,9 +62,12 @@ function App() {
       if (shouldShowTip) {
         // Wait 5 seconds before showing the tip
         const timer = setTimeout(() => {
+          const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
           toast({
             title: "Pro Tip",
-            description: "Try pressing Ctrl+Alt+V (or Cmd+Alt+V on Mac) for a fun surprise!",
+            description: isMac 
+              ? "Try pressing Command+Ctrl+V for a fun surprise!" 
+              : "Try pressing Ctrl+Alt+V for a fun surprise!",
             duration: 5000
           });
           setHasShownTip(true);
