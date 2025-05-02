@@ -42,12 +42,19 @@ const TagSelector = ({
   }, [selectedTags, onChange]);
 
   const handleTagToggle = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      // Remove tag
-      const newTags = selectedTags.filter((t) => t !== tag);
+    // Check if the tag exists in the selectedTags array (case-insensitive)
+    const tagExists = selectedTags.some(
+      (t) => t.toLowerCase() === tag.toLowerCase()
+    );
+    
+    if (tagExists) {
+      // Remove tag (find the exact case version that exists)
+      const newTags = selectedTags.filter(
+        (t) => t.toLowerCase() !== tag.toLowerCase()
+      );
       setSelectedTags(newTags);
     } else if (selectedTags.length < maxTags) {
-      // Add tag if under max limit
+      // Add tag if under max limit - use the exact case from the tag list
       const newTags = [...selectedTags, tag];
       setSelectedTags(newTags);
     }
@@ -112,7 +119,7 @@ const TagSelector = ({
         ) : (
           <div className="space-y-1">
             {filteredTags.map((tag: string) => {
-              const isSelected = selectedTags.includes(tag);
+              const isSelected = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase());
               const isDisabled = selectedTags.length >= maxTags && !isSelected;
 
               return (
