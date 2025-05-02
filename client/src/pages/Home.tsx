@@ -254,10 +254,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Trending Projects Section */}
-      {!searchQuery && !tagFilter && !userFilter && (
-        <TrendingProjects />
-      )}
+      {/* Trending Projects Section is already shown at the top */}
 
       {/* Featured Project */}
       {featuredProject && (
