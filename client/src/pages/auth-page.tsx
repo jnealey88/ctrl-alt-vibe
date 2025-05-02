@@ -10,11 +10,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Redirect, useLocation } from "wouter";
+import { Redirect, useRoute } from "wouter";
 import { Loader2 } from "lucide-react";
 
 const loginFormSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  username: z.string().min(3, "Username or email must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -27,8 +27,9 @@ const registerFormSchema = z.object({
 
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
-  const [, search] = useLocation();
-  const tabFromUrl = new URLSearchParams(search).get("tab");
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1] || '');
+  const tabFromUrl = searchParams.get("tab");
   
   const [activeTab, setActiveTab] = useState(tabFromUrl === "register" ? "register" : "login");
   const { toast } = useToast();
@@ -90,9 +91,9 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Username or Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="johndoe" {...field} />
+                            <Input placeholder="johndoe or john@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
