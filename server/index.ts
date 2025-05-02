@@ -4,6 +4,8 @@ import { setupVite, serveStatic, log } from "./vite";
 import rateLimit from "express-rate-limit";
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import logger from './utils/logger';
+import performance from './utils/performance';
+import apiResponse from './utils/apiResponse';
 
 const app = express();
 app.use(express.json());
@@ -35,34 +37,54 @@ const authLimiter = rateLimit({
 // Apply stricter rate limiting to authentication endpoints
 app.use(authLimiter);
 
+// Performance monitoring middleware
 app.use((req, res, next) => {
-  const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
+  
+  // Skip non-API routes
+  if (!path.startsWith('/api')) {
+    return next();
+  }
+  
+  // Start performance tracking
+  const endTracking = performance.trackEndpoint(path, req.method);
+  
+  // Capture response for logging
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
     capturedJsonResponse = bodyJson;
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
-
+  
+  // Monitor response completion
   res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+    // Stop performance tracking and get duration
+    const duration = endTracking({
+      statusCode: res.statusCode,
+      userAgent: req.headers['user-agent'],
+      contentLength: res.getHeader('content-length'),
+      responseType: res.getHeader('content-type')
+    });
+    
+    // Construct log line
+    let logLine = `${req.method} ${path} ${res.statusCode} in ${duration.toFixed(2)}ms`;
+    
+    // Add response data when appropriate
+    if (capturedJsonResponse) {
+      // Log compact or full response based on size
+      let responseStr = JSON.stringify(capturedJsonResponse);
+      if (responseStr.length > 80) {
+        responseStr = responseStr.slice(0, 79) + "…";
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      // Use our enhanced logger instead of vite log
-      logger.info(logLine, 'api');
+      logLine += ` :: ${responseStr}`;
     }
+    
+    // Use our enhanced logger
+    const logLevel = res.statusCode >= 400 ? 'warn' : 'info';
+    logger[logLevel](logLine, 'api');
   });
-
+  
   next();
 });
 

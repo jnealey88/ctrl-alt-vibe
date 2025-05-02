@@ -39,24 +39,16 @@ const Footer = () => {
             <h3 className="text-gray-900 font-medium">Product</h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Features</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Features</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Pricing</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Pricing</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Changelog</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Changelog</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Roadmap</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Roadmap</Link>
               </li>
             </ul>
           </div>
@@ -64,24 +56,16 @@ const Footer = () => {
             <h3 className="text-gray-900 font-medium">Resources</h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Community</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Community</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Help Center</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Help Center</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Blog</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Blog</Link>
               </li>
               <li>
-                <Link href="#">
-                  <a className="text-gray-500 hover:text-primary">Contact</a>
-                </Link>
+                <Link href="#" className="text-gray-500 hover:text-primary">Contact</Link>
               </li>
             </ul>
           </div>
@@ -89,15 +73,9 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} Ctrl Alt Vibe. All rights reserved.</p>
           <div className="mt-4 md:mt-0 flex space-x-6">
-            <Link href="#">
-              <a className="text-gray-400 hover:text-gray-500 text-sm">Terms</a>
-            </Link>
-            <Link href="#">
-              <a className="text-gray-400 hover:text-gray-500 text-sm">Privacy</a>
-            </Link>
-            <Link href="#">
-              <a className="text-gray-400 hover:text-gray-500 text-sm">Cookies</a>
-            </Link>
+            <Link href="#" className="text-gray-400 hover:text-gray-500 text-sm">Terms</Link>
+            <Link href="#" className="text-gray-400 hover:text-gray-500 text-sm">Privacy</Link>
+            <Link href="#" className="text-gray-400 hover:text-gray-500 text-sm">Cookies</Link>
           </div>
         </div>
       </div>
