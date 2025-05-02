@@ -38,9 +38,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Browse", path: "/browse" },
-    { name: "Latest", path: "/browse?sort=latest" },
-    { name: "Popular", path: "/browse?sort=popular" }
+    { name: "Browse", path: "/browse" }
   ];
 
   return (
@@ -128,7 +126,52 @@ const Navbar = () => {
           )}
           
           {isMobile && (
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              {/* Search icon for mobile */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
+                    <Search className="h-5 w-5" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="top" className="w-full pt-16">
+                  <div className="px-4 py-6">
+                    <form onSubmit={handleSearch} className="relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <Input
+                        type="text"
+                        className="pl-10 h-10 w-full"
+                        placeholder="Search projects..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        autoFocus
+                      />
+                      <Button type="submit" className="mt-2 w-full">Search Projects</Button>
+                    </form>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
+              {/* User actions for mobile */}
+              {user && (
+                <>
+                  <Link href="/submit">
+                    <Button size="sm" className="hidden xs:inline-flex bg-primary hover:bg-primary/90 text-white text-xs px-2 py-1 h-8">
+                      Submit
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/profile">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold uppercase text-primary">
+                      {user.username.charAt(0)}
+                    </div>
+                  </Link>
+                </>
+              )}
+
+              {/* Main menu for mobile */}
               <Sheet>
                 <SheetTrigger asChild>
                   <button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
@@ -138,31 +181,22 @@ const Navbar = () => {
                 </SheetTrigger>
                 <SheetContent>
                   <div className="flex flex-col space-y-4 mt-6">
-                    <form onSubmit={handleSearch} className="relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <Input
-                        type="text"
-                        className="pl-10 h-9 w-full"
-                        placeholder="Search projects"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </form>
-                    
-                    {navLinks.map((link) => (
-                      <Link key={link.name} href={link.path} className="text-gray-600 hover:text-primary py-2 text-base font-medium">
-                        {link.name}
-                      </Link>
-                    ))}
+                    <div className="pb-2 mb-2 border-b">
+                      <h4 className="text-sm font-medium text-gray-500 mb-3">NAVIGATION</h4>
+                      {navLinks.map((link) => (
+                        <Link key={link.name} href={link.path} className="block text-gray-600 hover:text-primary py-2 text-base font-medium">
+                          {link.name}
+                        </Link>
+                      ))}
+                    </div>
 
                     {user ? (
-                      <>
-                        <Link href="/profile" className="text-gray-600 hover:text-primary py-2 text-base font-medium">
-                          My Profile
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-gray-500 mb-1">YOUR ACCOUNT</h4>
+                        <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary py-2 text-base font-medium">
+                          <User className="mr-2 h-5 w-5" /> My Profile
                         </Link>
-                        <Link href="/submit">
+                        <Link href="/submit" className="block w-full">
                           <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                             Submit Project
                           </Button>
@@ -173,18 +207,20 @@ const Navbar = () => {
                           className="w-full"
                           disabled={logoutMutation.isPending}
                         >
+                          <LogOut className="mr-2 h-4 w-4" />
                           {logoutMutation.isPending ? "Logging out..." : "Logout"}
                         </Button>
-                      </>
+                      </div>
                     ) : (
-                      <>
-                        <Link href="/auth?tab=login">
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-gray-500 mb-1">ACCOUNT</h4>
+                        <Link href="/auth?tab=login" className="block w-full">
                           <Button variant="outline" className="w-full mb-2">Login</Button>
                         </Link>
-                        <Link href="/auth?tab=register">
+                        <Link href="/auth?tab=register" className="block w-full">
                           <Button className="w-full">Sign Up</Button>
                         </Link>
-                      </>
+                      </div>
                     )}
                   </div>
                 </SheetContent>
