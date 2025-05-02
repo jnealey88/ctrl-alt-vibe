@@ -7,6 +7,32 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Configure rate limiting middleware
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { error: 'Too many requests, please try again later.' },
+  // Whitelist paths that don't need rate limiting (like static assets)
+  skip: (req) => !req.path.startsWith('/api/')
+});
+
+// Apply rate limiting to all requests
+app.use(apiLimiter);
+
+// More restrictive rate limit for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 10, // Limit each IP to 10 login/register attempts per hour
+  message: { error: 'Too many login attempts, please try again later.' },
+  // Only apply to authentication routes
+  skip: (req) => !(req.path === '/api/login' || req.path === '/api/register')
+});
+
+// Apply stricter rate limiting to authentication endpoints
+app.use(authLimiter);
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
