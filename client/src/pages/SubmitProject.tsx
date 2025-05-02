@@ -206,7 +206,11 @@ const SubmitProject = () => {
     }
   };
   
-  const triggerFileInput = () => {
+  const triggerFileInput = (e: React.MouseEvent) => {
+    // Prevent event propagation to avoid dialog reopening
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -367,7 +371,7 @@ const SubmitProject = () => {
                           <Image className="mx-auto h-12 w-12 text-gray-400" />
                           <div className="flex text-sm text-gray-600">
                             <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/80">
-                              <span onClick={triggerFileInput}>Upload a file</span>
+                              <span onClick={(e) => triggerFileInput(e)}>Upload a file</span>
                               <input 
                                 ref={fileInputRef}
                                 id="file-upload" 
