@@ -18,12 +18,17 @@ export function errorHandler(err: AppError, req: Request, res: Response, _next: 
   const errorCode = err.code || 'UNKNOWN_ERROR';
   
   // Log error with appropriate level based on status code
-  const logLevel = statusCode >= 500 ? 'error' : 'warn';
-  logger(
-    `${req.method} ${req.originalUrl} - ${statusCode} - ${err.message}`,
-    logLevel,
-    'errorHandler'
-  );
+  if (statusCode >= 500) {
+    loggerModule.error(
+      `${req.method} ${req.originalUrl} - ${statusCode} - ${err.message}`,
+      'errorHandler'
+    );
+  } else {
+    loggerModule.warn(
+      `${req.method} ${req.originalUrl} - ${statusCode} - ${err.message}`,
+      'errorHandler'
+    );
+  }
   
   // Only log full error details (including stack trace) for server errors
   if (statusCode >= 500) {
