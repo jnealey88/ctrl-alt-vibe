@@ -105,24 +105,10 @@ export const storage = {
         sortOptions = { orderBy: [desc(projects.createdAt)] };
         break;
       default: // trending
-        // Use a more advanced ranking algorithm for trending projects
-        // combining views, likes, comments with time decay factor
+        // Simple trending algorithm - focusing just on views and recency
         sortOptions = { 
           orderBy: [
-            desc(sql`(
-              /* Base view score */
-              ${projects.viewsCount} * 0.5 + 
-              /* Number of likes factor - needs to be calculated via subquery */
-              (SELECT COUNT(*) FROM ${likes} 
-               WHERE ${likes.projectId} = ${projects.id} 
-                 AND ${likes.commentId} IS NULL 
-                 AND ${likes.replyId} IS NULL) * 5 +
-              /* Number of comments factor - needs to be calculated via subquery */
-              (SELECT COUNT(*) FROM ${comments} 
-               WHERE ${comments.projectId} = ${projects.id}) * 10 +
-              /* Recency factor - gives higher weight to newer projects */
-              EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3
-            )`)
+            desc(sql`(${projects.viewsCount} * 0.7 + EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3)`)
           ] 
         };
     }
@@ -279,8 +265,96 @@ export const storage = {
       likesCount,
       commentsCount,
       isLiked: !!userLike,
-      isBookmarked: !!userBookmark
+      isBookmarked: !!userBookmark,
+      // Convert Date to string
+      createdAt: featuredProject.createdAt.toISOString(),
+      updatedAt: featuredProject.updatedAt.toISOString()
     } as Project;
+  },
+  
+  async getTrendingProjects(limit: number = 4): Promise<Project[]> {
+    // Current user ID (in a real app, this would come from auth)
+    const currentUserId = 1;
+    
+    // Get projects using our trending algorithm
+    const projectsResults = await db.query.projects.findMany({
+      limit,
+      orderBy: [
+        desc(sql`(${projects.viewsCount} * 0.7 + EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3)`)
+      ],
+      with: {
+        author: {
+          columns: {
+            id: true,
+            username: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+    
+    // Convert to client-side Project type with all needed fields
+    const projectsWithDetails = await Promise.all(
+      projectsResults.map(async (project) => {
+        // Get tags for this project
+        const projectTagsResult = await db.query.projectTags.findMany({
+          where: eq(projectTags.projectId, project.id),
+          with: {
+            tag: true
+          }
+        });
+        const tagNames = projectTagsResult.map(pt => pt.tag.name);
+        
+        // Get likes count
+        const likesResult = await db.select({ count: count() })
+          .from(likes)
+          .where(and(
+            eq(likes.projectId, project.id),
+            isNull(likes.commentId),
+            isNull(likes.replyId)
+          ));
+        const likesCount = Number(likesResult[0]?.count || 0);
+        
+        // Check if current user has liked this project
+        const userLike = await db.query.likes.findFirst({
+          where: and(
+            eq(likes.projectId, project.id),
+            eq(likes.userId, currentUserId),
+            isNull(likes.commentId),
+            isNull(likes.replyId)
+          )
+        });
+        
+        // Get comments count
+        const commentsResult = await db.select({ count: count() })
+          .from(comments)
+          .where(eq(comments.projectId, project.id));
+        const commentsCount = Number(commentsResult[0]?.count || 0);
+        
+        // Check if current user has bookmarked this project
+        const userBookmark = await db.query.bookmarks.findFirst({
+          where: and(
+            eq(bookmarks.projectId, project.id),
+            eq(bookmarks.userId, currentUserId)
+          )
+        });
+        
+        // Transform Date objects to strings for the frontend
+        return {
+          ...project,
+          tags: tagNames,
+          likesCount,
+          commentsCount,
+          isLiked: !!userLike,
+          isBookmarked: !!userBookmark,
+          // Handle the date format conversion
+          createdAt: project.createdAt.toISOString(),
+          updatedAt: project.updatedAt.toISOString()
+        } as Project;
+      })
+    );
+    
+    return projectsWithDetails;
   },
   
   async getProjectById(id: number): Promise<Project | null> {
@@ -351,7 +425,10 @@ export const storage = {
       likesCount,
       commentsCount,
       isLiked: !!userLike,
-      isBookmarked: !!userBookmark
+      isBookmarked: !!userBookmark,
+      // Convert Date to string
+      createdAt: project.createdAt.toISOString(),
+      updatedAt: project.updatedAt.toISOString()
     } as Project;
   },
   
@@ -402,7 +479,10 @@ export const storage = {
         commentsCount: 0,
         viewsCount: 0,
         isLiked: false,
-        isBookmarked: false
+        isBookmarked: false,
+        // Convert Date to string
+        createdAt: newProject.createdAt.toISOString(),
+        updatedAt: newProject.updatedAt.toISOString()
       } as Project;
     });
   },
@@ -593,7 +673,10 @@ export const storage = {
               ...reply,
               likesCount: replyLikesCount,
               isLiked: !!userReplyLike,
-              isAuthor: project?.authorId === reply.author.id
+              isAuthor: project?.authorId === reply.author.id,
+              // Convert Date to string
+              createdAt: reply.createdAt.toISOString(),
+              updatedAt: reply.updatedAt.toISOString()
             } as CommentReply;
           })
         );
@@ -611,7 +694,10 @@ export const storage = {
           likesCount,
           isLiked: !!userLike,
           isAuthor: project?.authorId === comment.author.id,
-          replies: enrichedReplies
+          replies: enrichedReplies,
+          // Convert Date to string
+          createdAt: comment.createdAt.toISOString(),
+          updatedAt: comment.updatedAt.toISOString()
         } as Comment;
       })
     );
@@ -647,7 +733,10 @@ export const storage = {
       likesCount: 0,
       isLiked: false,
       isAuthor: false,
-      replies: []
+      replies: [],
+      // Convert Date to string
+      createdAt: newComment.createdAt.toISOString(),
+      updatedAt: newComment.updatedAt.toISOString()
     } as Comment;
   },
   
@@ -669,7 +758,10 @@ export const storage = {
       author: author || { id: replyData.authorId, username: 'unknown', avatarUrl: '' },
       likesCount: 0,
       isLiked: false,
-      isAuthor: false
+      isAuthor: false,
+      // Convert Date to string
+      createdAt: newReply.createdAt.toISOString(),
+      updatedAt: newReply.updatedAt.toISOString()
     } as CommentReply;
   },
   
