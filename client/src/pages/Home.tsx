@@ -136,7 +136,7 @@ const Home = () => {
           <div className="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
             <div className="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
               <Link href="/browse">
-                <Button variant="secondary" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary bg-white hover:bg-gray-50 sm:px-8 w-full">
+                <Button variant="secondary" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary bg-white hover:bg-gray-50 sm:px-8 w-full mb-4 sm:mb-0">
                   Browse Projects
                 </Button>
               </Link>
@@ -381,7 +381,7 @@ const Home = () => {
       </div>
 
       {/* CTA */}
-      <div className="bg-accent/10 rounded-xl p-8 text-center mb-16">
+      <div className="bg-accent/10 rounded-xl p-8 pb-10 text-center mb-16">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground font-space mb-4">Ready to showcase your AI project?</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-8">
           Join our community of developers who are pushing the boundaries of what's possible with AI-assisted coding.
