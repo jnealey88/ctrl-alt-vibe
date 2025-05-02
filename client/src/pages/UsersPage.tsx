@@ -32,6 +32,7 @@ type ProfilesResponse = {
 interface QueryParams {
   page?: number;
   role?: string;
+  tag?: string;
   search?: string;
   sort?: string;
 }
@@ -40,6 +41,7 @@ export default function UsersPage() {
   const [location, setLocation] = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputSearch, setInputSearch] = useState<string>("");
   const [sortOption, setSortOption] = useState<string>("newest");
@@ -48,11 +50,13 @@ export default function UsersPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get('role');
+    const tagParam = params.get('tag');
     const searchParam = params.get('search');
     const sortParam = params.get('sort');
     const pageParam = params.get('page');
 
     if (roleParam) setSelectedRole(roleParam);
+    if (tagParam) setSelectedTag(tagParam);
     if (searchParam) {
       setSearchQuery(searchParam);
       setInputSearch(searchParam);
@@ -67,12 +71,14 @@ export default function UsersPage() {
       '/api/profiles', 
       currentPage, 
       selectedRole, 
+      selectedTag,
       searchQuery, 
       sortOption
     ],
     queryFn: async () => {
       let url = `/api/profiles?page=${currentPage}`;
       if (selectedRole) url += `&role=${encodeURIComponent(selectedRole)}`;
+      if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
       if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
       if (sortOption) url += `&sort=${encodeURIComponent(sortOption)}`;
       
@@ -94,33 +100,48 @@ export default function UsersPage() {
 
   // Search now happens automatically with onChange event
 
+  // Fetch popular tags for filtering
+  const { data: tagsData, isLoading: isLoadingTags } = useQuery<{tags: string[]}>({ 
+    queryKey: ['/api/tags/popular'],
+    queryFn: async () => {
+      const response = await fetch('/api/tags/popular');
+      if (!response.ok) throw new Error("Failed to fetch tags");
+      return response.json();
+    },
+  });
+
   const clearSearch = () => {
     setInputSearch('');
     setSearchQuery('');
-    updateUrl(1, selectedRole, '', sortOption);
+    updateUrl(1, selectedRole, selectedTag, '', sortOption);
   };
 
-  const handleRoleClick = (role: string) => {
-    const newRole = selectedRole === role ? '' : role;
-    setSelectedRole(newRole);
-    updateUrl(1, newRole, searchQuery, sortOption);
+  const handleRoleChange = (role: string) => {
+    setSelectedRole(role);
+    updateUrl(1, role, selectedTag, searchQuery, sortOption);
+  };
+
+  const handleTagChange = (tag: string) => {
+    setSelectedTag(tag);
+    updateUrl(1, selectedRole, tag, searchQuery, sortOption);
   };
 
   const handleSortChange = (value: string) => {
     setSortOption(value);
-    updateUrl(1, selectedRole, searchQuery, value);
+    updateUrl(1, selectedRole, selectedTag, searchQuery, value);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    updateUrl(page, selectedRole, searchQuery, sortOption);
+    updateUrl(page, selectedRole, selectedTag, searchQuery, sortOption);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const updateUrl = (page: number, role: string, search: string, sort: string) => {
+  const updateUrl = (page: number, role: string, tag: string, search: string, sort: string) => {
     const params: QueryParams = {};
     if (page && page > 1) params.page = page;
     if (role) params.role = role;
+    if (tag) params.tag = tag;
     if (search) params.search = search;
     if (sort && sort !== 'newest') params.sort = sort;
 

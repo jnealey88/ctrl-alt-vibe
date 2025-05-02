@@ -351,12 +351,26 @@ export function setupAuth(app: Express) {
           WHERE LOWER(t.name) = LOWER(${tagFilter})
         `);
         
-        const tagUserIds = new Set(usersWithTag.map((user: any) => user.authorId));
+        // Handle the result as an array of objects with appropriate type safety
+        const tagUserIds = new Set<number>();
+        const rows = usersWithTag as unknown as Array<Record<string, any>>;
+        for (const row of rows) {
+          if (row && typeof row === 'object' && 'authorId' in row && typeof row.authorId === 'number') {
+            tagUserIds.add(row.authorId);
+          }
+        }
         
         // If roleFilter was also set, we need to find the intersection of both filters
         if (filteredUserIds.size > 0) {
           // Keep only IDs that exist in both sets
-          filteredUserIds = new Set([...filteredUserIds].filter(id => tagUserIds.has(id)));
+          const intersection = new Set<number>();
+          // Convert Set to Array for iteration to avoid TS issues
+          Array.from(filteredUserIds).forEach(id => {
+            if (tagUserIds.has(id)) {
+              intersection.add(id);
+            }
+          });
+          filteredUserIds = intersection;
         } else {
           // This is the first/only filter
           filteredUserIds = tagUserIds;
@@ -405,7 +419,11 @@ export function setupAuth(app: Express) {
         countQuery = totalFilteredUsers || [{ count: 0 }];
       }
 
-      const totalCount = countQuery[0]?.count || 0;
+      // Handle the count safely
+      let totalCount = 0;
+      if (Array.isArray(countQuery) && countQuery.length > 0 && 'count' in countQuery[0]) {
+        totalCount = countQuery[0].count as number;
+      }
       
       // Return with pagination info
       res.json({
