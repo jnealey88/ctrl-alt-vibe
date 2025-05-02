@@ -6,7 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { db } from "../db";
 import { users, projects } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "../db";
 import multer from "multer";
@@ -219,6 +219,81 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Get list of all users/profiles
+  app.get("/api/profiles", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 12;
+      const search = req.query.search as string || "";
+      
+      // Calculate offset
+      const offset = (page - 1) * limit;
+
+      // Use prepared statements approach with findMany to handle search and pagination
+      let usersQuery;
+      let countQuery;
+      
+      if (search) {
+        // We're using a more compatible approach than LOWER() for better database support
+        usersQuery = await db.query.users.findMany({
+          where: sql`${users.username} LIKE ${`%${search}%`}`,
+          limit,
+          offset,
+          orderBy: (users, { desc }) => [desc(users.createdAt)],
+          columns: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+            createdAt: true
+          }
+        });
+        
+        // Count for pagination
+        countQuery = await db.select({ count: sql<number>`count(*)` })
+          .from(users)
+          .where(sql`${users.username} LIKE ${`%${search}%`}`)
+          .execute();
+      } else {
+        // Without search, just get all profiles with pagination
+        usersQuery = await db.query.users.findMany({
+          limit, 
+          offset,
+          orderBy: (users, { desc }) => [desc(users.createdAt)],
+          columns: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+            createdAt: true
+          }
+        });
+        
+        // Count all users
+        countQuery = await db.select({ count: sql<number>`count(*)` })
+          .from(users)
+          .execute();
+      }
+      
+      const totalCount = countQuery[0]?.count || 0;
+      
+      // Return with pagination info
+      res.json({
+        profiles: usersQuery,
+        pagination: {
+          page,
+          limit,
+          totalProfiles: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasMore: page < Math.ceil(totalCount / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
+      res.status(500).json({ message: 'Failed to fetch profiles' });
+    }
+  });
+  
   // Get user profile by username with their projects
   app.get("/api/profile/:username", async (req, res) => {
     try {
