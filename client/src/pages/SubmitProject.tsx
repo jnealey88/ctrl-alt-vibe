@@ -86,18 +86,68 @@ const SubmitProject = () => {
     submitMutation.mutate(data);
   };
   
-  const handleImageUpload = () => {
-    // In a real implementation, this would handle file upload
-    // For now, we'll simulate by just showing a toast
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+    
+    const file = event.target.files[0];
+    const fileSize = file.size / 1024 / 1024; // in MB
+    
+    // Validate file size (max 5MB)
+    if (fileSize > 5) {
+      toast({
+        title: "File too large",
+        description: "Please select an image under 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a JPG, PNG, GIF, or WebP image",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsUploading(true);
-    setTimeout(() => {
-      form.setValue("imageUrl", "https://images.unsplash.com/photo-1607798748738-b15c40d33d57?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80");
-      setIsUploading(false);
+    
+    // Create FormData and append the file
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const data = await response.json();
+      
+      // Set the uploaded image URL to the form
+      form.setValue("imageUrl", data.fileUrl);
       toast({
         title: "Image uploaded",
-        description: "Your image has been successfully uploaded.",
+        description: "Your image has been successfully uploaded."
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was a problem uploading your image.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
   
   return (

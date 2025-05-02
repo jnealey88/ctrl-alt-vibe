@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
@@ -9,6 +9,50 @@ import {
   replyInsertSchema
 } from "@shared/schema";
 import { setupAuth } from "./auth";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Set up storage for uploaded files
+const uploadDir = path.join(process.cwd(), "uploads");
+
+// Create the uploads directory if it doesn't exist
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configure multer for file storage
+const storage_config = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Create a unique filename with the original extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
+  }
+});
+
+// File filter to only allow certain image types
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Accept only image files
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'));
+  }
+};
+
+// Initialize multer with our configuration
+const upload = multer({ 
+  storage: storage_config,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max file size
+  },
+  fileFilter: fileFilter
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -303,6 +347,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to fetch popular tags' });
     }
   });
+
+  // File upload endpoint
+  app.post(`${apiPrefix}/upload/image`, upload.single('image'), (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to upload images" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      // Create a URL for the uploaded file
+      const fileName = req.file.filename;
+      const fileUrl = `/uploads/${fileName}`;
+      
+      // Return the URL of the uploaded file
+      res.status(201).json({ 
+        fileUrl,
+        message: 'File uploaded successfully' 
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      res.status(500).json({ message: 'Failed to upload file' });
+    }
+  });
+
+  // Configure Express to serve static files from the uploads directory
+  app.use('/uploads', express.static(uploadDir, { maxAge: '1d' }));
 
   const httpServer = createServer(app);
   return httpServer;
