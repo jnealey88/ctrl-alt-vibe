@@ -5,8 +5,8 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { db } from "../db";
-import { users, projects } from "@shared/schema";
-import { eq, sql, desc, asc } from "drizzle-orm";
+import { users, projects, likes, comments, bookmarks, projectTags, Project } from "@shared/schema";
+import { eq, sql, desc, asc, and, isNull, count } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "../db";
 import multer from "multer";
@@ -206,13 +206,82 @@ export function setupAuth(app: Express) {
       
       const userId = req.user!.id;
       
-      // Get user's projects
+      // Get user's projects with relationship data
       const userProjects = await db.query.projects.findMany({
         where: eq(projects.authorId, userId),
-        orderBy: (projects, { desc }) => [desc(projects.createdAt)]
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+        with: {
+          author: {
+            columns: {
+              id: true,
+              username: true,
+              avatarUrl: true
+            }
+          }
+        }
       });
       
-      res.json({ user: req.user, projects: userProjects });
+      // Enhance projects with counts and tags
+      const projectsWithDetails = await Promise.all(
+        userProjects.map(async (project) => {
+          // Get tags for this project
+          const projectTagsResult = await db.query.projectTags.findMany({
+            where: eq(projectTags.projectId, project.id),
+            with: {
+              tag: true
+            }
+          });
+          const tagNames = projectTagsResult.map(pt => pt.tag.name);
+          
+          // Get likes count
+          const likesResult = await db.select({ count: count() })
+            .from(likes)
+            .where(and(
+              eq(likes.projectId, project.id),
+              isNull(likes.commentId),
+              isNull(likes.replyId)
+            ));
+          const likesCount = Number(likesResult[0]?.count || 0);
+          
+          // Check if current user has liked this project
+          const userLike = await db.query.likes.findFirst({
+            where: and(
+              eq(likes.projectId, project.id),
+              eq(likes.userId, userId),
+              isNull(likes.commentId),
+              isNull(likes.replyId)
+            )
+          });
+          
+          // Get comments count
+          const commentsResult = await db.select({ count: count() })
+            .from(comments)
+            .where(eq(comments.projectId, project.id));
+          const commentsCount = Number(commentsResult[0]?.count || 0);
+          
+          // Check if current user has bookmarked this project
+          const userBookmark = await db.query.bookmarks.findFirst({
+            where: and(
+              eq(bookmarks.projectId, project.id),
+              eq(bookmarks.userId, userId)
+            )
+          });
+          
+          return {
+            ...project,
+            tags: tagNames,
+            likesCount,
+            commentsCount,
+            isLiked: !!userLike,
+            isBookmarked: !!userBookmark,
+            // Convert Date objects to strings
+            createdAt: project.createdAt.toISOString(),
+            updatedAt: project.updatedAt.toISOString()
+          } as Project;
+        })
+      );
+      
+      res.json({ user: req.user, projects: projectsWithDetails });
     } catch (error) {
       console.error("Error fetching profile:", error);
       res.status(500).json({ message: "Failed to fetch profile" });
