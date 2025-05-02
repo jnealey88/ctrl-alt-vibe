@@ -20,6 +20,7 @@ import {
 import TagSelector from "@/components/TagSelector";
 import { Upload, Image } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
 // Modified schema for client-side validation
 const submitProjectSchema = z.object({
