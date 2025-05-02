@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
-import { Share } from 'lucide-react';
+import { Share2 as Share } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -134,7 +134,6 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
           
           <FacebookShareButton 
             url={projectDetailUrl} 
-            quote={shareTitle} 
             className="flex flex-col items-center justify-center"
             onClick={() => trackSocialShare('facebook')}>
             <FacebookIcon size={40} round />

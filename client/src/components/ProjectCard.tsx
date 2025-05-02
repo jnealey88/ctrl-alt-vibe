@@ -1,8 +1,9 @@
 import { Link } from "wouter";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Heart, MessageSquare } from "lucide-react";
+import { Heart, MessageSquare, Share2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { ShareButton } from "@/components/ShareButton";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
   const queryClient = useQueryClient();
   const [liked, setLiked] = useState(project.isLiked || false);
   const [likesCount, setLikesCount] = useState(project.likesCount || 0);
+  const [sharesCount, setSharesCount] = useState(project.sharesCount || 0);
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -118,16 +120,26 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
             <span className="text-gray-400 text-xs">No tags</span>
           )}
         </div>
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <div className="flex items-center space-x-3">
-            <span className="flex items-center">
-              <Heart className="h-4 w-4 mr-1 text-secondary" /> {likesCount}
-            </span>
-            <span className="flex items-center">
-              <MessageSquare className="h-4 w-4 mr-1" /> {project.commentsCount || 0}
-            </span>
-          </div>
-          <span>{formatTimeAgo(project.createdAt)}</span>
+        <div className="flex justify-between items-center mt-4">
+          <ShareButton
+            projectId={project.id}
+            projectTitle={project.title}
+            projectUrl={`/projects/${project.id}`}
+            onShare={(newSharesCount) => setSharesCount(newSharesCount)}
+          />
+          <span className="text-sm text-gray-500">{formatTimeAgo(project.createdAt)}</span>
+        </div>
+        
+        <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+          <span className="flex items-center">
+            <Heart className="h-4 w-4 mr-1 text-secondary" /> {likesCount}
+          </span>
+          <span className="flex items-center">
+            <MessageSquare className="h-4 w-4 mr-1" /> {project.commentsCount || 0}
+          </span>
+          <span className="flex items-center">
+            <Share2 className="h-4 w-4 mr-1" /> {sharesCount}
+          </span>
         </div>
       </CardContent>
     </Card>
