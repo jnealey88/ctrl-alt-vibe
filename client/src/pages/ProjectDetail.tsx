@@ -238,6 +238,15 @@ const ProjectDetail = () => {
           
           <div className="mb-8">
             <h2 className="text-xl font-bold text-foreground font-space mb-4">About this project</h2>
+            
+            {project.vibeCodingTool && (
+              <div className="mb-4 flex items-center">
+                <span className="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full border border-purple-400">
+                  <span className="font-bold">AI Tool:</span> {project.vibeCodingTool}
+                </span>
+              </div>
+            )}
+            
             <div className="prose prose-sm max-w-none text-gray-600">
               <p className="mb-4">{project.description}</p>
               

@@ -16,7 +16,8 @@ import {
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage 
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import TagSelector from "@/components/TagSelector";
 import { Upload, Image, Loader2, AlertTriangle } from "lucide-react";
@@ -113,6 +114,7 @@ const EditProject = () => {
         longDescription: project.longDescription || "",
         projectUrl: project.projectUrl,
         imageUrl: project.imageUrl,
+        vibeCodingTool: project.vibeCodingTool || "",
         tags: project.tags,
       });
     }
@@ -399,6 +401,26 @@ const EditProject = () => {
                     <FormControl>
                       <Input {...field} placeholder="https://" type="url" />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="vibeCodingTool"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vibe Coding Tool Used (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="e.g., ChatGPT, Claude, Gemini, etc." 
+                      />
+                    </FormControl>
+                    <p className="text-sm text-gray-500">
+                      Share which AI tool helped you create this project
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
