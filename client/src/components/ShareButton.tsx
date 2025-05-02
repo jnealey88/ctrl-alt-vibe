@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Share2 as Share } from 'lucide-react';
@@ -36,8 +37,10 @@ type ShareButtonProps = {
 };
 
 export function ShareButton({ projectId, projectTitle, projectUrl, onShare, className = '' }: ShareButtonProps) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   
   // Make sure we have an absolute URL
   const fullProjectUrl = projectUrl.startsWith('http') ? projectUrl : window.location.origin + projectUrl;
@@ -54,15 +57,23 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
       setIsSharing(true);
       await navigator.clipboard.writeText(projectDetailUrl);
       
-      // Record the share
-      const response = await apiRequest('POST', `/api/projects/${projectId}/share`, {
-        platform: 'copy_link'
-      });
-      
-      const data = await response.json();
-      
-      if (onShare && data.sharesCount) {
-        onShare(data.sharesCount);
+      // Record the share if user is logged in
+      if (user) {
+        const response = await apiRequest('POST', `/api/projects/${projectId}/share`, {
+          platform: 'copy_link'
+        });
+        
+        const data = await response.json();
+        
+        if (onShare && data.sharesCount) {
+          onShare(data.sharesCount);
+        }
+      } else {
+        // Just show success even if we couldn't track it
+        if (onShare) {
+          // This ensures UI updates even if we can't track properly
+          onShare(sharesCount + 1);
+        }
       }
       
       toast({

@@ -6,8 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ShareButton } from "@/components/ShareButton";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ProjectCardProps {
   project: Project;
@@ -16,10 +26,12 @@ interface ProjectCardProps {
 
 const ProjectCard = ({ project, className }: ProjectCardProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [liked, setLiked] = useState(project.isLiked || false);
   const [likesCount, setLikesCount] = useState(project.likesCount || 0);
   const [sharesCount, setSharesCount] = useState(project.sharesCount || 0);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -42,7 +54,11 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
   });
 
   const toggleLike = () => {
-    likeMutation.mutate();
+    if (!user) {
+      setShowAuthDialog(true);
+    } else {
+      likeMutation.mutate();
+    }
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -138,6 +154,30 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
           </span>
         </div>
       </CardContent>
+      
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in required</DialogTitle>
+            <DialogDescription>
+              You need to be signed in to like projects, comment, and interact with the community.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col space-y-3 mt-4">
+            <p className="text-sm text-gray-600">Join Ctrl Alt Vibe to share your AI-assisted projects and engage with other developers.</p>
+            
+            <div className="flex justify-between mt-2">
+              <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => window.location.href = '/auth'}>
+                Sign in / Register
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
