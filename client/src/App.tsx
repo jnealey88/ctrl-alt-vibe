@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
@@ -82,10 +83,25 @@ function App() {
     }
   }, [toast, hasShownTip]);
 
+  // Handle global error logging
+  const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
+    // In a production app, you would send this to an error tracking service
+    console.error('Global error caught:', error, errorInfo);
+    
+    // Show a toast notification
+    toast({
+      title: 'Application Error',
+      description: 'We encountered an unexpected problem. Our team has been notified.',
+      variant: 'destructive'
+    });
+  };
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
+        <ErrorBoundary onError={handleGlobalError}>
+          <Router />
+        </ErrorBoundary>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>

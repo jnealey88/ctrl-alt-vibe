@@ -586,6 +586,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add monitoring and health check routes
+  app.use(`${apiPrefix}/monitoring`, monitoringRoutes);
+
   // Configure Express to serve static files from the uploads directory
   app.use('/uploads', express.static(uploadDir, { maxAge: '1d' }));
 

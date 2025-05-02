@@ -8,10 +8,6 @@ import logger from '../utils/logger';
 import { db } from '../../db';
 import { sql } from 'drizzle-orm';
 
-interface DatabaseError extends Error {
-  message: string;
-}
-
 const router = Router();
 
 // Basic health check endpoint
@@ -66,7 +62,7 @@ router.get('/metrics', async (req, res) => {
       timestamp: new Date().toISOString(),
       metrics
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error(`Metrics retrieval failed: ${error.message}`, 'monitoring');
     res.status(500).json({
       status: 'error',
@@ -89,7 +85,7 @@ async function checkDatabaseHealth() {
       status: 'connected',
       responseTime: duration
     };
-  } catch (error) {
+  } catch (error: any) {
     logger.error(`Database health check failed: ${error.message}`, 'monitoring');
     return {
       status: 'error',
