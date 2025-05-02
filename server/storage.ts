@@ -24,9 +24,12 @@ const getProperCasedTag = (tagName: string): string => {
   // Define a list of predefined tags with proper casing
   const predefinedTags = [
     "AI Tools", "Analytics", "Art", "Business", 
-    "Collaboration", "Content Creation", "Data Visualization", "Developer Tools", 
-    "Education", "Finance", "Gaming", "Health", "Lifestyle", 
-    "Productivity", "Social", "Utilities", "Web Development", "Mobile", 
+    "Chatbots", "Code", "Creative", "Data Visualization", 
+    "Development", "Education", "GPT Models", "Image Generation", 
+    "Machine Learning", "Natural Language Processing", "Productivity", "Tools",
+    "Collaboration", "Content Creation", "Developer Tools", 
+    "Finance", "Gaming", "Health", "Lifestyle", 
+    "Social", "Utilities", "Web Development", "Mobile", 
     "Design", "Communication"
   ];
   

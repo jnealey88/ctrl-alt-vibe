@@ -76,8 +76,8 @@ const TagSelector = ({
         {selectedTags.length === 0 ? (
           <p className="text-sm text-gray-500">No tags selected. Select up to {maxTags} tags below.</p>
         ) : (
-          selectedTags.map((tag) => (
-            <Badge key={tag} className="bg-primary text-white flex items-center gap-1 pr-1">
+          selectedTags.map((tag, index) => (
+            <Badge key={`selected-${tag}-${index}`} className="bg-primary text-white flex items-center gap-1 pr-1">
               {tag}
               <button
                 type="button"
@@ -118,13 +118,14 @@ const TagSelector = ({
           </div>
         ) : (
           <div className="space-y-1">
-            {filteredTags.map((tag: string) => {
+            {/* Ensure unique keys by using both tag and index */}
+            {filteredTags.map((tag: string, index: number) => {
               const isSelected = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase());
               const isDisabled = selectedTags.length >= maxTags && !isSelected;
 
               return (
                 <div
-                  key={tag}
+                  key={`${tag}-${index}`}
                   onClick={() => !isDisabled && handleTagToggle(tag)}
                   className={`p-2 rounded-md flex items-center justify-between ${isSelected ? "bg-primary/10" : "hover:bg-gray-100"} ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 >
