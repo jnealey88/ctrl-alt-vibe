@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "@db";
-import { users, projects, comments, eq, sql, desc } from "@shared/schema";
+import { users, projects, comments } from "@shared/schema";
+import { eq, sql, desc } from "drizzle-orm";
 import { isAdmin } from "../middleware/auth";
 
 export function registerAdminRoutes(app: any) {

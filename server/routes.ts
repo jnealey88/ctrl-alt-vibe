@@ -11,6 +11,7 @@ import {
 import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
+import { registerAdminRoutes } from "./routes/admin";
 import path from "path";
 import fs from "fs";
 
@@ -58,6 +59,9 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
+  
+  // Register admin routes
+  registerAdminRoutes(app);
   
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
