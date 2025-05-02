@@ -73,7 +73,7 @@ const Home = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-primary to-secondary rounded-xl overflow-hidden mb-12">
+      <div className="relative bg-gradient-to-r from-primary/90 via-primary/80 to-secondary/90 rounded-xl overflow-hidden mb-12">
         <div className="absolute inset-0">
           <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 1463 360">
             <path className="text-primary text-opacity-40" fill="currentColor" d="M-100 300 L200 0 L700 300 L1200 0 L1600 300" />
