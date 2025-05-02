@@ -10,6 +10,7 @@ import {
   likes,
   bookmarks,
   codingTools,
+  shares,
 } from "@shared/schema";
 import type { 
   Project, 

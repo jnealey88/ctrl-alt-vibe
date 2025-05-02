@@ -26,6 +26,7 @@ export const projects = pgTable("projects", {
   vibeCodingTool: text("vibe_coding_tool"), // The AI tool used to create the project
   authorId: integer("author_id").references(() => users.id).notNull(),
   viewsCount: integer("views_count").default(0).notNull(),
+  sharesCount: integer("shares_count").default(0).notNull(),
   featured: boolean("featured").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -91,6 +92,15 @@ export const bookmarks = pgTable("bookmarks", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Project shares
+export const shares = pgTable("shares", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id).notNull(),
+  userId: integer("user_id").references(() => users.id), // Optional: track who shared (if logged in)
+  platform: text("platform").notNull(), // e.g., 'twitter', 'facebook', 'linkedin', 'copy_link'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
@@ -98,6 +108,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   commentReplies: many(commentReplies),
   likes: many(likes),
   bookmarks: many(bookmarks),
+  shares: many(shares),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -106,6 +117,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   comments: many(comments),
   likes: many(likes),
   bookmarks: many(bookmarks),
+  shares: many(shares),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -142,6 +154,11 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
   project: one(projects, { fields: [bookmarks.projectId], references: [projects.id] }),
 }));
 
+export const sharesRelations = relations(shares, ({ one }) => ({
+  user: one(users, { fields: [shares.userId], references: [users.id] }),
+  project: one(projects, { fields: [shares.projectId], references: [projects.id] }),
+}));
+
 // Create validation schemas
 export const userInsertSchema = createInsertSchema(users, {
   username: (schema) => schema.min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
@@ -174,6 +191,10 @@ export const codingToolInsertSchema = createInsertSchema(codingTools, {
   isPopular: (schema) => schema.optional(),
 });
 
+export const shareInsertSchema = createInsertSchema(shares, {
+  platform: (schema) => schema.min(2, "Platform name is required").max(50, "Platform name must be less than 50 characters"),
+});
+
 // Custom type for client-side project with tags as array
 export type Project = {
   id: number;
@@ -192,6 +213,7 @@ export type Project = {
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
+  sharesCount: number;
   isLiked?: boolean;
   isBookmarked?: boolean;
   featured: boolean;
@@ -248,4 +270,5 @@ export type InsertProject = z.infer<typeof projectInsertSchema>;
 export type InsertComment = z.infer<typeof commentInsertSchema>;
 export type InsertReply = z.infer<typeof replyInsertSchema>;
 export type InsertCodingTool = z.infer<typeof codingToolInsertSchema>;
+export type InsertShare = z.infer<typeof shareInsertSchema>;
 export type CodingToolFromDB = typeof codingTools.$inferSelect;
