@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Heart, Reply, Image, AtSign, Code } from "lucide-react";
@@ -14,17 +15,24 @@ const CommentSection = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [commentText, setCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "mostLiked">("newest");
   const [page, setPage] = useState(1);
   
-  const { data, isLoading } = useQuery({
+  type CommentsResponse = {
+    comments: Comment[];
+    hasMore: boolean;
+    totalComments: number;
+  };
+
+  const { data, isLoading } = useQuery<CommentsResponse>({
     queryKey: [`/api/projects/${id}/comments`, { sortBy, page }],
   });
 
-  const comments: Comment[] = data?.comments || [];
+  const comments = data?.comments || [];
   const hasMore = data?.hasMore || false;
   
   const commentMutation = useMutation({
@@ -276,8 +284,8 @@ const CommentSection = () => {
         <form onSubmit={handleSubmitComment}>
           <div className="flex items-start space-x-4">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="User" />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarImage src={user?.avatarUrl || undefined} alt={user?.username || 'User'} />
+              <AvatarFallback>{user?.username ? user.username.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
