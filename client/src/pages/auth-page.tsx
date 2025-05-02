@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Redirect, useRoute } from "wouter";
+import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
 
 const loginFormSchema = z.object({
@@ -27,11 +27,9 @@ const registerFormSchema = z.object({
 
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
-  const tabFromUrl = searchParams.get("tab");
   
-  const [activeTab, setActiveTab] = useState(tabFromUrl === "register" ? "register" : "login");
+  // Default to login tab, simplified for now
+  const [activeTab, setActiveTab] = useState("login");
   const { toast } = useToast();
 
   const loginForm = useForm<z.infer<typeof loginFormSchema>>({
