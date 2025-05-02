@@ -19,6 +19,26 @@ import type {
   InsertReply
 } from "@shared/schema";
 
+// Helper function to apply proper casing to tags
+const getProperCasedTag = (tagName: string): string => {
+  // Define a list of predefined tags with proper casing
+  const predefinedTags = [
+    "AI Tools", "Analytics", "Art", "Business", 
+    "Collaboration", "Content Creation", "Data Visualization", "Developer Tools", 
+    "Education", "Finance", "Gaming", "Health", "Lifestyle", 
+    "Productivity", "Social", "Utilities", "Web Development", "Mobile", 
+    "Design", "Communication"
+  ];
+  
+  // Find a match in the predefined list (case-insensitive)
+  const match = predefinedTags.find(
+    predefined => predefined.toLowerCase() === tagName.toLowerCase()
+  );
+  
+  // Return the properly cased version or the original if no match
+  return match || tagName;
+};
+
 export const storage = {
   // Projects
 
@@ -386,7 +406,9 @@ export const storage = {
         tag: true
       }
     });
-    const tagNames = projectTagsResult.map(pt => pt.tag.name);
+    
+    // Map database tags to their properly cased versions
+    const tagNames = projectTagsResult.map(pt => getProperCasedTag(pt.tag.name));
     
     // Get likes count
     const likesResult = await db.select({ count: count() })
@@ -477,7 +499,7 @@ export const storage = {
           username: 'Anonymous',
           avatarUrl: null
         },
-        tags: tagNames,
+        tags: tagNames.map(tag => getProperCasedTag(tag)),
         likesCount: 0,
         commentsCount: 0,
         viewsCount: 0,
@@ -845,13 +867,13 @@ export const storage = {
     .orderBy(desc(sql`count`))
     .limit(limit);
     
-    // Get tag names
+    // Get tag names with proper casing
     const tagDetails = await Promise.all(
       tagCounts.map(async (tc) => {
         const tagRecord = await db.query.tags.findFirst({
           where: eq(tags.id, tc.tagId)
         });
-        return tagRecord?.name || '';
+        return tagRecord ? getProperCasedTag(tagRecord.name) : '';
       })
     );
     
@@ -864,7 +886,8 @@ export const storage = {
       orderBy: asc(tags.name)
     });
     
-    return allTags.map(tag => tag.name);
+    // Map database tags to their properly cased versions
+    return allTags.map(tag => getProperCasedTag(tag.name));
   },
   
   async updateProject(projectId: number, projectData: Partial<InsertProject>, tagNames: string[]): Promise<Project | null> {
@@ -933,7 +956,7 @@ export const storage = {
           username: 'Anonymous',
           avatarUrl: null
         },
-        tags: tagNames,
+        tags: tagNames.map(tag => getProperCasedTag(tag)),
         likesCount: 0,
         commentsCount: 0,
         viewsCount: updatedProject.viewsCount,
