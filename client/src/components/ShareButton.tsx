@@ -127,7 +127,8 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
           <TwitterShareButton 
             url={projectDetailUrl} 
             title={shareTitle} 
-            className="flex flex-col items-center justify-center">
+            className="flex flex-col items-center justify-center"
+            onClick={() => trackSocialShare('twitter')}>
             <TwitterIcon size={40} round />
             <span className="mt-1 text-xs">Twitter</span>
           </TwitterShareButton>
@@ -143,7 +144,6 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
           <LinkedinShareButton 
             url={projectDetailUrl} 
             title={shareTitle} 
-            summary={shareDescription}
             className="flex flex-col items-center justify-center"
             onClick={() => trackSocialShare('linkedin')}>
             <LinkedinIcon size={40} round />

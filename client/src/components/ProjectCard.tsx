@@ -80,15 +80,13 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div>
-            <Link href={`/projects/${project.id}`}>
-              <a className="text-lg font-bold text-foreground font-space hover:text-primary">
-                {project.title}
-              </a>
+            <Link href={`/projects/${project.id}`} className="text-lg font-bold text-foreground font-space hover:text-primary">
+              {project.title}
             </Link>
             <p className="text-gray-500 text-sm mb-2">
               by {project.author && project.author.username ? (
-                <Link href={`/?user=${project.author.username}`}>
-                  <a className="text-primary hover:underline">{project.author.username}</a>
+                <Link href={`/?user=${project.author.username}`} className="text-primary hover:underline">
+                  {project.author.username}
                 </Link>
               ) : (
                 <span className="text-primary">Anonymous</span>
@@ -110,10 +108,8 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
         <div className="flex flex-wrap gap-2 mb-4">
           {project.tags && project.tags.length > 0 ? (
             project.tags.map((tag) => (
-              <Link key={tag} href={`/?tag=${tag}`}>
-                <a className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">
-                  {tag}
-                </a>
+              <Link key={tag} href={`/?tag=${tag}`} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full">
+                {tag}
               </Link>
             ))
           ) : (
