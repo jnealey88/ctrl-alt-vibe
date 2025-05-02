@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { 
   Form, 
   FormControl, 
@@ -427,12 +428,14 @@ const EditProject = () => {
                   <FormItem>
                     <FormLabel>Detailed Description (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        {...field} 
-                        placeholder="Provide more details about your project, its features, technologies used, etc." 
-                        rows={8}
+                      <TiptapEditor
+                        content={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Provide more details about your project, its features, technologies used, etc."
+                        className="min-h-[250px]"
                       />
                     </FormControl>
+                    <p className="text-sm text-gray-500">Use the toolbar to format your content with headings, lists, code blocks, and more.</p>
                     <FormMessage />
                   </FormItem>
                 )}
