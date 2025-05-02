@@ -73,12 +73,15 @@ const Home = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-primary/90 via-primary/80 to-secondary/90 rounded-xl overflow-hidden mb-12">
-        <div className="absolute inset-0">
-          <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 1463 360">
-            <path className="text-primary text-opacity-40" fill="currentColor" d="M-100 300 L200 0 L700 300 L1200 0 L1600 300" />
-            <path className="text-secondary text-opacity-40" fill="currentColor" d="M-100 250 L400 50 L900 250 L1300 50 L1600 250" />
-          </svg>
+      <div className="relative bg-gradient-to-r from-slate-800 via-gray-900 to-slate-800 rounded-xl overflow-hidden mb-12">
+        {/* Modern geometric pattern overlay */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-0 w-full h-full">
+            <div className="absolute top-10 left-10 w-20 h-20 bg-indigo-500 rounded-full blur-2xl"></div>
+            <div className="absolute top-20 right-20 w-40 h-40 bg-purple-600 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 left-1/4 w-60 h-30 bg-pink-500 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-1/3 w-30 h-30 bg-blue-600 rounded-full blur-2xl"></div>
+          </div>
         </div>
         <div className="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-20 lg:px-8">
           <h1 className="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
@@ -115,7 +118,7 @@ const Home = () => {
           <Link href="/">
             <Button 
               variant={activeTag === "all" ? "default" : "outline"}
-              className={`rounded-full text-sm ${activeTag === "all" ? "bg-primary text-white" : "bg-white text-gray-700"}`}
+              className="rounded-full text-sm"
               size="sm"
             >
               All
@@ -126,7 +129,7 @@ const Home = () => {
             <Link key={tag} href={`/?tag=${tag}`}>
               <Button 
                 variant={activeTag === tag ? "default" : "outline"}
-                className={`rounded-full text-sm ${activeTag === tag ? "bg-primary text-white" : "bg-white text-gray-700"}`}
+                className="rounded-full text-sm"
                 size="sm"
               >
                 {tag}
@@ -137,7 +140,7 @@ const Home = () => {
           {/* More button for future implementation */}
           {popularTags.length > 5 && (
             <div className="relative inline-block text-left">
-              <Button variant="outline" className="rounded-full text-sm bg-white text-gray-700 flex items-center" size="sm">
+              <Button variant="outline" className="rounded-full text-sm flex items-center" size="sm">
                 More <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
             </div>
@@ -200,7 +203,7 @@ const Home = () => {
         <div className="flex justify-center mb-16">
           <Button 
             variant="outline"
-            className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-md shadow-sm hover:bg-gray-50"
+            className="px-6 py-3 rounded-md shadow-sm"
             onClick={loadMoreProjects}
             disabled={isLoadingProjects}
           >
@@ -254,12 +257,12 @@ const Home = () => {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link href="/submit">
-            <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md text-base font-medium inline-block">
+            <Button className="px-8 py-3 rounded-md text-base font-medium inline-block">
               Submit Your Project
             </Button>
           </Link>
           <Link href="/">
-            <Button variant="outline" className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-md text-base font-medium inline-block hover:bg-gray-50">
+            <Button variant="outline" className="px-8 py-3 rounded-md text-base font-medium inline-block">
               Learn More
             </Button>
           </Link>
