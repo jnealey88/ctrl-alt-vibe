@@ -208,9 +208,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bookmark a project
   app.post(`${apiPrefix}/projects/:id/bookmark`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to bookmark a project" });
+      }
+      
       const projectId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user?.id || 0;
       
       const { bookmarked } = req.body;
       
@@ -224,6 +227,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error bookmarking project:', error);
       res.status(500).json({ message: 'Failed to bookmark project' });
+    }
+  });
+  
+  // Update project
+  app.put(`${apiPrefix}/projects/:id`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to update a project" });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProjectById(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Check if the authenticated user is the author of the project
+      if (project.author.id !== req.user!.id) {
+        return res.status(403).json({ message: "You do not have permission to update this project" });
+      }
+      
+      try {
+        // Create validation schema for update
+        const validateProjectWithTags = z.object({
+          title: z.string().min(3).max(100),
+          description: z.string().min(20).max(500),
+          longDescription: z.string().optional(),
+          projectUrl: z.string().url(),
+          imageUrl: z.string(),
+          tags: z.array(z.string()).min(1).max(5),
+        });
+        
+        const validated = validateProjectWithTags.parse(req.body);
+        const { tags: tagNames, ...projectData } = validated;
+        
+        const updatedProject = await storage.updateProject(projectId, projectData, tagNames);
+        
+        if (!updatedProject) {
+          return res.status(404).json({ message: "Failed to update project" });
+        }
+        
+        res.json({ project: updatedProject });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          const validationError = fromZodError(error);
+          return res.status(400).json({ errors: validationError.details });
+        }
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+      res.status(500).json({ message: 'Failed to update project' });
+    }
+  });
+  
+  // Delete project
+  app.delete(`${apiPrefix}/projects/:id`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to delete a project" });
+      }
+      
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProjectById(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Check if the authenticated user is the author of the project
+      if (project.author.id !== req.user!.id) {
+        return res.status(403).json({ message: "You do not have permission to delete this project" });
+      }
+      
+      const success = await storage.deleteProject(projectId);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to delete project" });
+      }
+      
+      res.status(200).json({ message: "Project deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      res.status(500).json({ message: 'Failed to delete project' });
     }
   });
   
@@ -249,8 +337,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 10;
       const sortBy = req.query.sortBy as string || 'newest';
       
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      // Get user ID from authentication if available
+      const userId = req.isAuthenticated() ? req.user!.id : 0;
       
       const result = await storage.getProjectComments(projectId, page, limit, sortBy, userId);
       res.json(result);
@@ -263,9 +351,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a comment to a project
   app.post(`${apiPrefix}/projects/:id/comments`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to comment" });
+      }
+      
       const projectId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user!.id;
       
       const commentData = {
         projectId,
