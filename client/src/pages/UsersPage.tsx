@@ -145,7 +145,7 @@ export default function UsersPage() {
             {/* Search */}
             <div className="mb-6">
               <h3 className="font-medium mb-2">Search</h3>
-              <form onSubmit={handleSearch} className="flex gap-2">
+              <form onSubmit={handleSearch} className="flex gap-1 sm:gap-2">
                 <div className="relative flex-grow">
                   <Input
                     type="text"
@@ -164,9 +164,9 @@ export default function UsersPage() {
                     </button>
                   )}
                 </div>
-                <Button type="submit" size="sm">
-                  <Search size={16} className="mr-1" />
-                  Search
+                <Button type="submit" size="sm" className="px-2 sm:px-3">
+                  <Search size={16} className="sm:mr-1" />
+                  <span className="hidden sm:inline">Search</span>
                 </Button>
               </form>
             </div>
