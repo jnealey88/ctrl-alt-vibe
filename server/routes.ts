@@ -384,9 +384,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a reply to a comment
   app.post(`${apiPrefix}/comments/:id/replies`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to reply to a comment" });
+      }
+      
       const commentId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user!.id;
       
       const replyData = {
         commentId,
@@ -411,9 +414,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Like a comment
   app.post(`${apiPrefix}/comments/:id/like`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to like a comment" });
+      }
+      
       const commentId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user!.id;
       
       const { liked } = req.body;
       
@@ -433,9 +439,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Like a reply
   app.post(`${apiPrefix}/replies/:id/like`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to like a reply" });
+      }
+      
       const replyId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user!.id;
       
       const { liked } = req.body;
       
