@@ -5,11 +5,13 @@ import {
   ExternalLink, 
   Heart, 
   Share2, 
-  Bookmark 
+  Bookmark,
+  Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import CommentSection from "@/components/CommentSection";
 import type { Project } from "@shared/schema";
@@ -17,13 +19,17 @@ import type { Project } from "@shared/schema";
 const ProjectDetail = () => {
   const { id } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<{project: Project}>({
     queryKey: [`/api/projects/${id}`],
   });
   
   const project: Project | undefined = data?.project;
+  
+  // Check if the current user is the author of the project
+  const isAuthor = user && project && user.id === project.author.id;
   
   // Record view on component mount
   useEffect(() => {
@@ -207,6 +213,16 @@ const ProjectDetail = () => {
               >
                 <ExternalLink className="mr-2 h-4 w-4" /> Visit Project
               </a>
+              {isAuthor && (
+                <Link href={`/projects/${id}/edit`}>
+                  <Button 
+                    variant="secondary"
+                    className="text-gray-700 px-4 py-2 rounded-md text-sm font-medium flex items-center"
+                  >
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                </Link>
+              )}
               <Button 
                 variant="outline"
                 className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
