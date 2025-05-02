@@ -90,6 +90,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get trending projects
+  app.get(`${apiPrefix}/projects/trending`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 4;
+      const trending = await storage.getTrendingProjects(limit);
+      res.json({ projects: trending });
+    } catch (error) {
+      console.error('Error fetching trending projects:', error);
+      res.status(500).json({ message: 'Failed to fetch trending projects' });
+    }
+  });
+  
   // Get project by ID
   app.get(`${apiPrefix}/projects/:id`, async (req, res) => {
     try {

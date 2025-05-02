@@ -7,6 +7,48 @@ import ProjectCard from "@/components/ProjectCard";
 import FeaturedProject from "@/components/FeaturedProject";
 import type { Project } from "@shared/schema";
 
+// Component for Trending Projects Section
+const TrendingProjects = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["/api/projects/trending"],
+  });
+
+  const trendingProjects: Project[] = data?.projects || [];
+
+  return (
+    <div className="mb-16">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Trending Projects</h2>
+        <Link href="/?sort=trending">
+          <Button variant="ghost" className="flex items-center text-primary hover:text-primary/90">
+            View all <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+      
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-card animate-pulse">
+              <div className="h-48 bg-gray-200"></div>
+              <div className="p-4">
+                <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {trendingProjects.map(project => (
+            <ProjectCard key={project.id} project={project} className="h-full" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Home = () => {
   const [location] = useLocation();
   const [page, setPage] = useState(1);

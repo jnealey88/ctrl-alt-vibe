@@ -184,7 +184,10 @@ export const storage = {
           likesCount,
           commentsCount,
           isLiked: !!userLike,
-          isBookmarked: !!userBookmark
+          isBookmarked: !!userBookmark,
+          // Convert Date objects to strings
+          createdAt: project.createdAt.toISOString(),
+          updatedAt: project.updatedAt.toISOString()
         } as Project;
       })
     );
