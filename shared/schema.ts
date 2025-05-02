@@ -37,6 +37,15 @@ export const tags = pgTable("tags", {
   name: varchar("name", { length: 50 }).notNull().unique(),
 });
 
+// AI Coding Tools table
+export const codingTools = pgTable("coding_tools", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  category: varchar("category", { length: 50 }).default("Other"),
+  isPopular: boolean("is_popular").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Project tags join table
 export const projectTags = pgTable("project_tags", {
   id: serial("id").primaryKey(),
@@ -159,6 +168,12 @@ export const replyInsertSchema = createInsertSchema(commentReplies, {
   content: (schema) => schema.min(1, "Reply cannot be empty").max(1000, "Reply must be less than 1000 characters"),
 });
 
+export const codingToolInsertSchema = createInsertSchema(codingTools, {
+  name: (schema) => schema.min(2, "Tool name must be at least 2 characters").max(50, "Tool name must be less than 50 characters"),
+  category: (schema) => schema.optional(),
+  isPopular: (schema) => schema.optional(),
+});
+
 // Custom type for client-side project with tags as array
 export type Project = {
   id: number;
@@ -217,9 +232,20 @@ export type CommentReply = {
   updatedAt: string;
 };
 
+// Coding tool type for client
+export type CodingTool = {
+  id: number;
+  name: string;
+  category?: string;
+  isPopular: boolean;
+  createdAt: string;
+};
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof userInsertSchema>;
 export type InsertProject = z.infer<typeof projectInsertSchema>;
 export type InsertComment = z.infer<typeof commentInsertSchema>;
 export type InsertReply = z.infer<typeof replyInsertSchema>;
+export type InsertCodingTool = z.infer<typeof codingToolInsertSchema>;
+export type CodingToolFromDB = typeof codingTools.$inferSelect;

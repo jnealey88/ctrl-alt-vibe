@@ -9,6 +9,7 @@ import {
   commentReplies,
   likes,
   bookmarks,
+  codingTools,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -16,7 +17,9 @@ import type {
   CommentReply, 
   InsertProject, 
   InsertComment, 
-  InsertReply
+  InsertReply,
+  CodingTool,
+  InsertCodingTool
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -899,6 +902,53 @@ export const storage = {
     
     // Map database tags to their properly cased versions
     return allTags.map(tag => getProperCasedTag(tag.name));
+  },
+  
+  async getAllCodingTools(): Promise<CodingTool[]> {
+    // Get all coding tools ordered alphabetically
+    const tools = await db.query.codingTools.findMany({
+      orderBy: asc(codingTools.name)
+    });
+    
+    // Convert dates to strings for client
+    return tools.map(tool => ({
+      id: tool.id,
+      name: tool.name,
+      category: tool.category || undefined,
+      isPopular: tool.isPopular,
+      createdAt: tool.createdAt.toISOString()
+    }));
+  },
+  
+  async getPopularCodingTools(limit: number = 10): Promise<CodingTool[]> {
+    // Get popular coding tools
+    const tools = await db.query.codingTools.findMany({
+      where: eq(codingTools.isPopular, true),
+      orderBy: asc(codingTools.name),
+      limit
+    });
+    
+    // Convert dates to strings for client
+    return tools.map(tool => ({
+      id: tool.id,
+      name: tool.name,
+      category: tool.category || undefined,
+      isPopular: tool.isPopular,
+      createdAt: tool.createdAt.toISOString()
+    }));
+  },
+  
+  async createCodingTool(toolData: InsertCodingTool): Promise<CodingTool> {
+    // Insert the coding tool
+    const [newTool] = await db.insert(codingTools).values(toolData).returning();
+    
+    return {
+      id: newTool.id,
+      name: newTool.name,
+      category: newTool.category || undefined,
+      isPopular: newTool.isPopular || false,
+      createdAt: newTool.createdAt.toISOString()
+    };
   },
   
   async updateProject(projectId: number, projectData: Partial<InsertProject>, tagNames: string[]): Promise<Project | null> {

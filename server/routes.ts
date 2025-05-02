@@ -487,6 +487,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to fetch all tags' });
     }
   });
+  
+  // Get all available coding tools
+  app.get(`${apiPrefix}/coding-tools`, async (req, res) => {
+    try {
+      const tools = await storage.getAllCodingTools();
+      res.json({ tools });
+    } catch (error) {
+      console.error('Error fetching coding tools:', error);
+      res.status(500).json({ message: 'Failed to fetch coding tools' });
+    }
+  });
+  
+  // Get popular coding tools
+  app.get(`${apiPrefix}/coding-tools/popular`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const tools = await storage.getPopularCodingTools(limit);
+      res.json({ tools });
+    } catch (error) {
+      console.error('Error fetching popular coding tools:', error);
+      res.status(500).json({ message: 'Failed to fetch popular coding tools' });
+    }
+  });
+  
+  // Add a new coding tool (admin only in a real app)
+  app.post(`${apiPrefix}/coding-tools`, async (req, res) => {
+    try {
+      const newTool = await storage.createCodingTool(req.body);
+      res.status(201).json({ tool: newTool });
+    } catch (error) {
+      console.error('Error creating coding tool:', error);
+      res.status(500).json({ message: 'Failed to create coding tool' });
+    }
+  });
 
   // File upload endpoint
   app.post(`${apiPrefix}/upload/image`, upload.single('image'), (req, res) => {
