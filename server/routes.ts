@@ -153,6 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           return false;
         }, { message: "Please provide a valid image URL or upload an image" }),
+        vibeCodingTool: z.string().optional(),
         authorId: z.number(),
         tags: z.array(z.string()).min(1).max(5)
       });
@@ -166,6 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         longDescription: validatedData.longDescription,
         projectUrl: validatedData.projectUrl,
         imageUrl: validatedData.imageUrl,
+        vibeCodingTool: validatedData.vibeCodingTool,
         authorId: validatedData.authorId
       };
       
@@ -257,6 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           longDescription: z.string().optional(),
           projectUrl: z.string().url(),
           imageUrl: z.string(),
+          vibeCodingTool: z.string().optional(),
           tags: z.array(z.string()).min(1).max(5),
         });
         

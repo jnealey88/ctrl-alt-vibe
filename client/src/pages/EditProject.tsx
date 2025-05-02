@@ -46,6 +46,7 @@ const editProjectSchema = z.object({
   projectUrl: z.string()
     .url("Please enter a valid URL")
     .startsWith("http", "URL must start with http:// or https://"),
+  vibeCodingTool: z.string().optional(),
   imageUrl: z.string()
     .refine(val => {
       // Allow URLs that start with http:// or https:// (remote images)
@@ -97,6 +98,7 @@ const EditProject = () => {
       longDescription: "",
       projectUrl: "",
       imageUrl: "",
+      vibeCodingTool: "",
       tags: [],
     },
   });
