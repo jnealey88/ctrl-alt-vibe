@@ -9,11 +9,11 @@ import type { Project } from "@shared/schema";
 
 // Component for Trending Projects Section
 const TrendingProjects = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<{ projects: Project[] }>({  
     queryKey: ["/api/projects/trending"],
   });
 
-  const trendingProjects: Project[] = data?.projects || [];
+  const trendingProjects = data?.projects || [];
 
   return (
     <div className="mb-16">
@@ -72,29 +72,29 @@ const Home = () => {
   }, [tagFilter, searchQuery, sortBy, userFilter]);
 
   // Fetch projects
-  const { data: projectsData, isLoading: isLoadingProjects } = useQuery({
+  const { data: projectsData, isLoading: isLoadingProjects } = useQuery<{ projects: Project[], hasMore: boolean, total: number }>({  
     queryKey: [
       '/api/projects', 
       { page, tag: tagFilter, search: searchQuery, sort: sortBy, user: userFilter }
     ]
   });
 
-  const projects: Project[] = projectsData?.projects || [];
+  const projects = projectsData?.projects || [];
   const hasMore = projectsData?.hasMore || false;
   
   // Fetch featured project
-  const { data: featuredProjectData, isLoading: isLoadingFeatured } = useQuery({
+  const { data: featuredProjectData, isLoading: isLoadingFeatured } = useQuery<{ project: Project }>({  
     queryKey: ['/api/projects/featured']
   });
 
-  const featuredProject: Project | null = featuredProjectData?.project || null;
+  const featuredProject = featuredProjectData?.project || null;
 
   // Fetch popular tags
-  const { data: tagsData } = useQuery({
+  const { data: tagsData } = useQuery<{ tags: string[] }>({  
     queryKey: ['/api/tags/popular']
   });
 
-  const popularTags: string[] = tagsData?.tags || [];
+  const popularTags = tagsData?.tags || [];
 
   const loadMoreProjects = () => {
     setPage(prevPage => prevPage + 1);
@@ -254,15 +254,18 @@ const Home = () => {
         </div>
       )}
 
+      {/* Trending Projects Section */}
+      {!searchQuery && !tagFilter && !userFilter && (
+        <TrendingProjects />
+      )}
+
       {/* Featured Project */}
       {featuredProject && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground font-space">Featured Project</h2>
-            <Link href="/?sort=featured">
-              <a className="text-primary hover:text-primary/80 text-sm font-medium">
-                View All Featured <ArrowRight className="ml-1 h-4 w-4 inline" />
-              </a>
+            <Link href="/?sort=featured" className="text-primary hover:text-primary/80 text-sm font-medium">
+              View All Featured <ArrowRight className="ml-1 h-4 w-4 inline" />
             </Link>
           </div>
           
