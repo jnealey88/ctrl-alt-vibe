@@ -34,6 +34,7 @@ const submitProjectSchema = z.object({
   projectUrl: z.string()
     .url("Please enter a valid URL")
     .startsWith("http", "URL must start with http:// or https://"),
+  vibeCodingTool: z.string().optional(),
   imageUrl: z.string()
     .refine(val => {
       // Allow URLs that start with http:// or https:// (remote images)
@@ -70,6 +71,7 @@ const SubmitProject = () => {
       longDescription: "",
       projectUrl: "",
       imageUrl: "",
+      vibeCodingTool: "",
       tags: [],
     },
   });
@@ -336,6 +338,24 @@ const SubmitProject = () => {
                         type="hidden" 
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="vibeCodingTool"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vibe Coding Tool Used</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="What AI tool helped you build this project? (e.g., ChatGPT, Claude, GitHub Copilot)"
+                      />
+                    </FormControl>
+                    <p className="text-sm text-gray-500">Share which AI coding assistant you used</p>
                     <FormMessage />
                   </FormItem>
                 )}

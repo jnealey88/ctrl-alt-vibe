@@ -23,6 +23,7 @@ export const projects = pgTable("projects", {
   longDescription: text("long_description"),
   projectUrl: text("project_url").notNull(),
   imageUrl: text("image_url").notNull(),
+  vibeCodingTool: text("vibe_coding_tool"), // The AI tool used to create the project
   authorId: integer("author_id").references(() => users.id).notNull(),
   viewsCount: integer("views_count").default(0).notNull(),
   featured: boolean("featured").default(false).notNull(),
@@ -147,6 +148,7 @@ export const projectInsertSchema = createInsertSchema(projects, {
   longDescription: (schema) => schema.optional(),
   projectUrl: (schema) => schema.url("Please enter a valid URL"),
   imageUrl: (schema) => schema.url("Please enter a valid image URL"),
+  vibeCodingTool: (schema) => schema.optional(),
 });
 
 export const commentInsertSchema = createInsertSchema(comments, {
@@ -165,6 +167,7 @@ export type Project = {
   longDescription?: string;
   projectUrl: string;
   imageUrl: string;
+  vibeCodingTool?: string;
   author: {
     id: number;
     username: string;
