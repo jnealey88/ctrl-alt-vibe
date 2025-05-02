@@ -16,6 +16,8 @@ type Profile = {
   avatarUrl: string | null;
   bio: string | null;
   createdAt: string;
+  projectsCount?: number;
+  likesCount?: number;
 };
 
 type ProfilesResponse = {
@@ -310,6 +312,19 @@ export default function UsersPage() {
                           <h3 className="text-lg font-medium mb-1">{profile.username}</h3>
                           {profile.bio && <p className="text-sm text-muted-foreground line-clamp-3">{profile.bio}</p>}
                         </div>
+                        
+                        {/* User Stats */}
+                        <div className="flex justify-center gap-4 w-full">
+                          <div className="text-center">
+                            <p className="text-xl font-semibold">{profile.projectsCount || 0}</p>
+                            <p className="text-xs text-muted-foreground">Projects</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xl font-semibold">{profile.likesCount || 0}</p>
+                            <p className="text-xs text-muted-foreground">Likes</p>
+                          </div>
+                        </div>
+                        
                         <Button asChild variant="outline" className="w-full mt-2">
                           <Link href={`/profile/${profile.username}`}>View Profile</Link>
                         </Button>

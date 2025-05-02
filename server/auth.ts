@@ -494,9 +494,44 @@ export function setupAuth(app: Express) {
         totalCount = countQuery[0].count as number;
       }
       
+      // Enhance user profiles with projects and likes counts
+      const enhancedProfiles = await Promise.all(filteredUsers.map(async (user: any) => {
+        // Count user's projects
+        const projectsCount = sort === "activity" && 'projectCount' in user
+          ? user.projectCount
+          : await db.select({ count: count() })
+              .from(projects)
+              .where(eq(projects.authorId, user.id))
+              .then(res => Number(res[0]?.count || 0));
+        
+        // Count total likes on user's projects
+        const likesResult = await db.execute(sql`
+          SELECT COUNT(*) AS count
+          FROM ${likes} l
+          JOIN ${projects} p ON l."projectId" = p.id
+          WHERE p."authorId" = ${user.id}
+          AND l."commentId" IS NULL
+          AND l."replyId" IS NULL
+        `);
+        
+        let likesCount = 0;
+        if (Array.isArray(likesResult) && likesResult.length > 0) {
+          const row = likesResult[0] as Record<string, any>;
+          likesCount = Number(row.count || 0);
+        }
+        
+        return {
+          ...user,
+          // Format the date
+          createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
+          projectsCount,
+          likesCount
+        };
+      }));
+      
       // Return with pagination info
       res.json({
-        profiles: filteredUsers,
+        profiles: enhancedProfiles,
         pagination: {
           page,
           limit,
