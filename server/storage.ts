@@ -467,14 +467,22 @@ export const storage = {
       const [newProject] = await tx.insert(projects).values(projectData).returning();
       
       // Process tags
-      for (const tagName of tagNames) {
-        // Check if tag exists or create it
+      // Remove duplicates & trim whitespace
+      const trimmedTags = tagNames.map(tag => tag.trim());
+      const uniqueTags = trimmedTags.filter((tag, index) => trimmedTags.indexOf(tag) === index);
+      
+      for (const tagName of uniqueTags) {
+        if (!tagName) continue; // Skip empty tags
+        
+        // Check if tag exists (case-insensitive) or create it
+        const properCasedTag = getProperCasedTag(tagName);
         let tagRecord = await tx.query.tags.findFirst({
-          where: eq(tags.name, tagName.toLowerCase())
+          where: sql`LOWER(${tags.name}) = LOWER(${properCasedTag})`
         });
         
         if (!tagRecord) {
-          [tagRecord] = await tx.insert(tags).values({ name: tagName.toLowerCase() }).returning();
+          // Store tag with proper casing but search case-insensitively
+          [tagRecord] = await tx.insert(tags).values({ name: properCasedTag }).returning();
         }
         
         // Create project-tag relationship
@@ -924,14 +932,22 @@ export const storage = {
         .where(eq(projectTags.projectId, projectId));
       
       // Process new tags
-      for (const tagName of tagNames) {
-        // Check if tag exists or create it
+      // Remove duplicates & trim whitespace
+      const trimmedTags = tagNames.map(tag => tag.trim());
+      const uniqueTags = trimmedTags.filter((tag, index) => trimmedTags.indexOf(tag) === index);
+      
+      for (const tagName of uniqueTags) {
+        if (!tagName) continue; // Skip empty tags
+        
+        // Check if tag exists (case-insensitive) or create it
+        const properCasedTag = getProperCasedTag(tagName);
         let tagRecord = await tx.query.tags.findFirst({
-          where: eq(tags.name, tagName.toLowerCase())
+          where: sql`LOWER(${tags.name}) = LOWER(${properCasedTag})`
         });
         
         if (!tagRecord) {
-          [tagRecord] = await tx.insert(tags).values({ name: tagName.toLowerCase() }).returning();
+          // Store tag with proper casing but search case-insensitively
+          [tagRecord] = await tx.insert(tags).values({ name: properCasedTag }).returning();
         }
         
         // Create project-tag relationship
