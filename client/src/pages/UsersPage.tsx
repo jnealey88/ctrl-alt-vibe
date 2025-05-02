@@ -176,7 +176,7 @@ export default function UsersPage() {
                       // Add debounce for typing
                       const timer = setTimeout(() => {
                         setSearchQuery(e.target.value);
-                        updateUrl(1, selectedRole, e.target.value, sortOption);
+                        updateUrl(1, selectedRole, selectedTag, e.target.value, sortOption);
                       }, 300);
                       return () => clearTimeout(timer);
                     }
@@ -211,29 +211,60 @@ export default function UsersPage() {
             </div>
 
             {/* AI Tools Used */}
-            <div>
+            <div className="mb-6">
               <h3 className="font-medium mb-2">AI Tools Used</h3>
               {isLoadingRoles ? (
                 <div className="flex justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {rolesData?.roles && rolesData.roles.length > 0 ? (
-                    rolesData.roles.map((role) => (
-                      <Badge 
-                        key={role} 
-                        variant={selectedRole === role ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => handleRoleClick(role)}
-                      >
-                        {role}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No AI tools data available</p>
-                  )}
+                <Select 
+                  value={selectedRole} 
+                  onValueChange={handleRoleChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select AI tool" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Tools</SelectItem>
+                    {rolesData?.roles && rolesData.roles.length > 0 ? (
+                      rolesData.roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))
+                    ) : null}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            
+            {/* Project Tags */}
+            <div>
+              <h3 className="font-medium mb-2">Project Tags</h3>
+              {isLoadingTags ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
+              ) : (
+                <Select 
+                  value={selectedTag} 
+                  onValueChange={handleTagChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Filter by project tag" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Tags</SelectItem>
+                    {tagsData?.tags && tagsData.tags.length > 0 ? (
+                      tagsData.tags.map((tag) => (
+                        <SelectItem key={tag} value={tag}>
+                          {tag}
+                        </SelectItem>
+                      ))
+                    ) : null}
+                  </SelectContent>
+                </Select>
               )}
             </div>
           </div>
@@ -242,7 +273,9 @@ export default function UsersPage() {
         <div className="w-full md:w-3/4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold">
-              {selectedRole ? `Members using "${selectedRole}"` : 
+              {selectedRole && selectedTag ? `Members using "${selectedRole}" with "${selectedTag}" projects` :
+               selectedRole ? `Members using "${selectedRole}"` : 
+               selectedTag ? `Members with "${selectedTag}" projects` :
                searchQuery ? `Search results for "${searchQuery}"` : 
                sortOption === 'activity' ? 'Most Active Members' :
                sortOption === 'oldest' ? 'Founding Members' :
@@ -300,10 +333,11 @@ export default function UsersPage() {
               <Button 
                 onClick={() => {
                   setSelectedRole('');
+                  setSelectedTag('');
                   setSearchQuery('');
                   setInputSearch('');
                   setSortOption('newest');
-                  updateUrl(1, '', '', 'newest');
+                  updateUrl(1, '', '', '', 'newest');
                 }}
               >
                 Clear all filters
