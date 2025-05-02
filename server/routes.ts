@@ -8,8 +8,11 @@ import {
   projectInsertSchema, 
   replyInsertSchema
 } from "@shared/schema";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
   const apiPrefix = '/api';
   
   // Projects routes
@@ -66,8 +69,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new project
   app.post(`${apiPrefix}/projects`, async (req, res) => {
     try {
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to create a project" });
+      }
+      const userId = req.user?.id || 0;
       
       // Validate project data
       const projectData = {
@@ -113,9 +118,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Like a project
   app.post(`${apiPrefix}/projects/:id/like`, async (req, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to like a project" });
+      }
       const projectId = parseInt(req.params.id);
-      // In a real application, this would be retrieved from the authenticated user
-      const userId = 1; // Mock user ID
+      const userId = req.user?.id || 0;
       
       const { liked } = req.body;
       
