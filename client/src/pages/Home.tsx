@@ -96,7 +96,7 @@ const Home = () => {
                 </Button>
               </Link>
               <Link href="/submit">
-                <Button className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-accent hover:bg-accent/90 sm:px-8 w-full">
+                <Button variant="default" className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white sm:px-8 w-full">
                   Submit Your Project
                 </Button>
               </Link>
