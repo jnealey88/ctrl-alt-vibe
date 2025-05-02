@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,8 +17,15 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
-import { Upload, Image } from "lucide-react";
+import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
@@ -62,6 +69,16 @@ const SubmitProject = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch AI tools
+  const { data: aiToolsData, isLoading: isLoadingAiTools } = useQuery<{roles: string[]}>({ 
+    queryKey: ['/api/user-roles'],
+    queryFn: async () => {
+      const response = await fetch('/api/user-roles');
+      if (!response.ok) throw new Error("Failed to fetch AI tools");
+      return response.json();
+    },
+  });
   
   const form = useForm<FormValues>({
     resolver: zodResolver(submitProjectSchema),
