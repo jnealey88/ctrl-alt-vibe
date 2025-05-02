@@ -508,10 +508,10 @@ export function setupAuth(app: Express) {
         const likesResult = await db.execute(sql`
           SELECT COUNT(*) AS count
           FROM ${likes} l
-          JOIN ${projects} p ON l."projectId" = p.id
+          JOIN ${projects} p ON l."project_id" = p.id
           WHERE p."authorId" = ${user.id}
-          AND l."commentId" IS NULL
-          AND l."replyId" IS NULL
+          AND l."comment_id" IS NULL
+          AND l."reply_id" IS NULL
         `);
         
         let likesCount = 0;
