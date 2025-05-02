@@ -915,7 +915,7 @@ export const storage = {
       id: tool.id,
       name: tool.name,
       category: tool.category || undefined,
-      isPopular: tool.isPopular,
+      isPopular: Boolean(tool.isPopular),
       createdAt: tool.createdAt.toISOString()
     }));
   },
@@ -933,7 +933,7 @@ export const storage = {
       id: tool.id,
       name: tool.name,
       category: tool.category || undefined,
-      isPopular: tool.isPopular,
+      isPopular: Boolean(tool.isPopular),
       createdAt: tool.createdAt.toISOString()
     }));
   },
@@ -946,7 +946,7 @@ export const storage = {
       id: newTool.id,
       name: newTool.name,
       category: newTool.category || undefined,
-      isPopular: newTool.isPopular || false,
+      isPopular: Boolean(newTool.isPopular),
       createdAt: newTool.createdAt.toISOString()
     };
   },

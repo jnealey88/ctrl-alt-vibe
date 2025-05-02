@@ -14,6 +14,7 @@ async function seed() {
 
     // Only seed if tables are empty
     const usersExist = await hasData(schema.users);
+    const codingToolsExist = await hasData(schema.codingTools);
     
     if (!usersExist) {
       console.log("Seeding users...");
@@ -399,10 +400,102 @@ async function seed() {
         }
       }
 
-      console.log("Database seed completed successfully!");
-    } else {
-      console.log("Database already contains data, skipping seed.");
     }
+    
+    if (!codingToolsExist) {
+      console.log("Seeding coding tools...");
+      // Seed AI coding tools
+      const codingTools = [
+        {
+          name: "GPT-4",
+          category: "Large Language Model",
+          isPopular: true
+        },
+        {
+          name: "DALL-E 3",
+          category: "Image Generation",
+          isPopular: true
+        },
+        {
+          name: "Midjourney",
+          category: "Image Generation",
+          isPopular: true
+        },
+        {
+          name: "GitHub Copilot",
+          category: "Code Generation",
+          isPopular: true
+        },
+        {
+          name: "Claude",
+          category: "Large Language Model",
+          isPopular: true
+        },
+        {
+          name: "Stable Diffusion",
+          category: "Image Generation",
+          isPopular: true
+        },
+        {
+          name: "ChatGPT",
+          category: "Large Language Model",
+          isPopular: true
+        },
+        {
+          name: "Bard",
+          category: "Large Language Model",
+          isPopular: false
+        },
+        {
+          name: "BERT",
+          category: "Natural Language Processing",
+          isPopular: false
+        },
+        {
+          name: "GPT-3",
+          category: "Large Language Model",
+          isPopular: false
+        },
+        {
+          name: "CodeWhisperer",
+          category: "Code Generation",
+          isPopular: false
+        },
+        {
+          name: "Replit AI",
+          category: "Code Generation",
+          isPopular: true
+        },
+        {
+          name: "Tabnine",
+          category: "Code Generation",
+          isPopular: false
+        },
+        {
+          name: "Kite",
+          category: "Code Generation",
+          isPopular: false
+        },
+        {
+          name: "StableLM",
+          category: "Large Language Model",
+          isPopular: false
+        },
+        {
+          name: "OpenAI Codex",
+          category: "Code Generation",
+          isPopular: false
+        }
+      ];
+
+      for (const tool of codingTools) {
+        await db.insert(schema.codingTools).values(tool);
+      }
+
+      console.log("Coding tools seeding completed.");
+    }
+    
+    console.log("Database seed completed successfully!");
   } catch (error) {
     console.error("Error seeding database:", error);
   }
