@@ -24,6 +24,15 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import Highlight from '@tiptap/extension-highlight';
+import Color from '@tiptap/extension-color';
+import Typography from '@tiptap/extension-typography';
 
 const BlogEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -97,6 +106,37 @@ const BlogEditor = () => {
           target: '_blank',
         },
       }),
+      // New extensions
+      Underline.configure(),
+      Highlight.configure({
+        multicolor: true,
+        HTMLAttributes: {
+          class: 'bg-yellow-200 dark:bg-yellow-800 px-1 rounded',
+        },
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'border-collapse table-auto w-full my-4',
+        },
+      }),
+      TableRow.configure(),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-medium',
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'border border-gray-300 dark:border-gray-700 px-4 py-2 text-left',
+        },
+      }),
+      Color.configure(),
+      Typography.configure(),
     ],
     content: content,
     onUpdate: ({ editor }) => {
@@ -477,7 +517,7 @@ const BlogEditor = () => {
                   
                   <div>
                     <Label htmlFor="editor" className="text-base font-medium">Content</Label>
-                    <div className="border rounded-md mt-1.5 overflow-hidden">
+                    <div className="border rounded-md mt-1.5 overflow-hidden sticky top-4 z-10">
                       {/* Editor Toolbar */}
                       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 p-2 border-b bg-background shadow-sm">
                         <Button 
