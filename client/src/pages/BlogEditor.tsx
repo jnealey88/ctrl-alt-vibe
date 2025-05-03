@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import SEO from "@/components/SEO";
 import { BlogTag, BlogCategory } from "@shared/schema";
 
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, ArrowLeft, Info, Image as ImageIcon, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Import TipTap components
+// TipTap components
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -411,8 +412,185 @@ const BlogEditor = () => {
                   
                   <div>
                     <Label htmlFor="editor" className="text-base font-medium">Content</Label>
-                    <div className="border rounded-md mt-1.5 p-4 min-h-[300px]">
-                      <EditorContent editor={editor} />
+                    <div className="border rounded-md mt-1.5 overflow-hidden">
+                      {/* Editor Toolbar */}
+                      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleBold().run()}
+                          data-active={editor?.isActive('bold') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('bold') ? 'text-primary font-bold' : ''}`}>B</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground italic" 
+                          onClick={() => editor?.chain().focus().toggleItalic().run()}
+                          data-active={editor?.isActive('italic') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('italic') ? 'text-primary' : ''}`}>I</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                          data-active={editor?.isActive('heading', { level: 2 }) ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('heading', { level: 2 }) ? 'text-primary' : ''}`}>H2</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                          data-active={editor?.isActive('heading', { level: 3 }) ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('heading', { level: 3 }) ? 'text-primary' : ''}`}>H3</span>
+                        </Button>
+                        
+                        <div className="h-4 border-r mx-1"></div>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                          data-active={editor?.isActive('bulletList') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('bulletList') ? 'text-primary' : ''}`}>• List</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                          data-active={editor?.isActive('orderedList') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('orderedList') ? 'text-primary' : ''}`}>1. List</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+                          data-active={editor?.isActive('codeBlock') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('codeBlock') ? 'text-primary' : ''}`}>Code</span>
+                        </Button>
+                        
+                        <div className="h-4 border-r mx-1"></div>
+                        
+                        <div className="relative">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 px-2 text-muted-foreground" 
+                            onClick={() => {
+                              document.getElementById('editorImageUpload')?.click();
+                            }}
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                          </Button>
+                          <input
+                            type="file"
+                            id="editorImageUpload"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file || !editor) return;
+                              
+                              // Check file size (max 5MB)
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast({
+                                  title: "Error",
+                                  description: "Image size should be less than 5MB",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              
+                              try {
+                                setIsSubmitting(true);
+                                
+                                // Create FormData
+                                const formData = new FormData();
+                                formData.append('image', file);
+                                
+                                // Upload the image
+                                const response = await fetch('/api/upload', {
+                                  method: 'POST',
+                                  body: formData,
+                                });
+                                
+                                if (!response.ok) {
+                                  throw new Error('Failed to upload image');
+                                }
+                                
+                                const data = await response.json();
+                                
+                                // Insert the image at cursor position
+                                editor.chain().focus().setImage({ src: data.imageUrl }).run();
+                                
+                                toast({
+                                  title: "Success",
+                                  description: "Image inserted successfully",
+                                });
+                              } catch (error) {
+                                console.error('Error uploading image:', error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to upload image",
+                                  variant: "destructive"
+                                });
+                              } finally {
+                                setIsSubmitting(false);
+                                // Reset file input
+                                const fileInput = document.getElementById('editorImageUpload') as HTMLInputElement;
+                                if (fileInput) fileInput.value = '';
+                              }
+                            }}
+                          />
+                        </div>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => {
+                            const url = window.prompt('Enter the link URL');
+                            if (url && editor) {
+                              editor.chain().focus().setLink({ href: url }).run();
+                            }
+                          }}
+                          data-active={editor?.isActive('link') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('link') ? 'text-primary' : ''}`}>Link</span>
+                        </Button>
+                      </div>
+                      
+                      {/* Editor Content */}
+                      <div className="p-4 min-h-[300px]">
+                        <EditorContent editor={editor} />
+                      </div>
                     </div>
                   </div>
                 </div>
