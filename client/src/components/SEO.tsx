@@ -12,7 +12,7 @@ export interface SEOProps {
 
 const defaultDescription = 'Ctrl Alt Vibe is a community platform for developers to showcase AI-assisted coding projects. Discover, share, and engage with innovative projects from the developer community.';
 const defaultTitle = 'Ctrl Alt Vibe | AI-Assisted Coding Projects Community';
-const defaultImage = '/ctrlaltvibelogo.png'; // Make sure this path is correct
+const defaultImage = '/social-share-image.svg'; // Optimized for social sharing (1200x630)
 const defaultKeywords = ['coding', 'AI-assisted', 'developer', 'projects', 'community', 'programming'];
 const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -48,12 +48,16 @@ export default function SEO({
       <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={imageUrl} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="Ctrl Alt Vibe - AI-Assisted Coding Projects Community" />
       
       {/* Twitter Card tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageUrl} />
+      <meta name="twitter:image:alt" content="Ctrl Alt Vibe - AI-Assisted Coding Projects Community" />
     </Helmet>
   );
 }
