@@ -1,9 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import SEO from "@/components/SEO";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+      <SEO
+        title="Page Not Found | 404 Error | Ctrl Alt Vibe"
+        description="The page you're looking for doesn't exist or has been moved. Return to Ctrl Alt Vibe homepage to discover AI-assisted coding projects."
+        keywords={['404', 'page not found', 'error', 'missing page']}
+      />
       <Card className="w-full max-w-md mx-4">
         <CardContent className="pt-6">
           <div className="flex mb-4 gap-2">

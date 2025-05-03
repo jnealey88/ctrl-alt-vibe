@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const loginFormSchema = z.object({
   username: z.string().min(3, "Username or email must be at least 3 characters"),
@@ -63,8 +64,33 @@ export default function AuthPage() {
     return <Redirect to="/" />;
   }
 
+  // Determine SEO title and description based on active tab
+  const getSeoTitle = () => {
+    return activeTab === "login" 
+      ? "Login | Ctrl Alt Vibe" 
+      : "Create an Account | Ctrl Alt Vibe";
+  };
+
+  const getSeoDescription = () => {
+    return activeTab === "login"
+      ? "Log in to your Ctrl Alt Vibe account to access your profile, submit projects, and engage with the developer community."
+      : "Join Ctrl Alt Vibe to showcase your AI-assisted coding projects, get feedback, and connect with other developers.";
+  };
+
+  const seoKeywords = [
+    'developer community', 'coding showcase', 'ai-assisted development',
+    'programmer portfolio', 'tech community', 'developer account',
+    activeTab === "login" ? 'login' : 'register', 
+    activeTab === "login" ? 'sign in' : 'sign up'
+  ];
+
   return (
     <div className="container mx-auto py-10 flex flex-col md:flex-row items-center justify-center min-h-[calc(100vh-10rem)]">
+      <SEO 
+        title={getSeoTitle()}
+        description={getSeoDescription()}
+        keywords={seoKeywords}
+      />
       {/* Left side: Auth forms */}
       <div className="flex-1 w-full max-w-md">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
