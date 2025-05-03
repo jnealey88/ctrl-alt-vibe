@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { useMobile } from "@/hooks/use-mobile";
+import { useMobile, useMediumScreen } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   Sheet, 
@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 const Navbar = () => {
   const [location, setLocation] = useLocation();
   const isMobile = useMobile();
+  const isMediumScreen = useMediumScreen();
   const { user, logoutMutation } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
@@ -80,7 +81,7 @@ const Navbar = () => {
             </div>
             
             {!isMobile && (
-              <div className="ml-6 flex space-x-6">
+              <div className="ml-6 flex space-x-3 lg:space-x-6">
                 {navLinks.map((link) => {
                   const isActive = location === link.path;
                   return (
@@ -95,7 +96,7 @@ const Navbar = () => {
                       )}
                     >
                       {link.icon}
-                      {link.name}
+                      {isMediumScreen ? "" : link.name}
                     </Link>
                   );
                 })}
@@ -104,15 +105,15 @@ const Navbar = () => {
           </div>
           
           {!isMobile && (
-            <div className="ml-6 flex items-center">
-              <form onSubmit={handleSearch} className="relative w-64">
+            <div className="ml-3 lg:ml-6 flex items-center">
+              <form onSubmit={handleSearch} className="relative w-40 lg:w-64">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-gray-400" />
                 </div>
                 <Input
                   type="text"
-                  className="pl-10 h-10 bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0"
-                  placeholder="Search projects..."
+                  className="pl-10 h-10 bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0 text-sm"
+                  placeholder={isMediumScreen ? "Search..." : "Search projects..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -121,9 +122,9 @@ const Navbar = () => {
               {user ? (
                 <>
                   <Link href="/submit">
-                    <Button className="ml-4 bg-primary hover:bg-primary/90 text-white group transition-all">
+                    <Button className="ml-3 lg:ml-4 bg-primary hover:bg-primary/90 text-white group transition-all text-xs sm:text-sm">
                       <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
-                      Submit Project
+                      {isMediumScreen ? "Submit" : "Submit Project"}
                     </Button>
                   </Link>
                   
@@ -173,14 +174,14 @@ const Navbar = () => {
                   </DropdownMenu>
                 </>
               ) : (
-                <div className="flex ml-4 space-x-3">
+                <div className="flex ml-3 lg:ml-4 space-x-2 lg:space-x-3">
                   <Link href="/auth?tab=login">
-                    <Button variant="outline" className="hover:bg-gray-50 transition-colors">
+                    <Button variant="outline" className="hover:bg-gray-50 transition-colors text-xs sm:text-sm h-9 px-2 lg:px-4">
                       Log in
                     </Button>
                   </Link>
                   <Link href="/auth?tab=register">
-                    <Button className="bg-primary hover:bg-primary/90 transition-colors">
+                    <Button className="bg-primary hover:bg-primary/90 transition-colors text-xs sm:text-sm h-9 px-2 lg:px-4">
                       Sign up
                     </Button>
                   </Link>

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
+const MEDIUM_BREAKPOINT = 1024; // Added breakpoint for medium screens (laptops)
 
 export function useMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(
@@ -18,4 +19,23 @@ export function useMobile() {
   }, []);
 
   return !!isMobile;
+}
+
+// New hook for detecting medium screens like laptops
+export function useMediumScreen() {
+  const [isMedium, setIsMedium] = React.useState<boolean | undefined>(
+    undefined,
+  );
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MEDIUM_BREAKPOINT - 1}px)`);
+    const onChange = () => {
+      setIsMedium(window.innerWidth < MEDIUM_BREAKPOINT);
+    };
+    mql.addEventListener("change", onChange);
+    setIsMedium(window.innerWidth < MEDIUM_BREAKPOINT);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return !!isMedium;
 }
