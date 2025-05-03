@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Search, Calendar, Tag, Filter, BookOpen } from "lucide-react";
+import { Search, Calendar, Tag, Filter, BookOpen, User } from "lucide-react";
 import { BlogPost, BlogCategory } from "@shared/schema";
 import SEO from "@/components/SEO";
 
@@ -76,46 +76,90 @@ const BlogPage = () => {
       />
       
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-3">The Ctrl Alt Vibe Blog</h1>
+        <div className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full mb-4 font-medium text-sm">
+          <BookOpen className="h-4 w-4 inline-block mr-1" /> Our Latest Content
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+          The Ctrl Alt Vibe Blog
+        </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Insights, tutorials, and community stories about tech, coding, and the developer lifestyle.
         </p>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-4 mb-8 items-start">
-        <form onSubmit={handleSearch} className="flex-1 flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search blog posts..."
-              className="pl-9"
-            />
+      <div className="mb-8 bg-gray-50 p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <form onSubmit={handleSearch} className="flex-1 flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search blog posts..."
+                className="pl-9 border-gray-200 bg-white focus-visible:ring-primary/30"
+              />
+            </div>
+            <Button type="submit" className="bg-primary hover:bg-primary/90">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </form>
+          
+          <div className="w-full md:w-auto flex gap-2 items-center">
+            <div className="flex items-center bg-white px-3 py-1.5 rounded-l-md border border-r-0 border-gray-200">
+              <Filter className="h-4 w-4 text-primary" />
+              <span className="text-sm ml-2 font-medium">Category</span>
+            </div>
+            <Select value={categoryFilter} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-[180px] rounded-l-none border-gray-200">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categoriesLoading ? (
+                  <SelectItem value="loading" disabled>Loading...</SelectItem>
+                ) : categoriesData?.categories?.map((category: BlogCategory) => (
+                  <SelectItem key={category.id} value={category.slug}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Button type="submit">Search</Button>
-        </form>
-        
-        <div className="w-full md:w-auto flex gap-2 items-center">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm text-gray-600 mr-2">Filter by:</span>
-          <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categoriesLoading ? (
-                <SelectItem value="loading" disabled>Loading...</SelectItem>
-              ) : categoriesData?.categories?.map((category: BlogCategory) => (
-                <SelectItem key={category.id} value={category.slug}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
+        
+        {(searchQuery || categoryFilter !== "all") && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+            <span className="text-sm text-gray-600">Active filters:</span>
+            {searchQuery && (
+              <Badge variant="secondary" className="bg-gray-100 hover:bg-gray-200 text-gray-700 gap-1">
+                <Search className="h-3 w-3" />
+                {searchQuery}
+                <button className="ml-1" onClick={() => setSearchQuery("")}>×</button>
+              </Badge>
+            )}
+            {categoryFilter !== "all" && categoriesData?.categories && (
+              <Badge variant="secondary" className="bg-primary/10 hover:bg-primary/20 text-primary gap-1">
+                <Filter className="h-3 w-3" />
+                {categoriesData.categories.find((c: BlogCategory) => c.slug === categoryFilter)?.name || categoryFilter}
+                <button className="ml-1" onClick={() => setCategoryFilter("all")}>×</button>
+              </Badge>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="ml-auto text-xs"
+              onClick={() => {
+                setSearchQuery("");
+                setCategoryFilter("all");
+                setLocation("/blog", { replace: true });
+              }}
+            >
+              Clear all filters
+            </Button>
+          </div>
+        )}
       </div>
       
       {postsLoading ? (
@@ -143,25 +187,39 @@ const BlogPage = () => {
       ) : postsData?.posts?.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {postsData.posts.map((post: BlogPost) => (
-            <Card key={post.id} className="overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg h-full flex flex-col" onClick={() => setLocation(`/blog/${post.slug}`)}>
-              {post.featuredImage && (
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={post.featuredImage} 
-                    alt={post.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out" 
-                  />
-                </div>
-              )}
+            <Card key={post.id} className="overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-xl h-full flex flex-col border-0 shadow" onClick={() => setLocation(`/blog/${post.slug}`)}>
+              <div className="relative">
+                {post.featuredImage ? (
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src={post.featuredImage} 
+                      alt={post.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out" 
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
+                    <BookOpen className="h-12 w-12 text-primary/60" />
+                  </div>
+                )}
+                {post.category && (
+                  <div className="absolute top-3 right-3">
+                    <Badge className="bg-white/80 hover:bg-white text-primary border-0 shadow-sm font-medium">
+                      {post.category.name}
+                    </Badge>
+                  </div>
+                )}
+              </div>
               <CardHeader className="pb-2">
-                <CardTitle className="group-hover:text-primary transition-colors duration-200">{post.title}</CardTitle>
+                <CardTitle className="group-hover:text-primary transition-colors duration-200 line-clamp-2">{post.title}</CardTitle>
                 <CardDescription className="flex items-center gap-1 text-sm text-gray-500">
                   <Calendar className="h-3 w-3" />
                   {format(new Date(post.createdAt), 'MMM d, yyyy')}
-                  {post.category && (
+                  {post.author && (
                     <>
                       <span className="mx-1">•</span>
-                      <span>{post.category.name}</span>
+                      <User className="h-3 w-3 mr-1" />
+                      {post.author.username}
                     </>
                   )}
                 </CardDescription>
@@ -169,14 +227,20 @@ const BlogPage = () => {
               <CardContent className="pb-4 flex-grow">
                 <p className="text-gray-600 line-clamp-3">{post.summary}</p>
               </CardContent>
-              <CardFooter className="pt-0 pb-4">
+              <CardFooter className="pt-0 pb-4 flex justify-between items-center">
                 <div className="flex flex-wrap gap-2">
-                  {post.tags && post.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {post.tags && post.tags.length > 0 && post.tags.slice(0, 2).map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700">
                       <Tag className="h-3 w-3" />
                       {tag}
                     </Badge>
                   ))}
+                  {post.tags && post.tags.length > 2 && (
+                    <Badge variant="secondary" className="bg-gray-100 hover:bg-gray-200 text-gray-700">+{post.tags.length - 2}</Badge>
+                  )}
+                </div>
+                <div className="flex items-center text-primary/70 font-medium text-sm group-hover:text-primary transition-colors">
+                  Read More
                 </div>
               </CardFooter>
             </Card>
