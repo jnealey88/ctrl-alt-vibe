@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -6,13 +6,24 @@ import {
   Heart, 
   Share2, 
   Bookmark,
-  Edit
+  Edit,
+  MessageSquare,
+  Eye,
+  Calendar,
+  BadgeCheck,
+  ArrowLeft,
+  Cpu,
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CommentSection from "@/components/CommentSection";
 import SEO from "@/components/SEO";
 import type { Project } from "@shared/schema";
@@ -22,6 +33,8 @@ const ProjectDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<string>("details");
+  const [projectUrlCopied, setProjectUrlCopied] = useState<boolean>(false);
   
   const { data, isLoading, error } = useQuery<{project: Project}>({
     queryKey: [`/api/projects/${id}`],
@@ -109,6 +122,28 @@ const ProjectDetail = () => {
     }
   };
   
+  const handleCopyProjectUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(project?.projectUrl || "");
+      setProjectUrlCopied(true);
+      toast({
+        title: "URL copied",
+        description: "Project URL copied to clipboard"
+      });
+      
+      setTimeout(() => {
+        setProjectUrlCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error copying URL:", error);
+      toast({
+        title: "Error",
+        description: "Failed to copy URL to clipboard",
+        variant: "destructive"
+      });
+    }
+  };
+  
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -174,7 +209,17 @@ const ProjectDetail = () => {
         article={true}
         keywords={seoKeywords}
       />
+      
+      {/* Back button */}
+      <div className="mb-6">
+        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-primary transition-colors">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Projects
+        </Link>
+      </div>
+      
       <div className="bg-white rounded-xl shadow-card overflow-hidden mb-16">
+        {/* Hero section with image and floating action buttons */}
         <div className="relative">
           <img 
             className="w-full h-80 object-cover" 
@@ -185,7 +230,7 @@ const ProjectDetail = () => {
             <Button 
               size="icon" 
               variant="secondary" 
-              className="bg-white/90 hover:bg-white rounded-full text-gray-700 h-10 w-10"
+              className="bg-white/90 hover:bg-white rounded-full text-gray-700 h-10 w-10 shadow-md transition-all hover:scale-105"
               onClick={handleShare}
             >
               <Share2 className="h-5 w-5" />
@@ -193,85 +238,205 @@ const ProjectDetail = () => {
             <Button 
               size="icon" 
               variant="secondary" 
-              className={`bg-white/90 hover:bg-white rounded-full h-10 w-10 ${project.isLiked ? 'text-secondary' : 'text-gray-700'}`}
+              className={`bg-white/90 hover:bg-white rounded-full h-10 w-10 shadow-md transition-all hover:scale-105 ${project.isLiked ? 'text-secondary' : 'text-gray-700'}`}
               onClick={() => likeMutation.mutate()}
               disabled={likeMutation.isPending}
             >
               <Heart className={`h-5 w-5 ${project.isLiked ? 'fill-secondary' : ''}`} />
             </Button>
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className={`bg-white/90 hover:bg-white rounded-full h-10 w-10 shadow-md transition-all hover:scale-105 ${project.isBookmarked ? 'text-gray-800' : 'text-gray-700'}`}
+              onClick={() => bookmarkMutation.mutate()}
+              disabled={bookmarkMutation.isPending}
+            >
+              <Bookmark className={`h-5 w-5 ${project.isBookmarked ? 'fill-gray-800' : ''}`} />
+            </Button>
+          </div>
+          
+          {/* Featured badge if the project is featured */}
+          {project.featured && (
+            <div className="absolute top-4 left-4">
+              <Badge variant="secondary" className="bg-amber-50 text-amber-700 hover:bg-amber-100 pl-2 pr-3 py-1.5 flex items-center gap-1 border border-amber-200 shadow-md">
+                <BadgeCheck className="h-4 w-4 fill-amber-500 stroke-amber-700" />
+                Featured Project
+              </Badge>
+            </div>
+          )}
+          
+          {/* Author avatar positioned at the bottom edge of the image */}
+          <div className="absolute -bottom-6 left-8">
+            <Avatar className="h-12 w-12 ring-4 ring-white rounded-full shadow-lg">
+              {project.author.avatarUrl ? (
+                <AvatarImage src={project.author.avatarUrl} alt={project.author.username} />
+              ) : (
+                <AvatarFallback className="bg-primary/20 text-primary">
+                  {project.author.username.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              )}
+            </Avatar>
           </div>
         </div>
         
-        <div className="p-8">
+        {/* Main content */}
+        <div className="p-8 pt-10">
+          {/* Project info section */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground font-space mb-2">{project.title}</h1>
-              <p className="text-gray-500 mb-4">
-                Submitted by <Link href={`/?user=${project.author.username}`}><a className="text-primary hover:underline">{project.author.username}</a></Link> on {formatDate(project.createdAt)}
-              </p>
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground font-space mb-2">{project.title}</h1>
+                  <p className="text-gray-500 mb-4">
+                    By <Link href={`/profile/${project.author.username}`} className="text-primary hover:underline font-medium">{project.author.username}</Link> • {formatDate(project.createdAt)}
+                  </p>
+                </div>
+                
+                <div className="hidden md:flex md:space-x-3">
+                  <a 
+                    href={project.projectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center transition-all hover:translate-y-[-2px] shadow-sm"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" /> Visit Project
+                  </a>
+                  {isAuthor && (
+                    <Link href={`/projects/${id}/edit`}>
+                      <Button 
+                        variant="secondary"
+                        className="text-gray-700 px-4 py-2 rounded-md text-sm font-medium flex items-center transition-all hover:translate-y-[-2px] shadow-sm"
+                      >
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+              
               <div className="flex flex-wrap gap-2 mb-4">
                 {project.tags.map(tag => (
-                  <Link key={tag} href={`/?tag=${tag}`}>
-                    <a className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
-                      {tag}
-                    </a>
+                  <Link key={tag} href={`/?tag=${tag}`} className="no-underline">
+                    <span>
+                      <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100 transition-colors">
+                        {tag}
+                      </Badge>
+                    </span>
                   </Link>
                 ))}
+                
+                {project.vibeCodingTool && (
+                  <Badge variant="outline" className="bg-purple-50 text-purple-800 hover:bg-purple-100 border-purple-200 transition-colors flex items-center gap-1">
+                    <Cpu className="h-3 w-3" />
+                    {project.vibeCodingTool}
+                  </Badge>
+                )}
               </div>
-            </div>
-            <div className="flex space-x-3 mt-4 md:mt-0">
-              <a 
-                href={project.projectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center"
-              >
-                <ExternalLink className="mr-2 h-4 w-4" /> Visit Project
-              </a>
-              {isAuthor && (
-                <Link href={`/projects/${id}/edit`}>
-                  <Button 
-                    variant="secondary"
-                    className="text-gray-700 px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                  >
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </Button>
-                </Link>
-              )}
-              <Button 
-                variant="outline"
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
-                onClick={() => bookmarkMutation.mutate()}
-                disabled={bookmarkMutation.isPending}
-              >
-                <Bookmark className={`h-4 w-4 ${project.isBookmarked ? 'fill-gray-700' : ''}`} />
-              </Button>
+              
+              {/* Stats cards */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <Card className="overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500">Views</p>
+                      <p className="text-lg font-bold">{project.viewsCount || 0}</p>
+                    </div>
+                    <Eye className="h-5 w-5 text-blue-500" />
+                  </CardContent>
+                </Card>
+                
+                <Card className="overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500">Likes</p>
+                      <p className="text-lg font-bold">{project.likesCount || 0}</p>
+                    </div>
+                    <Heart className={`h-5 w-5 text-red-500 ${project.isLiked ? 'fill-red-500' : ''}`} />
+                  </CardContent>
+                </Card>
+                
+                <Card className="overflow-hidden transition-all hover:shadow-md hover:-translate-y-1">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500">Comments</p>
+                      <p className="text-lg font-bold">{project.commentsCount || 0}</p>
+                    </div>
+                    <MessageSquare className="h-5 w-5 text-green-500" />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Mobile buttons for visit/edit */}
+              <div className="flex space-x-3 mb-6 md:hidden">
+                <a 
+                  href={project.projectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-md text-sm font-medium flex items-center flex-1 justify-center"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" /> Visit Project
+                </a>
+                {isAuthor && (
+                  <Link href={`/projects/${id}/edit`} className="flex-1">
+                    <Button 
+                      variant="secondary"
+                      className="text-gray-700 px-4 py-2 rounded-md text-sm font-medium flex items-center w-full justify-center"
+                    >
+                      <Edit className="mr-2 h-4 w-4" /> Edit
+                    </Button>
+                  </Link>
+                )}
+              </div>
+              
+              {/* Project URL with copy button */}
+              <div className="flex items-center mb-6 bg-gray-50 rounded-md border border-gray-200 p-2 overflow-hidden">
+                <div className="text-xs text-gray-500 font-medium px-2">Project URL:</div>
+                <div className="text-sm text-gray-700 truncate flex-1">{project.projectUrl}</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-500 hover:text-primary"
+                  onClick={handleCopyProjectUrl}
+                >
+                  {projectUrlCopied ? (
+                    <span className="text-green-600 text-xs">Copied!</span>
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
           
           <Separator className="mb-6" />
           
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-foreground font-space mb-4">About this project</h2>
-            
-            {project.vibeCodingTool && (
-              <div className="mb-4 flex items-center">
-                <span className="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full border border-purple-400">
-                  <span className="font-bold">AI Tool:</span> {project.vibeCodingTool}
+          {/* About this project / Comments tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+            <TabsList className="mb-4">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="comments" className="flex items-center gap-1">
+                Comments 
+                <span className="bg-gray-100 text-gray-800 rounded-full text-xs px-2 ml-1">
+                  {project.commentsCount || 0}
                 </span>
-              </div>
-            )}
+              </TabsTrigger>
+            </TabsList>
             
-            <div className="prose prose-sm max-w-none text-gray-600">
-              <p className="mb-4">{project.description}</p>
-              
-              {project.longDescription && (
-                <div dangerouslySetInnerHTML={{ __html: project.longDescription }} />
-              )}
-            </div>
-          </div>
-          
-          <CommentSection />
+            <TabsContent value="details" className="focus-visible:outline-none focus-visible:ring-0">
+              <div className="prose prose-sm max-w-none text-gray-700">
+                <h2 className="text-xl font-bold text-foreground mb-4">About this project</h2>
+                <p className="mb-4">{project.description}</p>
+                
+                {project.longDescription && (
+                  <div className="mt-6" dangerouslySetInnerHTML={{ __html: project.longDescription }} />
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="comments" className="focus-visible:outline-none focus-visible:ring-0">
+              <CommentSection />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

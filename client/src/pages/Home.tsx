@@ -144,7 +144,7 @@ const Home = () => {
             <span className="block text-white font-space">AI-Powered Projects</span>
           </h1>
           <p className="mt-6 max-w-lg mx-auto text-center text-xl text-white sm:max-w-3xl">
-            A community for developers to share their vibe coding projects and get feedback from peers.
+            A community for people to share their vibe coding projects and get feedback from peers.
           </p>
           <div className="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
             <div className="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
@@ -397,7 +397,7 @@ const Home = () => {
       <div className="bg-accent/10 rounded-xl p-8 pb-10 text-center mb-16">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground font-space mb-4">Ready to showcase your AI project?</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-          Join our community of developers who are pushing the boundaries of what's possible with AI-assisted coding.
+          Join our community of people who are pushing the boundaries of what's possible with AI-assisted coding.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link href="/submit">

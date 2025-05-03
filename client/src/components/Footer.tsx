@@ -8,7 +8,7 @@ const Footer = () => {
           <div className="md:col-span-1">
             <img src="/ctrlaltvibelogo1.png" alt="Ctrl Alt Vibe Logo" className="h-9 w-auto" />
             <p className="mt-4 text-gray-500 max-w-md">
-              A community-driven platform for developers to showcase their AI-assisted coding projects and connect with like-minded creators.
+              A community-driven platform for people to showcase their AI-assisted coding projects and connect with like-minded creators.
             </p>
           </div>
           <div>
