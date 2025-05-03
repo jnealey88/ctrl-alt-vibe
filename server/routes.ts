@@ -73,6 +73,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
+  // Check if user is admin
+  const isAdmin = (req: Request) => {
+    return req.isAuthenticated() && req.user?.role === 'admin';
+  };
+  
   const apiPrefix = '/api';
   
   // Projects routes
@@ -615,6 +620,475 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching popular coding tools:', error);
       res.status(500).json({ message: 'Failed to fetch popular coding tools' });
+    }
+  });
+  
+  // Blog routes
+  
+  // Get blog posts with pagination and filtering
+  app.get(`${apiPrefix}/blog/posts`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt(req.query.page as string) || 1;
+      const offset = (page - 1) * limit;
+      const categoryId = req.query.category ? parseInt(req.query.category as string) : undefined;
+      const tagId = req.query.tag ? parseInt(req.query.tag as string) : undefined;
+      const authorId = req.query.author ? parseInt(req.query.author as string) : undefined;
+      
+      // Only admins can see unpublished posts
+      const publishedOnly = !isAdmin(req);
+      
+      const result = await storage.getBlogPosts({ 
+        limit, 
+        offset,
+        publishedOnly,
+        categoryId,
+        tagId,
+        authorId
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      res.status(500).json({ message: 'Failed to fetch blog posts' });
+    }
+  });
+  
+  // Get blog post by ID
+  app.get(`${apiPrefix}/blog/posts/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid post ID' });
+      }
+      
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Only allow admins to see unpublished posts
+      if (!post.published && !isAdmin(req)) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Increment view count
+      await storage.incrementBlogPostViews(id);
+      
+      res.json({ post });
+    } catch (error) {
+      console.error('Error fetching blog post:', error);
+      res.status(500).json({ message: 'Failed to fetch blog post' });
+    }
+  });
+  
+  // Get blog post by slug
+  app.get(`${apiPrefix}/blog/posts/slug/:slug`, async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      
+      const post = await storage.getBlogPostBySlug(slug);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Only allow admins to see unpublished posts
+      if (!post.published && !isAdmin(req)) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Increment view count
+      await storage.incrementBlogPostViews(post.id);
+      
+      res.json({ post });
+    } catch (error) {
+      console.error('Error fetching blog post by slug:', error);
+      res.status(500).json({ message: 'Failed to fetch blog post' });
+    }
+  });
+  
+  // Create blog post (admin only)
+  app.post(`${apiPrefix}/blog/posts`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const userId = req.user!.id;
+      
+      const postData = {
+        ...req.body,
+        authorId: userId
+      };
+      
+      // Create validation schema
+      const validatePostWithTags = z.object({
+        title: z.string().min(5).max(200),
+        slug: z.string().min(3).max(200).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }),
+        content: z.string().min(50),
+        excerpt: z.string().min(20).max(500).optional(),
+        imageUrl: z.string().url().optional(),
+        categoryId: z.number().optional().nullable(),
+        authorId: z.number(),
+        published: z.boolean().default(false),
+        tags: z.array(z.number()).optional()
+      });
+      
+      const validatedData = validatePostWithTags.parse(postData);
+      const tags = validatedData.tags || [];
+      // Remove tags from post data
+      const { tags: _, ...postDataWithoutTags } = validatedData;
+      
+      const post = await storage.createBlogPost(postDataWithoutTags, tags);
+      res.status(201).json({ post });
+    } catch (error) {
+      console.error('Error creating blog post:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: 'Failed to create blog post' });
+    }
+  });
+  
+  // Update blog post (admin only)
+  app.put(`${apiPrefix}/blog/posts/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid post ID' });
+      }
+      
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      // Validate update data
+      const validatePostUpdate = z.object({
+        title: z.string().min(5).max(200).optional(),
+        slug: z.string().min(3).max(200).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }).optional(),
+        content: z.string().min(50).optional(),
+        excerpt: z.string().min(20).max(500).optional().nullable(),
+        imageUrl: z.string().url().optional().nullable(),
+        categoryId: z.number().optional().nullable(),
+        published: z.boolean().optional(),
+        tags: z.array(z.number()).optional()
+      });
+      
+      const validatedData = validatePostUpdate.parse(req.body);
+      const tags = validatedData.tags;
+      // Remove tags from post data if present
+      const { tags: _, ...postDataWithoutTags } = validatedData;
+      
+      const updatedPost = await storage.updateBlogPost(id, postDataWithoutTags, tags);
+      
+      if (!updatedPost) {
+        return res.status(500).json({ message: 'Failed to update post' });
+      }
+      
+      res.json({ post: updatedPost });
+    } catch (error) {
+      console.error('Error updating blog post:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: 'Failed to update blog post' });
+    }
+  });
+  
+  // Delete blog post (admin only)
+  app.delete(`${apiPrefix}/blog/posts/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid post ID' });
+      }
+      
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      
+      const success = await storage.deleteBlogPost(id);
+      
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to delete post' });
+      }
+      
+      res.status(200).json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      res.status(500).json({ message: 'Failed to delete blog post' });
+    }
+  });
+  
+  // Get blog categories
+  app.get(`${apiPrefix}/blog/categories`, async (req, res) => {
+    try {
+      const categories = await storage.getBlogCategories();
+      res.json({ categories });
+    } catch (error) {
+      console.error('Error fetching blog categories:', error);
+      res.status(500).json({ message: 'Failed to fetch blog categories' });
+    }
+  });
+  
+  // Get blog category by ID
+  app.get(`${apiPrefix}/blog/categories/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid category ID' });
+      }
+      
+      const category = await storage.getBlogCategory(id);
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+      
+      res.json({ category });
+    } catch (error) {
+      console.error('Error fetching blog category:', error);
+      res.status(500).json({ message: 'Failed to fetch blog category' });
+    }
+  });
+  
+  // Create blog category (admin only)
+  app.post(`${apiPrefix}/blog/categories`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      // Validate category data
+      const validateCategory = z.object({
+        name: z.string().min(2).max(50),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }),
+        description: z.string().max(500).optional().nullable()
+      });
+      
+      const validatedData = validateCategory.parse(req.body);
+      
+      const category = await storage.createBlogCategory(validatedData);
+      res.status(201).json({ category });
+    } catch (error) {
+      console.error('Error creating blog category:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      res.status(500).json({ message: 'Failed to create blog category' });
+    }
+  });
+  
+  // Update blog category (admin only)
+  app.put(`${apiPrefix}/blog/categories/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid category ID' });
+      }
+      
+      // Validate category update data
+      const validateCategoryUpdate = z.object({
+        name: z.string().min(2).max(50).optional(),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }).optional(),
+        description: z.string().max(500).optional().nullable()
+      });
+      
+      const validatedData = validateCategoryUpdate.parse(req.body);
+      
+      const category = await storage.updateBlogCategory(id, validatedData);
+      
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+      
+      res.json({ category });
+    } catch (error) {
+      console.error('Error updating blog category:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      res.status(500).json({ message: 'Failed to update blog category' });
+    }
+  });
+  
+  // Delete blog category (admin only)
+  app.delete(`${apiPrefix}/blog/categories/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid category ID' });
+      }
+      
+      const success = await storage.deleteBlogCategory(id);
+      
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to delete category' });
+      }
+      
+      res.status(200).json({ message: 'Category deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting blog category:', error);
+      res.status(500).json({ message: 'Failed to delete blog category' });
+    }
+  });
+  
+  // Get blog tags
+  app.get(`${apiPrefix}/blog/tags`, async (req, res) => {
+    try {
+      const tags = await storage.getBlogTags();
+      res.json({ tags });
+    } catch (error) {
+      console.error('Error fetching blog tags:', error);
+      res.status(500).json({ message: 'Failed to fetch blog tags' });
+    }
+  });
+  
+  // Get blog tag by ID
+  app.get(`${apiPrefix}/blog/tags/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid tag ID' });
+      }
+      
+      const tag = await storage.getBlogTag(id);
+      if (!tag) {
+        return res.status(404).json({ message: 'Tag not found' });
+      }
+      
+      res.json({ tag });
+    } catch (error) {
+      console.error('Error fetching blog tag:', error);
+      res.status(500).json({ message: 'Failed to fetch blog tag' });
+    }
+  });
+  
+  // Create blog tag (admin only)
+  app.post(`${apiPrefix}/blog/tags`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      // Validate tag data
+      const validateTag = z.object({
+        name: z.string().min(2).max(50),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        })
+      });
+      
+      const validatedData = validateTag.parse(req.body);
+      
+      const tag = await storage.createBlogTag(validatedData);
+      res.status(201).json({ tag });
+    } catch (error) {
+      console.error('Error creating blog tag:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      res.status(500).json({ message: 'Failed to create blog tag' });
+    }
+  });
+  
+  // Update blog tag (admin only)
+  app.put(`${apiPrefix}/blog/tags/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid tag ID' });
+      }
+      
+      // Validate tag update data
+      const validateTagUpdate = z.object({
+        name: z.string().min(2).max(50).optional(),
+        slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, {
+          message: 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }).optional()
+      });
+      
+      const validatedData = validateTagUpdate.parse(req.body);
+      
+      const tag = await storage.updateBlogTag(id, validatedData);
+      
+      if (!tag) {
+        return res.status(404).json({ message: 'Tag not found' });
+      }
+      
+      res.json({ tag });
+    } catch (error) {
+      console.error('Error updating blog tag:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      res.status(500).json({ message: 'Failed to update blog tag' });
+    }
+  });
+  
+  // Delete blog tag (admin only)
+  app.delete(`${apiPrefix}/blog/tags/:id`, async (req, res) => {
+    try {
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: 'Unauthorized. Admin access required' });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid tag ID' });
+      }
+      
+      const success = await storage.deleteBlogTag(id);
+      
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to delete tag' });
+      }
+      
+      res.status(200).json({ message: 'Tag deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting blog tag:', error);
+      res.status(500).json({ message: 'Failed to delete blog tag' });
     }
   });
   

@@ -464,12 +464,12 @@ export type BlogPost = typeof blogPosts.$inferSelect & {
     username: string,
     avatarUrl?: string
   },
-  category?: {
+  category: {
     id: number,
     name: string,
     slug: string
-  },
-  tags?: string[]
+  } | null,
+  tags: string[]
 };
 
 export type BlogCategory = typeof blogCategories.$inferSelect;
