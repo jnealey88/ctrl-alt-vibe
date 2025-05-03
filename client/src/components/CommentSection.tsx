@@ -97,6 +97,47 @@ const CommentSection = () => {
       });
     },
   });
+  
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      await apiRequest("DELETE", `/api/comments/${commentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+      toast({
+        title: "Comment deleted",
+        description: "Your comment has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete comment. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const deleteReplyMutation = useMutation({
+    mutationFn: async (replyId: number) => {
+      await apiRequest("DELETE", `/api/replies/${replyId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
+      toast({
+        title: "Reply deleted",
+        description: "Your reply has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete reply. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleLikeComment = (commentId: number, isReply: boolean, currentlyLiked: boolean) => {
     likeMutation.mutate({ commentId, isReply, liked: !currentlyLiked });
@@ -113,6 +154,18 @@ const CommentSection = () => {
     e.preventDefault();
     if (replyText.trim() && replyingTo) {
       replyMutation.mutate();
+    }
+  };
+  
+  const handleDeleteComment = (commentId: number) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      deleteCommentMutation.mutate(commentId);
+    }
+  };
+  
+  const handleDeleteReply = (replyId: number) => {
+    if (window.confirm('Are you sure you want to delete this reply?')) {
+      deleteReplyMutation.mutate(replyId);
     }
   };
 
@@ -180,6 +233,15 @@ const CommentSection = () => {
           >
             <Heart className={`h-4 w-4 mr-1 ${comment.isLiked ? 'fill-secondary' : ''}`} /> {comment.likesCount || 0}
           </button>
+          {/* Show delete button only for the comment author */}
+          {user?.id === comment.author.id && (
+            <button 
+              className="text-gray-500 hover:text-red-500 flex items-center"
+              onClick={() => handleDeleteComment(comment.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </button>
+          )}
         </div>
 
         {/* Reply form */}
@@ -241,6 +303,15 @@ const CommentSection = () => {
                     >
                       <Heart className={`h-4 w-4 mr-1 ${reply.isLiked ? 'fill-secondary' : ''}`} /> {reply.likesCount || 0}
                     </button>
+                    {/* Show delete button only for the reply author */}
+                    {user?.id === reply.author.id && (
+                      <button 
+                        className="text-gray-500 hover:text-red-500 flex items-center"
+                        onClick={() => handleDeleteReply(reply.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
