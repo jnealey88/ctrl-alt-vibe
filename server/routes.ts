@@ -1363,6 +1363,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     index: false, // Don't serve directory indexes
     redirect: false // Don't redirect to trailing slash
   }));
+  
+  // Configure avatars with longer cache times (30 days) since they change less frequently
+  const avatarDir = path.join(process.cwd(), "uploads", "avatars");
+  app.use('/uploads/avatars', express.static(avatarDir, { 
+    maxAge: '30d', // Cache for 30 days
+    immutable: true, // Files with filename hashes never change
+    etag: true, // Generate ETags for better caching
+    lastModified: true, // Use Last-Modified headers
+    index: false, // Don't serve directory indexes
+    redirect: false // Don't redirect to trailing slash
+  }));
 
   const httpServer = createServer(app);
   return httpServer;

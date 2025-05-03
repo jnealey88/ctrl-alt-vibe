@@ -1,7 +1,7 @@
 /**
  * Profile routes for managing user profiles, skills, and activity
  */
-import { Express, Request, Response } from "express";
+import express, { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { isAuthenticated, checkAuthenticated } from "../middleware/auth";
 import { z } from "zod";
@@ -54,6 +54,8 @@ const upload = multer({
 
 export function registerProfileRoutes(app: Express) {
   const apiPrefix = '/api';
+  
+  // Note about static file serving: Avatars are served through the main static file handler in server/routes.ts
 
   // Get user profile with projects
   app.get(`${apiPrefix}/profile`, async (req, res) => {
@@ -115,24 +117,70 @@ export function registerProfileRoutes(app: Express) {
     }
   });
 
-  // Upload avatar
+  // Upload avatar with image optimization
   app.post(`${apiPrefix}/profile/avatar`, isAuthenticated, upload.single('avatar'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const userId = req.user!.id;
-      const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+      // Get the uploaded file path
+      const filePath = req.file.path;
+      const fileName = req.file.filename;
+      const fileExt = path.extname(fileName).toLowerCase();
+      
+      // Generate optimized file name
+      const optimizedFileName = `${path.basename(fileName, fileExt)}-optimized${fileExt}`;
+      const optimizedFilePath = path.join(uploadDir, optimizedFileName);
+      
+      try {
+        // Import sharp dynamically to ensure it's loaded
+        const sharp = require('sharp');
+        
+        // Process the image with Sharp - avatars should be square and optimized
+        await sharp(filePath)
+          .resize({
+            width: 400, // Reasonable size for avatars
+            height: 400, 
+            fit: 'cover', // Make it square
+            position: 'center' // Center the image for the crop
+          })
+          .jpeg({ quality: 85 }) // For JPG output
+          .png({ compressionLevel: 9 }) // For PNG output
+          .webp({ quality: 85 }) // For WebP output
+          .toFormat(fileExt === '.png' ? 'png' : fileExt === '.webp' ? 'webp' : 'jpeg')
+          .toFile(optimizedFilePath);
+            
+        // Remove the original file
+        fs.unlinkSync(filePath);
+        
+        const userId = req.user!.id;
+        const avatarUrl = `/uploads/avatars/${optimizedFileName}`;
 
-      // Update user with new avatar URL
-      const updatedUser = await storage.updateUser(userId, { avatarUrl });
+        // Update user with new avatar URL
+        const updatedUser = await storage.updateUser(userId, { avatarUrl });
 
-      if (!updatedUser) {
-        return res.status(404).json({ error: 'User not found' });
+        if (!updatedUser) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ avatarUrl });
+      } catch (optimizationError) {
+        console.error('Avatar optimization error:', optimizationError);
+        
+        // If optimization fails, use the original file
+        const userId = req.user!.id;
+        const avatarUrl = `/uploads/avatars/${fileName}`;
+        
+        // Update user with original avatar URL
+        const updatedUser = await storage.updateUser(userId, { avatarUrl });
+
+        if (!updatedUser) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ avatarUrl });
       }
-
-      res.json({ avatarUrl });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       res.status(500).json({ error: 'Failed to upload avatar' });
