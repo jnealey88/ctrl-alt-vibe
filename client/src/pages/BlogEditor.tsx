@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -126,7 +126,7 @@ const BlogEditor = () => {
     'align',
   ];
 
-  // Function to insert a table via a normal button
+  // Function to insert a table via a normal button (Quill 2.0 approach using ref)
   const handleInsertTable = () => {
     // Create table HTML
     const tableHTML = `
@@ -153,8 +153,22 @@ const BlogEditor = () => {
       </table>
     `;
     
-    // Set content with the table added
-    setContent(content + tableHTML);
+    // Get Quill editor instance from ref
+    const editor = quillRef.current?.getEditor();
+    if (editor) {
+      // Get current selection
+      const range = editor.getSelection();
+      const index = range ? range.index : editor.getLength();
+      
+      // Insert the table at cursor position
+      editor.clipboard.dangerouslyPasteHTML(index, tableHTML, 'user');
+      
+      // Move cursor after the table
+      editor.setSelection(index + 1, 0);
+    } else {
+      // Fallback if editor not available
+      setContent(content + tableHTML);
+    }
     
     // Notify user
     toast({
