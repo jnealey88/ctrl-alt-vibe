@@ -28,7 +28,10 @@ import {
 import TagSelector from "@/components/TagSelector";
 import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
-import { TiptapEditor } from "@/components/ui/tiptap-editor";
+
+// Import Quill editor components (using v2.0)
+import ReactQuill from 'react-quill';
+import 'quill/dist/quill.snow.css';
 
 // Modified schema for client-side validation
 const submitProjectSchema = z.object({
@@ -70,6 +73,7 @@ const SubmitProject = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quillRef = useRef<ReactQuill>(null);
   
   // Fetch AI coding tools from database
   const { tools, isLoading: isLoadingAiTools } = useCodingTools();
@@ -323,11 +327,25 @@ const SubmitProject = () => {
                   <FormItem>
                     <FormLabel>Detailed Description (Optional)</FormLabel>
                     <FormControl>
-                      <TiptapEditor
-                        content={field.value || ''}
+                      <ReactQuill
+                        ref={quillRef}
+                        theme="snow"
+                        value={field.value || ''}
                         onChange={field.onChange}
                         placeholder="Provide more details about your project, its features, technologies used, etc."
-                        className="min-h-[250px]"
+                        className="rounded-md overflow-hidden min-h-[250px]"
+                        modules={{
+                          toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link', 'image', 'code-block'],
+                            ['clean']
+                          ],
+                          clipboard: {
+                            matchVisual: false,
+                          }
+                        }}
                       />
                     </FormControl>
                     <p className="text-sm text-gray-500">Use the toolbar to format your content with headings, lists, code blocks, and more.</p>
