@@ -369,3 +369,27 @@
 .hover-card-animation {
   @apply transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl;
 }
+
+/* Profile page styles */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(127, 127, 127, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(127, 127, 127, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center center;
+}
+
+/* Skill badges */
+.skill-badge {
+  @apply py-1 px-3 rounded-full text-xs font-medium bg-gray-100 text-gray-800 transition-all
+         hover:bg-primary/10 hover:text-primary;
+}
+
+/* Animation for profile stats */
+@keyframes count-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-count-up {
+  animation: count-up 0.5s ease-out forwards;
+}

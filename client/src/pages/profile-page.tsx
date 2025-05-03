@@ -155,7 +155,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="mx-auto py-10">
       {/* Hidden file input for avatar upload */}
       <input
         type="file"
@@ -165,99 +165,280 @@ export default function ProfilePage() {
         accept="image/jpeg,image/png,image/gif,image/webp"
       />
 
-      {/* Profile header */}
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-10">
-        <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="relative group">
-            <Avatar className="w-24 h-24 border-2 border-primary/10">
-              {profileData?.user?.avatarUrl ? (
-                <AvatarImage src={profileData.user.avatarUrl} alt={user?.username || "User avatar"} />
-              ) : (
-                <AvatarFallback className="text-3xl font-bold uppercase bg-primary/20 text-primary">
-                  {user?.username?.charAt(0)}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <Button
-              size="icon"
-              variant="outline"
-              className="absolute -bottom-2 -right-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={triggerFileInput}
-              disabled={isAvatarUploading}
-            >
-              {isAvatarUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Camera className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{user?.username}</h1>
-            <p className="text-muted-foreground mb-2">{user?.email}</p>
-            {profileData?.user?.bio && (
-              <p className="max-w-md">{profileData.user.bio}</p>
-            )}
-            <div className="mt-3">
-              <Button 
-                onClick={() => setIsEditDialogOpen(true)}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                Edit Profile
-              </Button>
+      {/* Profile Hero Section - Behance Inspired */}
+      <div className="relative mb-10">
+        {/* Cover Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 h-64 rounded-xl overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        </div>
+        
+        <div className="container mx-auto relative">
+          {/* Profile Info Section */}
+          <div className="pt-16 pb-20 md:flex items-end gap-8">
+            {/* Avatar */}
+            <div className="relative z-10 mb-6 md:mb-0">
+              <div className="relative group">
+                <Avatar className="w-32 h-32 rounded-xl border-4 border-white shadow-lg">
+                  {profileData?.user?.avatarUrl ? (
+                    <AvatarImage src={profileData.user.avatarUrl} alt={user?.username || "User avatar"} />
+                  ) : (
+                    <AvatarFallback className="text-4xl font-bold uppercase bg-primary/20 text-primary">
+                      {user?.username?.charAt(0)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="absolute -bottom-2 -right-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                  onClick={triggerFileInput}
+                  disabled={isAvatarUploading}
+                >
+                  {isAvatarUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            
+            {/* User Info */}
+            <div className="flex-1">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{user?.username}</h1>
+                  <div className="text-muted-foreground flex items-center gap-2 mb-3">
+                    <Mail className="h-4 w-4" />
+                    {user?.email}
+                  </div>
+                  {profileData?.user?.bio && (
+                    <p className="max-w-2xl text-sm md:text-base leading-relaxed">{profileData.user.bio}</p>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+                  <Button 
+                    onClick={() => setIsEditDialogOpen(true)}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Edit Profile
+                  </Button>
+                  <ShareButton
+                    title={user?.username || "My Profile"}
+                    url={`/profile/${user?.username}`}
+                    contentType="profile"
+                    variant="outline"
+                    size="sm"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
+                  >
+                    {logoutMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging out...
+                      </>
+                    ) : (
+                      "Logout"
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <ShareButton
-            title={user?.username || "My Profile"}
-            url={`/profile/${user?.username}`}
-            contentType="profile"
-            variant="outline"
-            size="sm"
-          />
-          <Button asChild variant="outline">
-            <Link href="/submit">Submit Project</Link>
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-          >
-            {logoutMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging out...
-              </>
-            ) : (
-              "Logout"
-            )}
-          </Button>
-        </div>
       </div>
 
-      {/* Projects section */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6">My Projects</h2>
-        {profileData?.projects && profileData.projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profileData.projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-muted/40 rounded-lg">
-            <h3 className="text-xl font-medium mb-2">No projects yet</h3>
-            <p className="text-muted-foreground mb-6">
-              You haven&apos;t submitted any projects yet. Start showcasing your work!
-            </p>
-            <Button asChild>
-              <Link href="/submit">Submit Your First Project</Link>
+      <div className="container mx-auto">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Projects</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">{profileData?.projects?.length || 0}</h3>
+                </div>
+                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Grid className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Likes</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                    {profileData?.projects?.reduce((total, project) => total + (project.likesCount || 0), 0) || 0}
+                  </h3>
+                </div>
+                <div className="h-12 w-12 bg-red-50 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-red-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Views</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                    {profileData?.projects?.reduce((total, project) => total + (project.viewsCount || 0), 0) || 0}
+                  </h3>
+                </div>
+                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Eye className="h-6 w-6 text-blue-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8 flex justify-between items-center">
+          <h2 className="text-2xl font-bold">My Portfolio</h2>
+          <Button asChild>
+            <Link href="/submit" className="gap-2">
+              <Image className="h-4 w-4" />
+              Submit New Project
+            </Link>
+          </Button>
+        </div>
+
+        {/* Tabs Section - Behance Inspired */}
+        <Tabs defaultValue="projects" className="mb-8">
+          <TabsList className="grid w-full md:w-96 grid-cols-3">
+            <TabsTrigger value="projects" className="flex gap-2 items-center justify-center">
+              <Grid className="h-4 w-4" />
+              <span className="hidden sm:inline">Projects</span>
+            </TabsTrigger>
+            <TabsTrigger value="liked" className="flex gap-2 items-center justify-center">
+              <Heart className="h-4 w-4" />
+              <span className="hidden sm:inline">Liked</span>
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex gap-2 items-center justify-center">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Projects Tab */}
+          <TabsContent value="projects" className="mt-6">
+            {profileData?.projects && profileData.projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profileData.projects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                  <Image className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No projects yet</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  You haven&apos;t submitted any projects yet. Start showcasing your work to the community!
+                </p>
+                <Button asChild>
+                  <Link href="/submit">Submit Your First Project</Link>
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Liked Tab - Placeholder for now */}
+          <TabsContent value="liked" className="mt-6">
+            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                <Heart className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-medium mb-2">Liked Projects Coming Soon</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                We're working on showing your liked projects here. Check back soon!
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* Activity Tab - Placeholder for now */}
+          <TabsContent value="activity" className="mt-6">
+            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                <MessageSquare className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-medium mb-2">Activity Feed Coming Soon</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                This is where you'll see your comments, replies, and other activity. Stay tuned!
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Skills Section */}
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Skills & Tools</h2>
+            <Button variant="ghost" size="sm">
+              <span className="text-primary">Add Skills</span>
+              <ChevronDown className="h-4 w-4 ml-1 text-primary" />
             </Button>
           </div>
-        )}
+          <Card>
+            <CardContent className="py-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center">
+                    <Code className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Development</h4>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant="outline" className="bg-gray-50">React</Badge>
+                      <Badge variant="outline" className="bg-gray-50">TypeScript</Badge>
+                      <Badge variant="outline" className="bg-gray-50">Node.js</Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-purple-50 rounded-full flex items-center justify-center">
+                    <Brush className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Design</h4>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant="outline" className="bg-gray-50">UI/UX</Badge>
+                      <Badge variant="outline" className="bg-gray-50">Figma</Badge>
+                      <Badge variant="outline" className="bg-gray-50">Web Design</Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center">
+                    <Layout className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">AI Tools</h4>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant="outline" className="bg-gray-50">Midjourney</Badge>
+                      <Badge variant="outline" className="bg-gray-50">ChatGPT</Badge>
+                      <Badge variant="outline" className="bg-gray-50">Dall-E</Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Profile Edit Dialog */}
