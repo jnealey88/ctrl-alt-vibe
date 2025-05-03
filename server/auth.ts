@@ -391,13 +391,25 @@ export function setupAuth(app: Express) {
       if (user) {
         // User exists, log them in
         console.log("Existing user found with email:", email);
-        req.login(user, (err) => {
-          if (err) {
-            console.error("Login error:", err);
-            return res.status(500).json({ message: "Login failed" });
-          }
-          return res.status(200).json({ user, accessToken: access_token });
+        // Use a promise to handle the async login
+        const loginPromise = new Promise<void>((resolve, reject) => {
+          req.login(user, (err) => {
+            if (err) {
+              console.error("Login error:", err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
         });
+        
+        try {
+          await loginPromise;
+          // Successfully logged in
+          return res.status(200).json({ user, accessToken: access_token });
+        } catch (err) {
+          return res.status(500).json({ message: "Login failed" });
+        }
       } else {
         // Create a new user with Google data
         console.log("Creating new user for Google account:", email);
@@ -441,13 +453,25 @@ export function setupAuth(app: Express) {
         console.log("Creating new user with data:", { username, email });
         user = await createUser(newUser);
         
-        req.login(user, (err) => {
-          if (err) {
-            console.error("Registration error:", err);
-            return res.status(500).json({ message: "Registration failed" });
-          }
-          return res.status(201).json({ user, accessToken: access_token });
+        // Use a promise to handle the async login
+        const loginPromise = new Promise<void>((resolve, reject) => {
+          req.login(user, (err) => {
+            if (err) {
+              console.error("Registration error:", err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
         });
+        
+        try {
+          await loginPromise;
+          // Successfully logged in
+          return res.status(201).json({ user, accessToken: access_token });
+        } catch (err) {
+          return res.status(500).json({ message: "Registration failed" });
+        }
       }
     } catch (error) {
       console.error("Google OAuth callback error:", error);

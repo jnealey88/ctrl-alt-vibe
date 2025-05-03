@@ -57,14 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
           
           const userData = await res.json();
+          console.log("Server response:", userData);
           
-          // Update the user in the query cache
-          queryClient.setQueryData(["/api/user"], userData.user);
-          
-          toast({
-            title: "Google login successful",
-            description: `Welcome, ${userData.user.username}!`,
-          });
+          if (userData.user) {
+            // Update the user in the query cache
+            queryClient.setQueryData(["/api/user"], userData.user);
+            
+            toast({
+              title: "Google login successful",
+              description: `Welcome, ${userData.user.username}!`,
+            });
+          } else {
+            console.error("Invalid user data received:", userData);
+            throw new Error("Invalid response format from server");
+          }
           
           // Clean query parameters from URL without triggering a page reload
           window.history.replaceState({}, document.title, window.location.pathname);
