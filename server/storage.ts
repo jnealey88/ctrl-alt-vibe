@@ -15,6 +15,8 @@ import {
   blogCategories,
   blogTags,
   blogPostTags,
+  userSkills,
+  userActivity,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -57,7 +59,7 @@ const getProperCasedTag = (tagName: string): string => {
   return match || tagName;
 };
 
-import { userSkills, userActivity, activityTypes, type UserSkill } from "@shared/schema";
+import { activityTypes, type UserSkill } from "@shared/schema";
 
 export const storage = {
   // Blog methods
