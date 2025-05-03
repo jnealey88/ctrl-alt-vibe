@@ -7,6 +7,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import SEO from "@/components/SEO";
 import { BlogTag, BlogCategory } from "@shared/schema";
 
+// No need for additional window declarations
+
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Quill editor components (using v2.0)
 import ReactQuill from 'react-quill';
 import 'quill/dist/quill.snow.css';
-// Import Quill 2.0 styles (core styles are included in snow theme now)
-// Note: Quill 2.0 paths have changed slightly from 1.x
+// Note: Using Quill 2.0 with improved table handling
 
 const BlogEditor = () => {
   // Set up ref for Quill editor (Quill 2.0 approach)
@@ -98,7 +99,7 @@ const BlogEditor = () => {
     }
   };
 
-  // Basic editor configuration - avoiding custom modules for better stability
+  // Editor configuration with standard Quill 2.0 modules
   const quillModules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
@@ -113,6 +114,9 @@ const BlogEditor = () => {
     ],
     clipboard: {
       matchVisual: false,
+    },
+    keyboard: {
+      bindings: {}
     }
   };
   
