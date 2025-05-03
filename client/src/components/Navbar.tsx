@@ -50,7 +50,7 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center">
-                <span className="font-space font-bold text-2xl gradient-text">Ctrl Alt Vibe</span>
+                <img src="/ctrlaltvibelogo.png" alt="Ctrl Alt Vibe Logo" className="h-9 w-auto" />
               </Link>
             </div>
             
