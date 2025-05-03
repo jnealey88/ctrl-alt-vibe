@@ -954,7 +954,7 @@ const BlogEditor = () => {
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col sm:flex-row gap-3">
               <Button 
                 onClick={handleSubmit} 
                 className="w-full" 
@@ -972,6 +972,17 @@ const BlogEditor = () => {
                   </>
                 ) : isEditMode ? "Update Post" : "Publish Post"}
               </Button>
+              
+              {isEditMode && (
+                <Button 
+                  variant="outline" 
+                  type="button"
+                  className="w-full sm:w-auto"
+                  onClick={() => window.open(`/blog/post/${blogPostData?.post?.slug}`, '_blank')}
+                >
+                  <Eye className="mr-2 h-4 w-4" /> View Post
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </div>

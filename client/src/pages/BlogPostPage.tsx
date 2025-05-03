@@ -152,11 +152,6 @@ const BlogPostPage = () => {
                 )}
                 
                 <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
-                  <Eye className="h-4 w-4 text-primary" />
-                  {post.viewCount || 0} views
-                </div>
-                
-                <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
                   <MessageCircle className="h-4 w-4 text-primary" />
                   0 comments
                 </div>
@@ -165,7 +160,7 @@ const BlogPostPage = () => {
               {post.tldr && (
                 <div className="bg-gray-50 border-l-4 border-primary/50 p-4 mb-6 rounded-r-md">
                   <h2 className="text-base font-semibold mb-2 text-gray-700 flex items-center">
-                    <span className="mr-2">✨</span> TL;DR
+                    <span className="mr-2">✨</span> AI TL;DR
                   </h2>
                   <p className="italic text-gray-700">{post.tldr}</p>
                 </div>
