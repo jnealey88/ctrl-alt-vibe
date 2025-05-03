@@ -141,13 +141,18 @@ export function registerProfileRoutes(app: Express) {
 
   // Get user skills
   app.get(`${apiPrefix}/profile/skills`, async (req, res) => {
+    console.log('GET /api/profile/skills: Route handler called');
+    console.log('isAuthenticated:', req.isAuthenticated());
     try {
       if (req.isAuthenticated()) {
         const userId = req.user!.id;
+        console.log('User ID:', userId);
         const skills = await storage.getUserSkills(userId);
+        console.log('Skills fetched:', skills);
         res.json({ skills });
       } else {
         // Return an empty array if not authenticated
+        console.log('User not authenticated, returning empty skills array');
         res.json({ skills: [] });
       }
     } catch (error) {
