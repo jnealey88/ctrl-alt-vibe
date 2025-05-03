@@ -3,8 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { 
-  Loader2, Camera, User, Mail, FileText, Heart, Eye, Grid, Image, Bookmark,
-  Code, Brush, Layout, Award, ChevronDown, MessageSquare, CheckCircle, Settings
+  Loader2, Camera, Mail, FileText, Heart, Eye, Grid, Image, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -18,28 +17,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-
-type UserSkill = {
-  id: number;
-  userId: number;
-  category: string;
-  skill: string;
-  createdAt: string;
-};
-
-type UserActivity = {
-  id: number;
-  type: string;
-  createdAt: string;
-  targetData: any;
-};
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type ProfileResponse = {
   user: {
@@ -49,18 +29,6 @@ type ProfileResponse = {
     bio?: string;
     avatarUrl?: string;
   };
-  projects: Project[];
-};
-
-type SkillsResponse = {
-  skills: UserSkill[];
-};
-
-type ActivityResponse = {
-  activities: UserActivity[];
-};
-
-type LikedProjectsResponse = {
   projects: Project[];
 };
 
@@ -80,24 +48,6 @@ export default function ProfilePage() {
 
   const { data: profileData, isLoading: isLoadingProfile } = useQuery<ProfileResponse>({
     queryKey: ["/api/profile"],
-    queryFn: getQueryFn({ on401: "throw" }),
-    enabled: !!user,
-  });
-  
-  const { data: skillsData, isLoading: isLoadingSkills } = useQuery<SkillsResponse>({
-    queryKey: ["/api/profile/skills"],
-    queryFn: getQueryFn({ on401: "throw" }),
-    enabled: !!user,
-  });
-  
-  const { data: likedProjectsData, isLoading: isLoadingLiked } = useQuery<LikedProjectsResponse>({
-    queryKey: ["/api/profile/liked"],
-    queryFn: getQueryFn({ on401: "throw" }),
-    enabled: !!user,
-  });
-  
-  const { data: activitiesData, isLoading: isLoadingActivities } = useQuery<ActivityResponse>({
-    queryKey: ["/api/profile/activity"],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!user,
   });
@@ -191,7 +141,7 @@ export default function ProfilePage() {
     logoutMutation.mutate();
   };
 
-  if (isLoadingProfile || isLoadingSkills || isLoadingLiked || isLoadingActivities) {
+  if (isLoadingProfile) {
     return (
       <div className="container mx-auto py-10 flex justify-center items-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -361,187 +311,29 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        {/* Tabs Section - Behance Inspired */}
-        <Tabs defaultValue="projects" className="mb-8">
-          <TabsList className="grid w-full md:w-96 grid-cols-3">
-            <TabsTrigger value="projects" className="flex gap-2 items-center justify-center">
-              <Grid className="h-4 w-4" />
-              <span className="hidden sm:inline">Projects</span>
-            </TabsTrigger>
-            <TabsTrigger value="liked" className="flex gap-2 items-center justify-center">
-              <Heart className="h-4 w-4" />
-              <span className="hidden sm:inline">Liked</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex gap-2 items-center justify-center">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Activity</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Projects Tab */}
-          <TabsContent value="projects" className="mt-6">
-            {profileData?.projects && profileData.projects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {profileData.projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
+        {/* Projects Section */}
+        <h2 className="text-2xl font-bold mb-6">My Projects</h2>
+        <div className="mt-6">
+          {profileData?.projects && profileData.projects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {profileData.projects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                <Image className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
-                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
-                  <Image className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-medium mb-2">No projects yet</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  You haven&apos;t submitted any projects yet. Start showcasing your work to the community!
-                </p>
-                <Button asChild>
-                  <Link href="/submit">Submit Your First Project</Link>
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Liked Projects Tab */}
-          <TabsContent value="liked" className="mt-6">
-            {likedProjectsData?.projects && likedProjectsData.projects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {likedProjectsData.projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
-                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-medium mb-2">No Liked Projects Yet</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  You haven't liked any projects yet. Explore the community and show appreciation for projects you enjoy!
-                </p>
-                <Button asChild>
-                  <Link href="/">Explore Projects</Link>
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Activity Tab */}
-          <TabsContent value="activity" className="mt-6">
-            {activitiesData?.activities && activitiesData.activities.length > 0 ? (
-              <div className="space-y-4">
-                {activitiesData.activities.map((activity) => {
-                  const date = new Date(activity.createdAt);
-                  const formattedDate = new Intl.DateTimeFormat('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  }).format(date);
-                  
-                  return (
-                    <Card key={activity.id} className="overflow-hidden">
-                      <CardContent className="p-0">
-                        <div className="flex items-start border-l-4 border-primary pl-4 p-4">
-                          <div className="mr-4 mt-1">
-                            {activity.type === 'project_created' && <Grid className="h-5 w-5 text-primary" />}
-                            {activity.type === 'project_liked' && <Heart className="h-5 w-5 text-red-500" />}
-                            {activity.type === 'project_comment' && <MessageSquare className="h-5 w-5 text-blue-500" />}
-                            {activity.type === 'project_view' && <Eye className="h-5 w-5 text-green-500" />}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium">
-                                  {activity.type === 'project_created' && 'Created a new project'}
-                                  {activity.type === 'project_liked' && 'Liked a project'}
-                                  {activity.type === 'project_comment' && 'Commented on a project'}
-                                  {activity.type === 'project_view' && 'Viewed a project'}
-                                </p>
-                                {activity.targetData && (
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {activity.targetData.title || 'Untitled project'}
-                                  </p>
-                                )}
-                              </div>
-                              <span className="text-xs text-muted-foreground">{formattedDate}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
-                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-medium mb-2">No Activity Yet</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Your activity feed is currently empty. Interact with projects to see your activity here!
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        {/* Skills Section */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Skills & Tools</h2>
-            <Button variant="ghost" size="sm">
-              <span className="text-primary">Add Skills</span>
-              <ChevronDown className="h-4 w-4 ml-1 text-primary" />
-            </Button>
-          </div>
-          <Card>
-            <CardContent className="py-6">
-              {skillsData?.skills && skillsData.skills.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Group skills by category */}
-                  {Object.entries(skillsData.skills.reduce((acc, skill) => {
-                    if (!acc[skill.category]) {
-                      acc[skill.category] = [];
-                    }
-                    acc[skill.category].push(skill);
-                    return acc;
-                  }, {} as Record<string, UserSkill[]>)).map(([category, skills]) => (
-                    <div key={category} className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        {category.toLowerCase().includes('dev') ? (
-                          <Code className="h-5 w-5 text-primary" />
-                        ) : category.toLowerCase().includes('design') ? (
-                          <Brush className="h-5 w-5 text-purple-500" />
-                        ) : category.toLowerCase().includes('ai') ? (
-                          <Layout className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Award className="h-5 w-5 text-blue-500" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{category}</h4>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {skills.map(skill => (
-                            <Badge key={skill.id} variant="outline" className="bg-gray-50">
-                              {skill.skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-muted-foreground mb-4">No skills added yet.</p>
-                  <Button variant="outline" size="sm">
-                    Add Your First Skill
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <h3 className="text-xl font-medium mb-2">No projects yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                You haven&apos;t submitted any projects yet. Start showcasing your work to the community!
+              </p>
+              <Button asChild>
+                <Link href="/submit">Submit Your First Project</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

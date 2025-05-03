@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Heart, Eye, Grid, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
 import ProjectCard from "@/components/ProjectCard";
 import { ShareButton } from "@/components/ShareButton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type UserProfileResponse = {
   user: {
@@ -56,49 +57,130 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      {/* Profile header */}
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-10">
-        <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-3xl font-bold uppercase text-primary">
-            {profileData.user.username.charAt(0)}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{profileData.user.username}</h1>
-            <p className="text-muted-foreground mb-2">{profileData.user.email}</p>
-            {profileData.user.bio && (
-              <p className="max-w-md">{profileData.user.bio}</p>
-            )}
-          </div>
+    <div className="mx-auto py-10">
+      {/* Profile Hero Section - Behance Inspired */}
+      <div className="relative mb-10">
+        {/* Cover Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 h-64 rounded-xl overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         </div>
-        <div>
-          <ShareButton
-            title={profileData.user.username}
-            url={`/profile/${profileData.user.username}`}
-            contentType="profile"
-            variant="outline"
-            size="sm"
-          />
+        
+        <div className="container mx-auto relative">
+          {/* Profile Info Section */}
+          <div className="pt-16 pb-20 md:flex items-end gap-8">
+            {/* Avatar */}
+            <div className="relative z-10 mb-6 md:mb-0">
+              <Avatar className="w-32 h-32 rounded-xl border-4 border-white shadow-lg">
+                {profileData.user.avatarUrl ? (
+                  <AvatarImage src={profileData.user.avatarUrl} alt={profileData.user.username} />
+                ) : (
+                  <AvatarFallback className="text-4xl font-bold uppercase bg-primary/20 text-primary">
+                    {profileData.user.username.charAt(0)}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </div>
+            
+            {/* User Info */}
+            <div className="flex-1">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{profileData.user.username}</h1>
+                  <div className="text-muted-foreground flex items-center gap-2 mb-3">
+                    <Mail className="h-4 w-4" />
+                    {profileData.user.email}
+                  </div>
+                  {profileData.user.bio && (
+                    <p className="max-w-2xl text-sm md:text-base leading-relaxed">{profileData.user.bio}</p>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+                  <ShareButton
+                    title={profileData.user.username}
+                    url={`/profile/${profileData.user.username}`}
+                    contentType="profile"
+                    variant="outline"
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Projects section */}
-      <div>
+      <div className="container mx-auto">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Projects</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">{profileData.projects.length || 0}</h3>
+                </div>
+                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Grid className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Likes</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                    {profileData.projects.reduce((total, project) => total + (project.likesCount || 0), 0) || 0}
+                  </h3>
+                </div>
+                <div className="h-12 w-12 bg-red-50 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-red-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Views</p>
+                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                    {profileData.projects.reduce((total, project) => total + (project.viewsCount || 0), 0) || 0}
+                  </h3>
+                </div>
+                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Eye className="h-6 w-6 text-blue-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Projects Section */}
         <h2 className="text-2xl font-bold mb-6">Projects</h2>
-        {profileData.projects && profileData.projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profileData.projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-muted/40 rounded-lg">
-            <h3 className="text-xl font-medium mb-2">No projects yet</h3>
-            <p className="text-muted-foreground">
-              This user hasn't submitted any projects yet.
-            </p>
-          </div>
-        )}
+        <div className="mt-6">
+          {profileData.projects && profileData.projects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {profileData.projects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                <Image className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-medium mb-2">No projects yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                This user hasn't submitted any projects yet.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
