@@ -17,7 +17,6 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
-  Bell,
   Menu,
   Search,
   User,
@@ -128,11 +127,7 @@ const Navbar = () => {
                     </Button>
                   </Link>
                   
-                  <button className="ml-3 bg-white/80 hover:bg-white p-1.5 rounded-full text-gray-400 hover:text-gray-700 focus:outline-none transition-colors relative">
-                    <span className="sr-only">View notifications</span>
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-                  </button>
+                  {/* Notification bell removed until functionality is implemented */}
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
