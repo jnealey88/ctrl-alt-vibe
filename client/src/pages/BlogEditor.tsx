@@ -479,7 +479,7 @@ const BlogEditor = () => {
                     <Label htmlFor="editor" className="text-base font-medium">Content</Label>
                     <div className="border rounded-md mt-1.5 overflow-hidden">
                       {/* Editor Toolbar */}
-                      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
+                      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 p-2 border-b bg-background shadow-sm">
                         <Button 
                           type="button" 
                           variant="ghost" 
