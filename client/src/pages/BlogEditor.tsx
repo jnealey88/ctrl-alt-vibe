@@ -182,7 +182,7 @@ const BlogEditor = () => {
       setTitle(post.title || "");
       setContent(post.content || "");
       setSummary(post.summary || "");
-      setFeaturedImage(post.featuredImage || "");
+      setFeaturedImage(post.featured_image || ""); // Match the database column name
       setCategoryId(post.category?.id || null);
       
       if (post.tags && Array.isArray(post.tags) && tagsData?.tags) {
@@ -239,7 +239,7 @@ const BlogEditor = () => {
         slug, // Add the slug field
         content,
         summary,
-        featuredImage,
+        featured_image: featuredImage, // Match the database column name
         categoryId: categoryId || undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
       };
