@@ -730,7 +730,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: z.string().min(50),
         summary: z.string().min(10).max(500), // Required by the schema
         excerpt: z.string().min(20).max(500).optional(),
-        imageUrl: z.string().url().optional(),
+        featuredImage: z.string().url().optional(),
         categoryId: z.number().optional().nullable(),
         authorId: z.number(),
         published: z.boolean().default(false),
@@ -783,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: z.string().min(50).optional(),
         summary: z.string().min(10).max(500).optional(), // Required field in schema
         excerpt: z.string().min(20).max(500).optional().nullable(),
-        imageUrl: z.string().url().optional().nullable(),
+        featuredImage: z.string().url().optional().nullable(),
         categoryId: z.number().optional().nullable(),
         published: z.boolean().optional(),
         tags: z.array(z.number()).optional()
