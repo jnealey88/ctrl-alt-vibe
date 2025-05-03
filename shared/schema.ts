@@ -43,6 +43,26 @@ export const projects = pgTable("projects", {
   };
 });
 
+// Project views table for tracking monthly views
+export const projectViews = pgTable("project_views", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id).notNull(),
+  viewsCount: integer("views_count").default(0).notNull(),
+  month: integer("month").notNull(), // 1-12 for January-December
+  year: integer("year").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Index for finding views by project
+    projectIdIdx: index("project_views_project_id_idx").on(table.projectId),
+    // Unique constraint for one record per project per month
+    monthYearProjectIdx: unique("project_views_month_year_project_idx").on(table.projectId, table.month, table.year),
+    // Index for querying based on time period
+    yearMonthIdx: index("project_views_year_month_idx").on(table.year, table.month),
+  };
+});
+
 // Tags table
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
@@ -287,6 +307,11 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   likes: many(likes),
   bookmarks: many(bookmarks),
   shares: many(shares),
+  views: many(projectViews),
+}));
+
+export const projectViewsRelations = relations(projectViews, ({ one }) => ({
+  project: one(projects, { fields: [projectViews.projectId], references: [projects.id] }),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -538,3 +563,8 @@ export const userSkillInsertSchema = createInsertSchema(userSkills);
 export type UserSkill = typeof userSkills.$inferSelect;
 export type InsertUserSkill = z.infer<typeof userSkillInsertSchema>;
 export type UserActivity = typeof userActivity.$inferSelect;
+
+// Project views schema and types
+export const projectViewInsertSchema = createInsertSchema(projectViews);
+export type ProjectView = typeof projectViews.$inferSelect;
+export type InsertProjectView = z.infer<typeof projectViewInsertSchema>;

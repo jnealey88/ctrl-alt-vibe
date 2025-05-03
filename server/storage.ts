@@ -801,18 +801,37 @@ export const storage = {
   },
   
   async getTrendingProjects(limit: number = 4, currentUserId: number = 0): Promise<Project[]> {
+    // Get current date info for the current month
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
     
-    // Get projects using our trending algorithm
+    // Get projects using our trending algorithm based on monthly views
     // Apply privacy filter: only show public projects unless user is the author
+    
+    // First, find projects with views in the current month
+    const monthlyViewProjects = await db.select({
+      projectId: projectViews.projectId,
+      monthlyViews: projectViews.viewsCount
+    })
+    .from(projectViews)
+    .where(and(
+      eq(projectViews.month, currentMonth),
+      eq(projectViews.year, currentYear)
+    ));
+    
+    // Create a map of project IDs to their monthly views
+    const projectMonthlyViews = new Map<number, number>();
+    monthlyViewProjects.forEach(pv => {
+      projectMonthlyViews.set(pv.projectId, pv.monthlyViews);
+    });
+    
+    // Get all projects
     const projectsResults = await db.query.projects.findMany({
       where: or(
         eq(projects.isPrivate, false),
         currentUserId > 0 ? eq(projects.authorId, currentUserId) : undefined
       ),
-      limit,
-      orderBy: [
-        desc(sql`(${projects.viewsCount} * 0.7 + EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3)`)
-      ],
       with: {
         author: {
           columns: {
@@ -823,6 +842,23 @@ export const storage = {
         }
       }
     });
+    
+    // Sort projects by monthly views and recency
+    const sortedProjects = projectsResults.sort((a, b) => {
+      const aMonthlyViews = projectMonthlyViews.get(a.id) || 0;
+      const bMonthlyViews = projectMonthlyViews.get(b.id) || 0;
+      
+      // Calculate trending score: 70% monthly views + 30% recency
+      const aScore = aMonthlyViews * 0.7 + 
+        ((a.createdAt.getTime() - now.getTime() + 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000) * 3);
+      const bScore = bMonthlyViews * 0.7 + 
+        ((b.createdAt.getTime() - now.getTime() + 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000) * 3);
+      
+      return bScore - aScore; // Descending order
+    });
+    
+    // Limit the number of results
+    const limitedProjects = sortedProjects.slice(0, limit);
     
     // Convert to client-side Project type with all needed fields
     const projectsWithDetails = await Promise.all(
@@ -1090,9 +1126,46 @@ export const storage = {
   },
   
   async incrementProjectViews(projectId: number): Promise<void> {
-    await db.update(projects)
-      .set({ viewsCount: sql`${projects.viewsCount} + 1` })
-      .where(eq(projects.id, projectId));
+    // Get current date info
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+    const currentYear = now.getFullYear();
+    
+    // Start a transaction so both updates are atomic
+    await db.transaction(async (tx) => {
+      // Increment total project views
+      await tx.update(projects)
+        .set({ viewsCount: sql`${projects.viewsCount} + 1` })
+        .where(eq(projects.id, projectId));
+      
+      // Find or create a record for the current month
+      const existingRecord = await tx.query.projectViews.findFirst({
+        where: and(
+          eq(projectViews.projectId, projectId),
+          eq(projectViews.month, currentMonth),
+          eq(projectViews.year, currentYear)
+        )
+      });
+      
+      if (existingRecord) {
+        // Update existing month record
+        await tx.update(projectViews)
+          .set({ viewsCount: sql`${projectViews.viewsCount} + 1` })
+          .where(and(
+            eq(projectViews.projectId, projectId),
+            eq(projectViews.month, currentMonth),
+            eq(projectViews.year, currentYear)
+          ));
+      } else {
+        // Create new month record
+        await tx.insert(projectViews).values({
+          projectId,
+          month: currentMonth,
+          year: currentYear,
+          viewsCount: 1
+        });
+      }
+    });
   },
 
   // Project sharing
