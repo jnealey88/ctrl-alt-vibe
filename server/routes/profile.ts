@@ -142,6 +142,11 @@ export function registerProfileRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to fetch skills data' });
     }
   });
+  
+  // Fallback route for skills when not authenticated
+  app.get(`${apiPrefix}/profile/skills`, (req, res) => {
+    res.json({ skills: [] });
+  });
 
   // Add a skill
   app.post(`${apiPrefix}/profile/skills`, isAuthenticated, async (req, res) => {
@@ -206,6 +211,11 @@ export function registerProfileRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to fetch activity data' });
     }
   });
+  
+  // Fallback route for activity when not authenticated
+  app.get(`${apiPrefix}/profile/activity`, (req, res) => {
+    res.json({ activities: [] });
+  });
 
   // Get user's liked projects
   app.get(`${apiPrefix}/profile/liked`, isAuthenticated, async (req, res) => {
@@ -217,6 +227,11 @@ export function registerProfileRoutes(app: Express) {
       console.error('Error fetching liked projects:', error);
       res.status(500).json({ error: 'Failed to fetch liked projects' });
     }
+  });
+  
+  // Fallback route for liked projects when not authenticated
+  app.get(`${apiPrefix}/profile/liked`, (req, res) => {
+    res.json({ projects: [] });
   });
 
   // View another user's profile
