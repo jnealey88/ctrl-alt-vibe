@@ -717,8 +717,15 @@ export const storage = {
   },
   
   async getFeaturedProject(currentUserId: number = 0): Promise<Project | null> {
+    // Only show public projects or projects owned by the current user
     const featuredProject = await db.query.projects.findFirst({
-      where: eq(projects.featured, true),
+      where: and(
+        eq(projects.featured, true),
+        or(
+          eq(projects.isPrivate, false),
+          currentUserId > 0 ? eq(projects.authorId, currentUserId) : undefined
+        )
+      ),
       orderBy: [desc(projects.createdAt)],
       with: {
         author: {
@@ -792,7 +799,12 @@ export const storage = {
   async getTrendingProjects(limit: number = 4, currentUserId: number = 0): Promise<Project[]> {
     
     // Get projects using our trending algorithm
+    // Apply privacy filter: only show public projects unless user is the author
     const projectsResults = await db.query.projects.findMany({
+      where: or(
+        eq(projects.isPrivate, false),
+        currentUserId > 0 ? eq(projects.authorId, currentUserId) : undefined
+      ),
       limit,
       orderBy: [
         desc(sql`(${projects.viewsCount} * 0.7 + EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3)`)
@@ -873,8 +885,14 @@ export const storage = {
   },
   
   async getProjectById(id: number, currentUserId: number = 0): Promise<Project | null> {
+    // Get project by ID but respect privacy settings
     const project = await db.query.projects.findFirst({
-      where: eq(projects.id, id),
+      where: and(
+        eq(projects.id, id)
+        // Note: We don't filter by privacy here because we want to return the project
+        // even if it's private, and let the caller decide whether to show it or not
+        // based on ownership check in the route handler
+      ),
       with: {
         author: {
           columns: {
