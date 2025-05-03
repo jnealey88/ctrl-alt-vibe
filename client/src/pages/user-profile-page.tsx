@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
 import ProjectCard from "@/components/ProjectCard";
+import { ShareButton } from "@/components/ShareButton";
 
 type UserProfileResponse = {
   user: {
@@ -69,6 +70,15 @@ export default function UserProfilePage() {
               <p className="max-w-md">{profileData.user.bio}</p>
             )}
           </div>
+        </div>
+        <div>
+          <ShareButton
+            title={profileData.user.username}
+            url={`/profile/${profileData.user.username}`}
+            contentType="profile"
+            variant="outline"
+            size="sm"
+          />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { Loader2, Camera, User, Mail, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import ProjectCard from "@/components/ProjectCard";
+import { ShareButton } from "@/components/ShareButton";
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -203,6 +204,13 @@ export default function ProfilePage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
+          <ShareButton
+            title={user?.username || "My Profile"}
+            url={`/profile/${user?.username}`}
+            contentType="profile"
+            variant="outline"
+            size="sm"
+          />
           <Button asChild variant="outline">
             <Link href="/submit">Submit Project</Link>
           </Button>
