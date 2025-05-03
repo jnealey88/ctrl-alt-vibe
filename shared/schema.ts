@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -164,6 +164,77 @@ export const shares = pgTable("shares", {
   };
 });
 
+// Blog categories schema
+export const blogCategories = pgTable("blog_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    nameIdx: index("blog_categories_name_idx").on(table.name),
+    slugIdx: index("blog_categories_slug_idx").on(table.slug),
+  };
+});
+
+// Blog posts schema
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: varchar("slug", { length: 200 }).notNull().unique(),
+  summary: text("summary").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  published: boolean("published").default(false).notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
+  categoryId: integer("category_id").references(() => blogCategories.id),
+  viewCount: integer("view_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  publishedAt: timestamp("published_at"),
+}, (table) => {
+  return {
+    titleIdx: index("blog_posts_title_idx").on(table.title),
+    slugIdx: index("blog_posts_slug_idx").on(table.slug),
+    authorIdx: index("blog_posts_author_idx").on(table.authorId),
+    categoryIdx: index("blog_posts_category_idx").on(table.categoryId),
+    publishedIdx: index("blog_posts_published_idx").on(table.published),
+    createdAtIdx: index("blog_posts_created_at_idx").on(table.createdAt),
+    publishedAtIdx: index("blog_posts_published_at_idx").on(table.publishedAt),
+  };
+});
+
+// Blog tags schema
+export const blogTags = pgTable("blog_tags", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    nameIdx: index("blog_tags_name_idx").on(table.name),
+    slugIdx: index("blog_tags_slug_idx").on(table.slug),
+  };
+});
+
+// Blog post tags relationship
+export const blogPostTags = pgTable("blog_post_tags", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => blogPosts.id).notNull(),
+  tagId: integer("tag_id").references(() => blogTags.id).notNull(),
+}, (table) => {
+  return {
+    postIdIdx: index("blog_post_tags_post_id_idx").on(table.postId),
+    tagIdIdx: index("blog_post_tags_tag_id_idx").on(table.tagId),
+    // Composite index for when we query by both
+    postTagIdx: index("blog_post_tags_unique_idx").on(table.postId, table.tagId),
+  };
+});
+
+// Unique constraint is handled within the table definition using (t) => ({ ... })
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
@@ -172,6 +243,39 @@ export const usersRelations = relations(users, ({ many }) => ({
   likes: many(likes),
   bookmarks: many(bookmarks),
   shares: many(shares),
+  blogPosts: many(blogPosts),
+}));
+
+// Blog relations
+export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [blogPosts.authorId],
+    references: [users.id],
+  }),
+  category: one(blogCategories, {
+    fields: [blogPosts.categoryId],
+    references: [blogCategories.id],
+  }),
+  tags: many(blogPostTags),
+}));
+
+export const blogCategoriesRelations = relations(blogCategories, ({ many }) => ({
+  posts: many(blogPosts),
+}));
+
+export const blogTagsRelations = relations(blogTags, ({ many }) => ({
+  postTags: many(blogPostTags),
+}));
+
+export const blogPostTagsRelations = relations(blogPostTags, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogPostTags.postId],
+    references: [blogPosts.id],
+  }),
+  tag: one(blogTags, {
+    fields: [blogPostTags.tagId],
+    references: [blogTags.id],
+  }),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -338,3 +442,39 @@ export type InsertReply = z.infer<typeof replyInsertSchema>;
 export type InsertCodingTool = z.infer<typeof codingToolInsertSchema>;
 export type InsertShare = z.infer<typeof shareInsertSchema>;
 export type CodingToolFromDB = typeof codingTools.$inferSelect;
+
+// Blog schemas
+export const blogPostInsertSchema = createInsertSchema(blogPosts, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  summary: (schema) => schema.min(10, "Summary must be at least 10 characters"),
+  content: (schema) => schema.min(50, "Content must be at least 50 characters"),
+});
+
+export const blogCategoryInsertSchema = createInsertSchema(blogCategories, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+});
+
+export const blogTagInsertSchema = createInsertSchema(blogTags, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+});
+
+export type BlogPost = typeof blogPosts.$inferSelect & {
+  author: {
+    id: number,
+    username: string,
+    avatarUrl?: string
+  },
+  category?: {
+    id: number,
+    name: string,
+    slug: string
+  },
+  tags?: string[]
+};
+
+export type BlogCategory = typeof blogCategories.$inferSelect;
+export type BlogTag = typeof blogTags.$inferSelect;
+
+export type InsertBlogPost = z.infer<typeof blogPostInsertSchema>;
+export type InsertBlogCategory = z.infer<typeof blogCategoryInsertSchema>;
+export type InsertBlogTag = z.infer<typeof blogTagInsertSchema>;
