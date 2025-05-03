@@ -56,22 +56,30 @@ export function registerProfileRoutes(app: Express) {
   const apiPrefix = '/api';
 
   // Get user profile with projects
-  app.get(`${apiPrefix}/profile`, isAuthenticated, async (req, res) => {
+  app.get(`${apiPrefix}/profile`, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const user = req.user;
-      
-      // Get user's projects
-      const { projects } = await storage.getProjects({ 
-        user: userId.toString(), 
-        currentUserId: userId,
-        limit: 100 // Get all user projects
-      });
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const user = req.user;
+        
+        // Get user's projects
+        const { projects } = await storage.getProjects({ 
+          user: userId.toString(), 
+          currentUserId: userId,
+          limit: 100 // Get all user projects
+        });
 
-      res.json({
-        user,
-        projects
-      });
+        res.json({
+          user,
+          projects
+        });
+      } else {
+        // Return an empty response if not authenticated
+        res.json({
+          user: null,
+          projects: []
+        });
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       res.status(500).json({ error: 'Failed to fetch profile data' });
@@ -132,20 +140,20 @@ export function registerProfileRoutes(app: Express) {
   });
 
   // Get user skills
-  app.get(`${apiPrefix}/profile/skills`, isAuthenticated, async (req, res) => {
+  app.get(`${apiPrefix}/profile/skills`, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const skills = await storage.getUserSkills(userId);
-      res.json({ skills });
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const skills = await storage.getUserSkills(userId);
+        res.json({ skills });
+      } else {
+        // Return an empty array if not authenticated
+        res.json({ skills: [] });
+      }
     } catch (error) {
       console.error('Error fetching skills:', error);
       res.status(500).json({ error: 'Failed to fetch skills data' });
     }
-  });
-  
-  // Fallback route for skills when not authenticated
-  app.get(`${apiPrefix}/profile/skills`, (req, res) => {
-    res.json({ skills: [] });
   });
 
   // Add a skill
@@ -200,38 +208,38 @@ export function registerProfileRoutes(app: Express) {
   });
 
   // Get user activity
-  app.get(`${apiPrefix}/profile/activity`, isAuthenticated, async (req, res) => {
+  app.get(`${apiPrefix}/profile/activity`, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const activities = await storage.getUserActivities(userId, limit);
-      res.json({ activities });
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const activities = await storage.getUserActivities(userId, limit);
+        res.json({ activities });
+      } else {
+        // Return an empty array if not authenticated
+        res.json({ activities: [] });
+      }
     } catch (error) {
       console.error('Error fetching activities:', error);
       res.status(500).json({ error: 'Failed to fetch activity data' });
     }
   });
-  
-  // Fallback route for activity when not authenticated
-  app.get(`${apiPrefix}/profile/activity`, (req, res) => {
-    res.json({ activities: [] });
-  });
 
   // Get user's liked projects
-  app.get(`${apiPrefix}/profile/liked`, isAuthenticated, async (req, res) => {
+  app.get(`${apiPrefix}/profile/liked`, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const likedProjects = await storage.getUserLikedProjects(userId, userId);
-      res.json({ projects: likedProjects });
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const likedProjects = await storage.getUserLikedProjects(userId, userId);
+        res.json({ projects: likedProjects });
+      } else {
+        // Return an empty array if not authenticated
+        res.json({ projects: [] });
+      }
     } catch (error) {
       console.error('Error fetching liked projects:', error);
       res.status(500).json({ error: 'Failed to fetch liked projects' });
     }
-  });
-  
-  // Fallback route for liked projects when not authenticated
-  app.get(`${apiPrefix}/profile/liked`, (req, res) => {
-    res.json({ projects: [] });
   });
 
   // View another user's profile
