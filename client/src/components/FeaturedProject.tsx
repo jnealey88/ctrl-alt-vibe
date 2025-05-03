@@ -67,7 +67,7 @@ const FeaturedProject = ({ project }: FeaturedProjectProps) => {
             </span>
             <h3 className="mt-3 text-2xl font-bold text-foreground font-space">{project.title}</h3>
             <p className="text-gray-500 text-sm mb-4">
-              by <Link href={`/?user=${project.author.username}`}><a className="text-primary hover:underline">{project.author.username}</a></Link> • {formatDate(project.createdAt)}
+              by <Link href={`/?user=${project.author.username}`} className="text-primary hover:underline">{project.author.username}</Link> • {formatDate(project.createdAt)}
             </p>
           </div>
           <button
@@ -84,10 +84,8 @@ const FeaturedProject = ({ project }: FeaturedProjectProps) => {
         <p className="text-gray-600 mb-6">{project.description}</p>
         <div className="flex flex-wrap gap-2 mb-6">
           {project.tags.map((tag) => (
-            <Link key={tag} href={`/?tag=${tag}`}>
-              <a className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
-                {tag}
-              </a>
+            <Link key={tag} href={`/?tag=${tag}`} className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
+              {tag}
             </Link>
           ))}
         </div>
@@ -114,9 +112,9 @@ const FeaturedProject = ({ project }: FeaturedProjectProps) => {
             Visit Project
           </a>
           <Link href={`/projects/${project.id}`}>
-            <a className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+            <span className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
               Read More
-            </a>
+            </span>
           </Link>
         </div>
       </div>
