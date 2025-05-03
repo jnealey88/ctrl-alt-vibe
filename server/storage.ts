@@ -57,6 +57,8 @@ const getProperCasedTag = (tagName: string): string => {
   return match || tagName;
 };
 
+import { userSkills, userActivity, activityTypes, type UserSkill } from "@shared/schema";
+
 export const storage = {
   // Blog methods
   async getBlogCategories(): Promise<BlogCategory[]> {
