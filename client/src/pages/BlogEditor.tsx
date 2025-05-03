@@ -497,7 +497,30 @@ const BlogEditor = () => {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-medium mb-2">{activeTab === "content" ? "Content Editor" : "Preview"}</CardTitle>
+              <div className="flex justify-between items-center mb-2">
+                <CardTitle className="text-lg font-medium">{activeTab === "content" ? "Content Editor" : "Preview"}</CardTitle>
+                {activeTab === "content" && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleInsertTable}
+                    type="button"
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-table">
+                      <path d="M9 3H5a2 2 0 0 0-2 2v4"/>
+                      <path d="M9 3h10a2 2 0 0 1 2 2v4"/>
+                      <path d="M9 21h-4a2 2 0 0 1-2-2v-4"/>
+                      <path d="M9 21h10a2 2 0 0 0 2-2v-4"/>
+                      <path d="M3 9h18"/>
+                      <path d="M3 15h18"/>
+                      <path d="M9 3v18"/>
+                      <path d="M15 3v18"/>
+                    </svg>
+                    Insert Table
+                  </Button>
+                )}
+              </div>
               <div className="flex space-x-2 mt-2">
                 <Button
                   variant={activeTab === "content" ? "default" : "outline"}
@@ -547,26 +570,8 @@ const BlogEditor = () => {
                   </div>
                   
                   <div>
-                    <div className="flex justify-between items-center mb-1.5">
+                    <div className="mb-1.5">
                       <Label htmlFor="editor" className="text-base font-medium">Content</Label>
-                      <Button 
-                        type="button" 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={handleInsertTable}
-                        className="flex items-center text-xs"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" 
-                             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" 
-                             strokeLinejoin="round" className="mr-1.5">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="3" y1="9" x2="21" y2="9"></line>
-                          <line x1="3" y1="15" x2="21" y2="15"></line>
-                          <line x1="9" y1="3" x2="9" y2="21"></line>
-                          <line x1="15" y1="3" x2="15" y2="21"></line>
-                        </svg>
-                        Insert Table
-                      </Button>
                     </div>
                     <div className="mt-1.5 sticky top-4 z-10">
                       {/* ReactQuill Editor with Quill 2.0 */}

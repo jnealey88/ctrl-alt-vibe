@@ -113,9 +113,11 @@
 .ql-editor table {
   border-collapse: collapse;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   border: 1px solid #e2e8f0;
   table-layout: fixed;
+  border-radius: 0.25rem;
+  overflow: hidden;
 }
 
 .ql-editor table td,
@@ -125,15 +127,28 @@
   text-align: left;
   min-width: 2rem;
   position: relative;
+  vertical-align: top;
 }
 
 .ql-editor table th {
   background-color: #f1f5f9;
   font-weight: bold;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .ql-editor table tr:nth-child(even) {
   background-color: #f8fafc;
+}
+
+.ql-editor table tr:hover {
+  background-color: rgba(236, 72, 153, 0.05);
+}
+
+/* Interactive table cell styles */
+.ql-editor table td:focus-within,
+.ql-editor table th:focus-within {
+  outline: 2px solid rgba(14, 120, 249, 0.3);
+  outline-offset: -2px;
 }
 
 /* Table resize handle styles */
@@ -149,6 +164,7 @@
   z-index: 1;
 }
 
+/* Dark mode table styles */
 .dark .ql-editor table {
   border-color: #374151;
 }
@@ -160,10 +176,15 @@
 
 .dark .ql-editor table th {
   background-color: #1f2937;
+  border-bottom-color: #374151;
 }
 
 .dark .ql-editor table tr:nth-child(even) {
   background-color: #111827;
+}
+
+.dark .ql-editor table tr:hover {
+  background-color: rgba(236, 72, 153, 0.1);
 }
 
 /* Dark mode Quill button styles */
