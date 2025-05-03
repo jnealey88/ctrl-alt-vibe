@@ -380,7 +380,7 @@ const BlogEditor = () => {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Uncategorized</SelectItem>
+                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
                     {categoriesData?.categories?.map((category: BlogCategory) => (
                       <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
