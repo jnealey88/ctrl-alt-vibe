@@ -17,6 +17,7 @@ import {
   blogPostTags,
   userSkills,
   userActivity,
+  projectViews,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -33,7 +34,9 @@ import type {
   BlogTag,
   InsertBlogPost,
   InsertBlogCategory,
-  InsertBlogTag
+  InsertBlogTag,
+  ProjectView,
+  InsertProjectView
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -629,12 +632,15 @@ export const storage = {
         sortOptions = { orderBy: [desc(projects.createdAt)] };
         break;
       default: // trending
-        // Simple trending algorithm - focusing just on views and recency
+        // For trending, we'll retrieve monthly views first, then do custom sorting in JavaScript
+        // This is necessary because we need to join data from projectViews table
+        
+        // Get sort data normally now; we'll handle custom sorting after the query
         sortOptions = { 
-          orderBy: [
-            desc(sql`(${projects.viewsCount} * 0.7 + EXTRACT(EPOCH FROM (${projects.createdAt} - NOW() + INTERVAL '30 days'))/86400 * 3)`)
-          ] 
+          orderBy: [desc(projects.createdAt)]
         };
+        
+        // We'll apply the trending algorithm after query using data from projectViews
     }
     
     let projectsResults = await db.query.projects.findMany({
@@ -712,6 +718,49 @@ export const storage = {
         } as Project;
       })
     );
+    
+    // Apply special trending sort for trending option
+    if (sort === "trending") {
+      // Get current date info for the current month
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      
+      // Get monthly views for all projects
+      const monthlyViewProjects = await db.select({
+        projectId: projectViews.projectId,
+        monthlyViews: projectViews.viewsCount
+      })
+      .from(projectViews)
+      .where(and(
+        eq(projectViews.month, currentMonth),
+        eq(projectViews.year, currentYear)
+      ));
+      
+      // Create a map of project IDs to their monthly views
+      const projectMonthlyViews = new Map<number, number>();
+      monthlyViewProjects.forEach(pv => {
+        projectMonthlyViews.set(pv.projectId, pv.monthlyViews);
+      });
+      
+      // Sort projects based on trending algorithm (monthly views and recency)
+      projectsWithDetails.sort((a, b) => {
+        const aMonthlyViews = projectMonthlyViews.get(a.id) || 0;
+        const bMonthlyViews = projectMonthlyViews.get(b.id) || 0;
+        
+        // Parse dates back from ISO strings
+        const aDate = new Date(a.createdAt);
+        const bDate = new Date(b.createdAt);
+        
+        // Calculate trending score: 70% monthly views + 30% recency
+        const aScore = aMonthlyViews * 0.7 + 
+          ((aDate.getTime() - now.getTime() + 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000) * 3);
+        const bScore = bMonthlyViews * 0.7 + 
+          ((bDate.getTime() - now.getTime() + 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000) * 3);
+        
+        return bScore - aScore; // Descending order
+      });
+    }
     
     return {
       projects: projectsWithDetails,
@@ -862,7 +911,7 @@ export const storage = {
     
     // Convert to client-side Project type with all needed fields
     const projectsWithDetails = await Promise.all(
-      projectsResults.map(async (project) => {
+      limitedProjects.map(async (project) => {
         // Get tags for this project
         const projectTagsResult = await db.query.projectTags.findMany({
           where: eq(projectTags.projectId, project.id),
