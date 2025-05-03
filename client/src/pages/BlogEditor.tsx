@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, ArrowLeft, Info } from "lucide-react";
+import { Loader2, Save, ArrowLeft, Info, Image as ImageIcon, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Import TipTap components
@@ -41,6 +41,12 @@ const BlogEditor = () => {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("content");
+  
+  // Category and tag creation state
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newTagName, setNewTagName] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   // TipTap editor
   const editor = useEditor({
@@ -189,6 +195,103 @@ const BlogEditor = () => {
     }
   };
 
+  // Create category mutation
+  const createCategoryMutation = useMutation({
+    mutationFn: async (categoryData: any) => {
+      return apiRequest("POST", "/api/blog/categories", categoryData).then(res => res.json());
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Category Created",
+        description: "New category has been created successfully."
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/categories"] });
+      setNewCategoryName("");
+      if (data?.category?.id) {
+        setCategoryId(data.category.id);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create category: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Create tag mutation
+  const createTagMutation = useMutation({
+    mutationFn: async (tagData: any) => {
+      return apiRequest("POST", "/api/blog/tags", tagData).then(res => res.json());
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Tag Created",
+        description: "New tag has been created successfully."
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/tags"] });
+      setNewTagName("");
+      if (data?.tag?.id) {
+        setSelectedTags(prev => [...prev, data.tag.id]);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create tag: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Handle creating a new category
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    setIsCreatingCategory(true);
+    try {
+      const slug = newCategoryName
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
+      await createCategoryMutation.mutateAsync({
+        name: newCategoryName.trim(),
+        slug
+      });
+    } catch (error) {
+      console.error("Error creating category:", error);
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  // Handle creating a new tag
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) return;
+    
+    setIsCreatingTag(true);
+    try {
+      const slug = newTagName
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
+      await createTagMutation.mutateAsync({
+        name: newTagName.trim(),
+        slug
+      });
+    } catch (error) {
+      console.error("Error creating tag:", error);
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
+
+  // Handle toggle tag selection
   const handleTagToggle = (tagId: number) => {
     setSelectedTags(prev => {
       if (prev.includes(tagId)) {
@@ -348,55 +451,155 @@ const BlogEditor = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="featuredImage" className="text-sm font-medium">Featured Image URL</Label>
-                <Input 
-                  id="featuredImage" 
-                  placeholder="https://example.com/image.jpg" 
-                  value={featuredImage} 
-                  onChange={(e) => setFeaturedImage(e.target.value)}
-                  className="mt-1.5"
-                />
-                {featuredImage && (
-                  <div className="mt-2 rounded-md overflow-hidden border">
-                    <img 
-                      src={featuredImage} 
-                      alt="Featured image preview" 
-                      className="w-full h-32 object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://placehold.co/600x400/EEE/999?text=Image+Error";
-                      }}
-                    />
+                <Label htmlFor="featuredImage" className="text-sm font-medium">Featured Image</Label>
+                <div className="mt-1.5 space-y-3">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input 
+                        id="featuredImage" 
+                        placeholder="https://example.com/image.jpg" 
+                        value={featuredImage} 
+                        onChange={(e) => setFeaturedImage(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Label 
+                        htmlFor="imageUpload" 
+                        className="cursor-pointer flex items-center justify-center h-10 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
+                        Upload
+                      </Label>
+                      <input
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          // Check file size (max 5MB)
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast({
+                              title: "Error",
+                              description: "Image size should be less than 5MB",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          
+                          try {
+                            setIsSubmitting(true);
+                            
+                            // Create FormData
+                            const formData = new FormData();
+                            formData.append('image', file);
+                            
+                            // Upload the image
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            });
+                            
+                            if (!response.ok) {
+                              throw new Error('Failed to upload image');
+                            }
+                            
+                            const data = await response.json();
+                            setFeaturedImage(data.imageUrl);
+                            
+                            toast({
+                              title: "Success",
+                              description: "Image uploaded successfully",
+                            });
+                          } catch (error) {
+                            console.error('Error uploading image:', error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to upload image",
+                              variant: "destructive"
+                            });
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
-                )}
+                  
+                  {featuredImage ? (
+                    <div className="rounded-md overflow-hidden border">
+                      <img 
+                        src={featuredImage} 
+                        alt="Featured image preview" 
+                        className="w-full h-40 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400/EEE/999?text=Image+Error";
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="border rounded-md p-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                      <ImageIcon className="h-8 w-8 opacity-50" />
+                      <p className="text-sm">No featured image</p>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div>
                 <Label htmlFor="category" className="text-sm font-medium">Category</Label>
-                <Select 
-                  value={categoryId ? categoryId.toString() : ""} 
-                  onValueChange={(value) => setCategoryId(value ? parseInt(value) : null)}
-                >
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                    {categoriesData?.categories?.map((category: BlogCategory) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-1.5 space-y-2">
+                  <Select 
+                    value={categoryId ? categoryId.toString() : ""} 
+                    onValueChange={(value) => setCategoryId(value ? parseInt(value) : null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                      {categoriesData?.categories?.map((category: BlogCategory) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="New category name" 
+                      value={newCategoryName} 
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCreateCategory}
+                      disabled={isCreatingCategory || !newCategoryName.trim()}
+                      className="whitespace-nowrap"
+                    >
+                      {isCreatingCategory ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-1" /> Add
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <Label className="text-sm font-medium mb-2 block">Tags</Label>
-                <div className="space-y-2 mt-1.5">
-                  {tagsData?.tags && tagsData.tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
+                <div className="space-y-4 mt-1.5">
+                  {tagsData?.tags && tagsData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-md max-h-60 overflow-y-auto">
                       {tagsData.tags.map((tag: BlogTag) => (
-                        <div key={tag.id} className="flex items-center gap-2">
+                        <div key={tag.id} className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-md">
                           <Checkbox 
                             id={`tag-${tag.id}`} 
                             checked={selectedTags.includes(tag.id)}
@@ -406,10 +609,43 @@ const BlogEditor = () => {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-muted-foreground text-sm flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      <span>No tags available. Create tags in the admin dashboard.</span>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="New tag name" 
+                      value={newTagName} 
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCreateTag}
+                      disabled={isCreatingTag || !newTagName.trim()}
+                      className="whitespace-nowrap"
+                    >
+                      {isCreatingTag ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-1" /> Add
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {selectedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <p className="text-sm text-muted-foreground mb-1 w-full">Selected tags:</p>
+                      {selectedTags.map(tagId => {
+                        const tag = tagsData?.tags?.find((t: BlogTag) => t.id === tagId);
+                        return tag ? (
+                          <div key={tag.id} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                            {tag.name}
+                          </div>
+                        ) : null;
+                      })}
                     </div>
                   )}
                 </div>
