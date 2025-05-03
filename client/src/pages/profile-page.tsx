@@ -402,30 +402,87 @@ export default function ProfilePage() {
             )}
           </TabsContent>
 
-          {/* Liked Tab - Placeholder for now */}
+          {/* Liked Projects Tab */}
           <TabsContent value="liked" className="mt-6">
-            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
-              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
-                <Heart className="h-8 w-8 text-muted-foreground" />
+            {likedProjectsData?.projects && likedProjectsData.projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {likedProjectsData.projects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
               </div>
-              <h3 className="text-xl font-medium mb-2">Liked Projects Coming Soon</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                We're working on showing your liked projects here. Check back soon!
-              </p>
-            </div>
+            ) : (
+              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                  <Heart className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No Liked Projects Yet</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  You haven't liked any projects yet. Explore the community and show appreciation for projects you enjoy!
+                </p>
+                <Button asChild>
+                  <Link href="/">Explore Projects</Link>
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
-          {/* Activity Tab - Placeholder for now */}
+          {/* Activity Tab */}
           <TabsContent value="activity" className="mt-6">
-            <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
-              <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
-                <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            {activitiesData?.activities && activitiesData.activities.length > 0 ? (
+              <div className="space-y-4">
+                {activitiesData.activities.map((activity) => {
+                  const date = new Date(activity.createdAt);
+                  const formattedDate = new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  }).format(date);
+                  
+                  return (
+                    <Card key={activity.id} className="overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="flex items-start border-l-4 border-primary pl-4 p-4">
+                          <div className="mr-4 mt-1">
+                            {activity.type === 'project_created' && <Grid className="h-5 w-5 text-primary" />}
+                            {activity.type === 'project_liked' && <Heart className="h-5 w-5 text-red-500" />}
+                            {activity.type === 'project_comment' && <MessageSquare className="h-5 w-5 text-blue-500" />}
+                            {activity.type === 'project_view' && <Eye className="h-5 w-5 text-green-500" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">
+                                  {activity.type === 'project_created' && 'Created a new project'}
+                                  {activity.type === 'project_liked' && 'Liked a project'}
+                                  {activity.type === 'project_comment' && 'Commented on a project'}
+                                  {activity.type === 'project_view' && 'Viewed a project'}
+                                </p>
+                                {activity.targetData && (
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {activity.targetData.title || 'Untitled project'}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-              <h3 className="text-xl font-medium mb-2">Activity Feed Coming Soon</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                This is where you'll see your comments, replies, and other activity. Stay tuned!
-              </p>
-            </div>
+            ) : (
+              <div className="text-center py-16 bg-muted/20 rounded-xl border border-muted">
+                <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No Activity Yet</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Your activity feed is currently empty. Interact with projects to see your activity here!
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
@@ -440,47 +497,49 @@ export default function ProfilePage() {
           </div>
           <Card>
             <CardContent className="py-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center">
-                    <Code className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Development</h4>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge variant="outline" className="bg-gray-50">React</Badge>
-                      <Badge variant="outline" className="bg-gray-50">TypeScript</Badge>
-                      <Badge variant="outline" className="bg-gray-50">Node.js</Badge>
+              {skillsData?.skills && skillsData.skills.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Group skills by category */}
+                  {Object.entries(skillsData.skills.reduce((acc, skill) => {
+                    if (!acc[skill.category]) {
+                      acc[skill.category] = [];
+                    }
+                    acc[skill.category].push(skill);
+                    return acc;
+                  }, {} as Record<string, UserSkill[]>)).map(([category, skills]) => (
+                    <div key={category} className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        {category.toLowerCase().includes('dev') ? (
+                          <Code className="h-5 w-5 text-primary" />
+                        ) : category.toLowerCase().includes('design') ? (
+                          <Brush className="h-5 w-5 text-purple-500" />
+                        ) : category.toLowerCase().includes('ai') ? (
+                          <Layout className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <Award className="h-5 w-5 text-blue-500" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{category}</h4>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {skills.map(skill => (
+                            <Badge key={skill.id} variant="outline" className="bg-gray-50">
+                              {skill.skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-purple-50 rounded-full flex items-center justify-center">
-                    <Brush className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Design</h4>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge variant="outline" className="bg-gray-50">UI/UX</Badge>
-                      <Badge variant="outline" className="bg-gray-50">Figma</Badge>
-                      <Badge variant="outline" className="bg-gray-50">Web Design</Badge>
-                    </div>
-                  </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground mb-4">No skills added yet.</p>
+                  <Button variant="outline" size="sm">
+                    Add Your First Skill
+                  </Button>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center">
-                    <Layout className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium">AI Tools</h4>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge variant="outline" className="bg-gray-50">Midjourney</Badge>
-                      <Badge variant="outline" className="bg-gray-50">ChatGPT</Badge>
-                      <Badge variant="outline" className="bg-gray-50">Dall-E</Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
