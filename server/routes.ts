@@ -739,13 +739,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = validatePostWithTags.parse(postData);
       const tags = validatedData.tags || [];
-      // Remove tags from post data and handle featured_image mapping
-      const { tags: _, featuredImage, ...rest } = validatedData;
+      // Remove tags from the validated data
+      const { tags: _, ...rest } = validatedData;
       
-      // Explicitly map featuredImage to featured_image for the database
+      // Use the rest of the validated data directly
       const postDataWithoutTags = {
-        ...rest,
-        featured_image: featuredImage
+        ...rest
       };
       
       const post = await storage.createBlogPost(postDataWithoutTags, tags);
@@ -798,17 +797,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = validatePostUpdate.parse(req.body);
       const tags = validatedData.tags;
       // Remove tags from post data if present and handle featured_image mapping
-      const { tags: _, featuredImage, ...rest } = validatedData;
+      const { tags: _, ...rest } = validatedData;
       
-      // Explicitly map featuredImage to featured_image for the database
+      // Use the validated data directly without remapping fields
       const postDataWithoutTags = {
         ...rest
       };
-      
-      // Only include featuredImage if it was provided
-      if (featuredImage !== undefined) {
-        postDataWithoutTags.featuredImage = featuredImage;
-      }
       
       const updatedPost = await storage.updateBlogPost(id, postDataWithoutTags, tags);
       

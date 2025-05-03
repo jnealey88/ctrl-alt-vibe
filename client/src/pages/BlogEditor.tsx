@@ -703,7 +703,17 @@ const BlogEditor = () => {
                         alt="Featured image preview" 
                         className="w-full h-48 object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = "https://placehold.co/600x400/EEE/999?text=Image+Error";
+                          // Show a proper branded fallback instead of an external dependency
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-primary/5', 'to-primary/20', 'flex', 'items-center', 'justify-center');
+                          const icon = document.createElement('div');
+                          icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary/50"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M2 15h10"></path><path d="M9 18h3"></path><path d="M2 12h5"></path></svg>';
+                          e.currentTarget.parentElement?.appendChild(icon);
+                          
+                          const errorText = document.createElement('div');
+                          errorText.className = 'text-sm text-primary/70 mt-2';
+                          errorText.innerText = 'Image could not be loaded';
+                          e.currentTarget.parentElement?.appendChild(errorText);
                         }}
                       />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -789,11 +799,12 @@ const BlogEditor = () => {
                           body: formData,
                         });
                         
+                        const data = await response.json();
+                        
                         if (!response.ok) {
-                          throw new Error('Failed to upload image');
+                          throw new Error(data.message || 'Failed to upload image');
                         }
                         
-                        const data = await response.json();
                         setFeaturedImage(data.fileUrl);
                         
                         toast({
@@ -804,7 +815,7 @@ const BlogEditor = () => {
                         console.error('Error uploading image:', error);
                         toast({
                           title: "Error",
-                          description: "Failed to upload image",
+                          description: error instanceof Error ? error.message : "Failed to upload image",
                           variant: "destructive"
                         });
                       } finally {
