@@ -100,11 +100,19 @@ const BlogPostPage = () => {
           
           <div className="max-w-3xl mx-auto bg-white shadow-sm border border-gray-100 rounded-xl overflow-hidden">
             {post.featuredImage ? (
-              <div className="h-[300px] overflow-hidden relative">
+              <div className="h-[300px] md:h-[400px] overflow-hidden relative">
                 <img 
                   src={post.featuredImage} 
                   alt={post.title} 
                   className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    // If image fails to load, show a clean fallback
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-primary/5', 'to-primary/20', 'flex', 'items-center', 'justify-center');
+                    const icon = document.createElement('div');
+                    icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-primary/40"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>';
+                    e.currentTarget.parentElement?.appendChild(icon);
+                  }}
                 />
                 {post.category && (
                   <div className="absolute top-4 right-4">

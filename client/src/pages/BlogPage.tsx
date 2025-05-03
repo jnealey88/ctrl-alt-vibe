@@ -195,6 +195,14 @@ const BlogPage = () => {
                       src={post.featuredImage} 
                       alt={post.title} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out" 
+                      onError={(e) => {
+                        // If image fails to load, show the fallback
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-primary/10', 'to-primary/30', 'flex', 'items-center', 'justify-center');
+                        const icon = document.createElement('div');
+                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary/60"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>';
+                        e.currentTarget.parentElement?.appendChild(icon);
+                      }}
                     />
                   </div>
                 ) : (
