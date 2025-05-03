@@ -75,7 +75,7 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center">
-                <img src="/ctrlaltvibelogo1.png" alt="Ctrl Alt Vibe Logo" className="h-8 w-auto" />
+                <img src="/logo-black.png" alt="Ctrl Alt Vibe Logo" className="h-8 w-auto" />
               </Link>
             </div>
             
