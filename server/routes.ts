@@ -92,8 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const search = req.query.search as string;
       const sort = req.query.sort as string;
       const user = req.query.user as string;
+      const currentUserId = req.user?.id || 0;
       
-      const result = await storage.getProjects({ page, limit, tag, search, sort, user });
+      const result = await storage.getProjects({ page, limit, tag, search, sort, user, currentUserId });
       res.json(result);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -104,7 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get featured project
   app.get(`${apiPrefix}/projects/featured`, async (req, res) => {
     try {
-      const featured = await storage.getFeaturedProject();
+      const currentUserId = req.user?.id || 0;
+      const featured = await storage.getFeaturedProject(currentUserId);
       res.json({ project: featured });
     } catch (error) {
       console.error('Error fetching featured project:', error);
@@ -116,7 +118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/projects/trending`, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 4;
-      const trending = await storage.getTrendingProjects(limit);
+      const currentUserId = req.user?.id || 0;
+      const trending = await storage.getTrendingProjects(limit, currentUserId);
       res.json({ projects: trending });
     } catch (error) {
       console.error('Error fetching trending projects:', error);
@@ -132,9 +135,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid project ID' });
       }
       
-      const project = await storage.getProjectById(id);
+      const currentUserId = req.user?.id || 0;
+      const project = await storage.getProjectById(id, currentUserId);
       if (!project) {
         return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if the project is private and not owned by the current user
+      if (project.isPrivate && project.author.id !== currentUserId) {
+        return res.status(403).json({ message: 'You do not have permission to view this project' });
       }
       
       res.json({ project });

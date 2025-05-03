@@ -1,5 +1,5 @@
 import { db } from "@db";
-import { eq, and, desc, sql, asc, count, isNull, like, inArray, not } from "drizzle-orm";
+import { eq, and, desc, sql, asc, count, isNull, like, inArray, not, or } from "drizzle-orm";
 import {
   users,
   projects,
@@ -536,7 +536,8 @@ export const storage = {
     tag = "", 
     search = "", 
     sort = "trending", 
-    user = "" 
+    user = "",
+    currentUserId = 0 // Add param for logged-in user
   }): Promise<{ projects: Project[]; hasMore: boolean; total: number }> {
     const offset = (page - 1) * limit;
     
@@ -554,6 +555,17 @@ export const storage = {
     
     // Build query conditions
     let conditions = [];
+    
+    // Only show public projects unless user is viewing their own projects
+    if (!userId || userId !== currentUserId) {
+      conditions.push(
+        or(
+          eq(projects.isPrivate, false),
+          // Also include private projects if the current user is the author
+          currentUserId > 0 ? eq(projects.authorId, currentUserId) : undefined
+        )
+      );
+    }
     
     // Tag filter
     if (tag) {
@@ -620,9 +632,6 @@ export const storage = {
           ] 
         };
     }
-    
-    // Current user ID (in a real app, this would come from auth)
-    const currentUserId = 1;
     
     let projectsResults = await db.query.projects.findMany({
       where: conditions.length ? and(...conditions) : undefined,
@@ -707,7 +716,7 @@ export const storage = {
     };
   },
   
-  async getFeaturedProject(): Promise<Project | null> {
+  async getFeaturedProject(currentUserId: number = 0): Promise<Project | null> {
     const featuredProject = await db.query.projects.findFirst({
       where: eq(projects.featured, true),
       orderBy: [desc(projects.createdAt)],
@@ -723,9 +732,6 @@ export const storage = {
     });
     
     if (!featuredProject) return null;
-    
-    // Current user ID (in a real app, this would come from auth)
-    const currentUserId = 1;
     
     // Get tags for this project
     const projectTagsResult = await db.query.projectTags.findMany({
@@ -783,9 +789,7 @@ export const storage = {
     } as Project;
   },
   
-  async getTrendingProjects(limit: number = 4): Promise<Project[]> {
-    // Current user ID (in a real app, this would come from auth)
-    const currentUserId = 1;
+  async getTrendingProjects(limit: number = 4, currentUserId: number = 0): Promise<Project[]> {
     
     // Get projects using our trending algorithm
     const projectsResults = await db.query.projects.findMany({
@@ -868,7 +872,7 @@ export const storage = {
     return projectsWithDetails;
   },
   
-  async getProjectById(id: number): Promise<Project | null> {
+  async getProjectById(id: number, currentUserId: number = 0): Promise<Project | null> {
     const project = await db.query.projects.findFirst({
       where: eq(projects.id, id),
       with: {
@@ -883,9 +887,6 @@ export const storage = {
     });
     
     if (!project) return null;
-    
-    // Current user ID (in a real app, this would come from auth)
-    const currentUserId = 1;
     
     // Get tags for this project
     const projectTagsResult = await db.query.projectTags.findMany({
