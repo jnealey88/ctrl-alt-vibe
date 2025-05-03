@@ -7,11 +7,25 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Reply, Image, AtSign, Code, Trash2, AlertCircle, Calendar, MessageSquare, ThumbsUp, RefreshCw, Filter } from "lucide-react";
+import { 
+  Heart, 
+  Reply, 
+  Image, 
+  AtSign, 
+  Code, 
+  Trash2, 
+  AlertCircle, 
+  Calendar, 
+  MessageSquare, 
+  ThumbsUp, 
+  RefreshCw,
+  Copy 
+} from "lucide-react";
 import type { Comment, CommentReply } from "@shared/schema";
 
 const CommentSection = () => {
