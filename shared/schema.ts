@@ -435,7 +435,8 @@ export type CodingTool = {
   createdAt: string;
 };
 
-// Export types
+
+
 export type User = typeof users.$inferSelect & {
   role: string; // Include the role in the User type
 };
@@ -483,3 +484,57 @@ export type BlogTag = typeof blogTags.$inferSelect;
 export type InsertBlogPost = z.infer<typeof blogPostInsertSchema>;
 export type InsertBlogCategory = z.infer<typeof blogCategoryInsertSchema>;
 export type InsertBlogTag = z.infer<typeof blogTagInsertSchema>;
+
+// User skills table
+export const userSkills = pgTable("user_skills", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  category: text("category").notNull(),
+  skill: text("skill").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User activity types
+export const activityTypes = {
+  PROJECT_CREATED: "project_created",
+  PROJECT_LIKED: "project_liked",
+  COMMENT_ADDED: "comment_added",
+  REPLY_ADDED: "reply_added",
+} as const;
+
+// User activity table
+export const userActivity = pgTable("user_activity", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text("type").notNull(),
+  targetId: integer("target_id").notNull(), // ID of project, comment, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User skills and activity relations
+export const userSkillsRelations = relations(userSkills, ({ one }) => ({
+  user: one(users, { fields: [userSkills.userId], references: [users.id] }),
+}));
+
+export const userActivityRelations = relations(userActivity, ({ one }) => ({
+  user: one(users, { fields: [userActivity.userId], references: [users.id] }),
+}));
+
+// Complete version of usersRelations including skills and activities
+export const extendedUsersRelations = relations(users, ({ many }) => ({
+  projects: many(projects),
+  comments: many(comments),
+  commentReplies: many(commentReplies),
+  likes: many(likes),
+  bookmarks: many(bookmarks),
+  shares: many(shares),
+  blogPosts: many(blogPosts),
+  skills: many(userSkills),
+  activities: many(userActivity),
+}));
+
+// User skills schema and types
+export const userSkillInsertSchema = createInsertSchema(userSkills);
+export type UserSkill = typeof userSkills.$inferSelect;
+export type InsertUserSkill = z.infer<typeof userSkillInsertSchema>;
+export type UserActivity = typeof userActivity.$inferSelect;
