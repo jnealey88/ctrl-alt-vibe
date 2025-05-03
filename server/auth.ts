@@ -115,7 +115,7 @@ async function createUser(userData: any) {
   return user;
 }
 
-async function updateUser(userId: number, userData: Partial<Omit<Express.User, 'id' | 'password'>>) {
+async function updateUser(userId: number, userData: Partial<Omit<Express.User, 'id'>>) {
   const [user] = await db.update(users)
     .set({
       ...userData,
