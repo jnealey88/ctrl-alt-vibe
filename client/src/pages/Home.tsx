@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectCard from "@/components/ProjectCard";
 import FeaturedProject from "@/components/FeaturedProject";
+import SEO from "@/components/SEO";
 import type { Project } from "@shared/schema";
 
 // Component for Trending Projects Section
@@ -112,8 +113,20 @@ const Home = () => {
     }
   };
 
+  // Define SEO metadata for the homepage
+  const seoKeywords = [
+    'AI-assisted coding', 'developer projects', 'coding showcase',
+    'programming community', 'developer portfolio', 'AI tools',
+    'tech projects', 'coding collaboration'
+  ];
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SEO 
+        title="AI-Assisted Coding Projects Community"
+        description="Discover, share, and engage with innovative AI-assisted coding projects from the developer community. Showcase your work and connect with fellow developers."
+        keywords={seoKeywords}
+      />
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-slate-800 via-gray-900 to-slate-800 rounded-xl overflow-hidden mb-12">
         {/* Modern geometric pattern overlay */}

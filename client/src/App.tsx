@@ -21,6 +21,8 @@ import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
+import { HelmetProvider } from "react-helmet-async";
+import SEO from "@/components/SEO";
 
 function Router() {
   return (
@@ -99,14 +101,17 @@ function App() {
   };
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ErrorBoundary onError={handleGlobalError}>
-          <Router />
-        </ErrorBoundary>
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ErrorBoundary onError={handleGlobalError}>
+            <SEO />
+            <Router />
+          </ErrorBoundary>
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 
