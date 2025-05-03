@@ -1,5 +1,5 @@
 import { db } from "@db";
-import { eq, and, desc, sql, asc, count, isNull, like, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, asc, count, isNull, like, inArray, not } from "drizzle-orm";
 import {
   users,
   projects,
@@ -66,15 +66,17 @@ export const storage = {
   },
 
   async getBlogCategory(id: number): Promise<BlogCategory | null> {
-    return await db.query.blogCategories.findFirst({
+    const category = await db.query.blogCategories.findFirst({
       where: eq(blogCategories.id, id)
     });
+    return category || null;
   },
 
   async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | null> {
-    return await db.query.blogCategories.findFirst({
+    const category = await db.query.blogCategories.findFirst({
       where: eq(blogCategories.slug, slug)
     });
+    return category || null;
   },
 
   async createBlogCategory(categoryData: Omit<InsertBlogCategory, 'id' | 'createdAt' | 'updatedAt'>): Promise<BlogCategory> {
@@ -161,70 +163,60 @@ export const storage = {
   } = {}): Promise<{ posts: BlogPost[]; total: number }> {
     const { limit = 10, offset = 0, publishedOnly = true, categoryId, tagId, authorId } = options;
     
-    let postsQuery = db.select()
+    // Build conditions array for query
+    const conditions: any[] = [];
+    
+    if (publishedOnly) {
+      conditions.push(eq(blogPosts.published, true));
+    }
+    
+    if (categoryId) {
+      conditions.push(eq(blogPosts.categoryId, categoryId));
+    }
+    
+    if (authorId) {
+      conditions.push(eq(blogPosts.authorId, authorId));
+    }
+    
+    // Execute query with all conditions
+    let postResults;
+    if (tagId) {
+      // For tag filtering, we need to do a join query
+      const joinResults = await db.select({
+        post: blogPosts,
+        blogPostTag: blogPostTags
+      })
       .from(blogPosts)
+      .innerJoin(blogPostTags, eq(blogPosts.id, blogPostTags.postId))
+      .where(and(eq(blogPostTags.tagId, tagId), ...(conditions.length ? conditions : [])))
       .limit(limit)
       .offset(offset)
       .orderBy(desc(blogPosts.createdAt));
-
-    // Filter conditions
-    if (publishedOnly) {
-      postsQuery = postsQuery.where(eq(blogPosts.published, true));
-    }
-
-    if (categoryId) {
-      postsQuery = postsQuery.where(eq(blogPosts.categoryId, categoryId));
-    }
-
-    if (authorId) {
-      postsQuery = postsQuery.where(eq(blogPosts.authorId, authorId));
-    }
-
-    let postResults = await postsQuery;
-
-    // If filtering by tag, we need to do a separate query with a join
-    if (tagId) {
+      
+      // Extract just the post data
+      postResults = joinResults.map(result => result.post);
+    } else {
+      // Standard query without tag filtering
       postResults = await db.select()
         .from(blogPosts)
-        .innerJoin(blogPostTags, eq(blogPosts.id, blogPostTags.postId))
-        .where(eq(blogPostTags.tagId, tagId))
+        .where(conditions.length ? and(...conditions) : undefined)
         .limit(limit)
         .offset(offset)
         .orderBy(desc(blogPosts.createdAt));
-      
-      if (publishedOnly) {
-        postResults = postResults.filter(post => post.blog_posts.published);
-      }
-
-      // Extract just the post data
-      postResults = postResults.map(result => result.blog_posts);
     }
-
-    // Get the total count for pagination
-    let countQuery = db.select({ count: count() }).from(blogPosts);
     
-    if (publishedOnly) {
-      countQuery = countQuery.where(eq(blogPosts.published, true));
-    }
-
-    if (categoryId) {
-      countQuery = countQuery.where(eq(blogPosts.categoryId, categoryId));
-    }
-
-    if (authorId) {
-      countQuery = countQuery.where(eq(blogPosts.authorId, authorId));
-    }
-
-    // If tag filtering, need a different count query
+    // Get the total count for pagination
     let totalCount;
     if (tagId) {
       const taggedPostsCount = await db.select({ count: count() })
         .from(blogPosts)
         .innerJoin(blogPostTags, eq(blogPosts.id, blogPostTags.postId))
-        .where(eq(blogPostTags.tagId, tagId));
+        .where(and(eq(blogPostTags.tagId, tagId), ...(conditions.length ? conditions : [])));
       totalCount = Number(taggedPostsCount[0]?.count || 0);
     } else {
-      const countResult = await countQuery;
+      const countResult = await db.select({ count: count() })
+        .from(blogPosts)
+        .where(conditions.length ? and(...conditions) : undefined);
       totalCount = Number(countResult[0]?.count || 0);
     }
 
@@ -247,12 +239,15 @@ export const storage = {
       }
 
       // Get tags for this post
-      const postTagResults = await db.select()
+      const postTagResults = await db.select({
+        blogPostTag: blogPostTags,
+        tag: blogTags
+      })
         .from(blogPostTags)
         .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
         .where(eq(blogPostTags.postId, post.id));
 
-      const tags = postTagResults.map(result => result.blog_tags.name);
+      const tags = postTagResults.map(result => result.tag.name);
 
       return {
         ...post,
