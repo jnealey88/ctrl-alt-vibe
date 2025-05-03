@@ -215,11 +215,13 @@ export function setupAuth(app: Express) {
   // Google authentication endpoint
   app.post("/api/auth/google", async (req, res) => {
     try {
-      const { uid, email, displayName, photoURL } = req.body;
+      const { googleId, email, name, picture, token } = req.body;
       
-      if (!uid || !email) {
+      if (!googleId || !email) {
         return res.status(400).json({ message: "Missing required Google authentication data" });
       }
+      
+      console.log("Google OAuth Authentication:", { googleId, email, name });
       
       // Check if user already exists with this email
       let user = await db.query.users.findFirst({
@@ -228,15 +230,21 @@ export function setupAuth(app: Express) {
       
       if (user) {
         // User exists, log them in
+        console.log("Existing user found with email:", email);
         req.login(user, (err) => {
-          if (err) return res.status(500).json({ message: "Login failed" });
+          if (err) {
+            console.error("Login error:", err);
+            return res.status(500).json({ message: "Login failed" });
+          }
           return res.status(200).json(user);
         });
       } else {
         // Create a new user with Google data
-        // Generate a username from the display name or email
-        const baseUsername = displayName ? 
-          displayName.toLowerCase().replace(/\s+/g, "_") : 
+        console.log("Creating new user for Google account:", email);
+        
+        // Generate a username from the name or email
+        const baseUsername = name ? 
+          name.toLowerCase().replace(/\s+/g, "_") : 
           email.split("@")[0];
         
         // Check if username already exists and make it unique if needed
@@ -265,15 +273,19 @@ export function setupAuth(app: Express) {
           username,
           email,
           password: randomPassword,
-          avatarUrl: photoURL || null,
+          avatarUrl: picture || null,
           bio: "",
           role: "user"
         };
         
+        console.log("Creating new user with data:", { username, email });
         user = await createUser(newUser);
         
         req.login(user, (err) => {
-          if (err) return res.status(500).json({ message: "Registration failed" });
+          if (err) {
+            console.error("Registration error:", err);
+            return res.status(500).json({ message: "Registration failed" });
+          }
           return res.status(201).json(user);
         });
       }

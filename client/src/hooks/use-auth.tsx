@@ -150,32 +150,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
-      // 1. Sign in with Google using Firebase
-      const firebaseUser = await signInWithGoogle();
+      // Initiate Google OAuth flow - this will redirect to Google
+      initiateGoogleLogin();
       
-      // 2. Send the Firebase user data to our backend
-      const res = await apiRequest("POST", "/api/auth/google", {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL
-      });
-      
-      return await res.json();
-    },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Google login successful",
-        description: `Welcome, ${user.username}!`,
-      });
+      // This is a dummy return as we'll be redirected away
+      // The actual login happens in the useEffect that handles the redirect
+      return null as any;
     },
     onError: (error: Error) => {
       toast({
         title: "Google login failed",
-        description: error.message || "Could not authenticate with Google",
+        description: error.message || "Could not initiate Google authentication",
         variant: "destructive",
       });
+      clearGoogleAuth();
     },
   });
 
