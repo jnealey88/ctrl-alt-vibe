@@ -1601,5 +1601,222 @@ export const storage = {
         return false;
       }
     });
+  },
+
+  // User Methods
+  async getUserByUsername(username: string): Promise<any | null> {
+    const user = await db.query.users.findFirst({
+      where: eq(users.username, username)
+    });
+    return user || null;
+  },
+
+  async updateUser(userId: number, userData: Partial<Omit<User, 'id' | 'password'>>): Promise<User | null> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser || null;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return null;
+    }
+  },
+
+  // User Skills Methods
+  async getUserSkills(userId: number): Promise<UserSkill[]> {
+    return await db.query.userSkills.findMany({
+      where: eq(userSkills.userId, userId),
+      orderBy: [asc(userSkills.category), asc(userSkills.skill)]
+    });
+  },
+
+  async addUserSkill(userId: number, category: string, skill: string): Promise<UserSkill> {
+    // Check if skill already exists for this user and category
+    const existingSkill = await db.query.userSkills.findFirst({
+      where: and(
+        eq(userSkills.userId, userId),
+        eq(userSkills.category, category),
+        eq(userSkills.skill, skill)
+      )
+    });
+
+    if (existingSkill) {
+      return existingSkill;
+    }
+
+    // Add new skill
+    const [newSkill] = await db.insert(userSkills).values({
+      userId,
+      category,
+      skill,
+      createdAt: new Date()
+    }).returning();
+
+    return newSkill;
+  },
+
+  async removeUserSkill(skillId: number, userId: number): Promise<boolean> {
+    try {
+      // Make sure the skill belongs to the user
+      const skill = await db.query.userSkills.findFirst({
+        where: and(
+          eq(userSkills.id, skillId),
+          eq(userSkills.userId, userId)
+        )
+      });
+
+      if (!skill) {
+        return false;
+      }
+
+      await db.delete(userSkills).where(eq(userSkills.id, skillId));
+      return true;
+    } catch (error) {
+      console.error('Error removing user skill:', error);
+      return false;
+    }
+  },
+
+  async getUserSkillCategories(userId: number): Promise<string[]> {
+    const result = await db
+      .selectDistinct({ category: userSkills.category })
+      .from(userSkills)
+      .where(eq(userSkills.userId, userId))
+      .orderBy(asc(userSkills.category));
+    
+    return result.map(r => r.category);
+  },
+
+  // User Activity Methods
+  async getUserActivities(userId: number, limit: number = 10): Promise<any[]> {
+    const activities = await db.query.userActivity.findMany({
+      where: eq(userActivity.userId, userId),
+      orderBy: [desc(userActivity.createdAt)],
+      limit
+    });
+
+    return await Promise.all(activities.map(async (activity) => {
+      let targetData = null;
+
+      // Fetch related data based on activity type
+      if (activity.type === activityTypes.PROJECT_CREATED || 
+          activity.type === activityTypes.PROJECT_LIKED) {
+        targetData = await db.query.projects.findFirst({
+          where: eq(projects.id, activity.targetId),
+          columns: {
+            id: true,
+            title: true,
+            imageUrl: true
+          }
+        });
+      } else if (activity.type === activityTypes.COMMENT_ADDED) {
+        const comment = await db.query.comments.findFirst({
+          where: eq(comments.id, activity.targetId),
+          columns: {
+            id: true,
+            content: true,
+            projectId: true
+          }
+        });
+
+        if (comment) {
+          const project = await db.query.projects.findFirst({
+            where: eq(projects.id, comment.projectId),
+            columns: {
+              id: true,
+              title: true
+            }
+          });
+          
+          targetData = {
+            ...comment,
+            project: project || { id: 0, title: 'Unknown Project' }
+          };
+        }
+      } else if (activity.type === activityTypes.REPLY_ADDED) {
+        const reply = await db.query.commentReplies.findFirst({
+          where: eq(commentReplies.id, activity.targetId),
+          columns: {
+            id: true,
+            content: true,
+            commentId: true
+          }
+        });
+
+        if (reply) {
+          const comment = await db.query.comments.findFirst({
+            where: eq(comments.id, reply.commentId),
+            columns: {
+              id: true,
+              projectId: true
+            }
+          });
+          
+          if (comment) {
+            const project = await db.query.projects.findFirst({
+              where: eq(projects.id, comment.projectId),
+              columns: {
+                id: true,
+                title: true
+              }
+            });
+            
+            targetData = {
+              ...reply,
+              comment: { id: comment.id },
+              project: project || { id: 0, title: 'Unknown Project' }
+            };
+          }
+        }
+      }
+
+      return {
+        id: activity.id,
+        type: activity.type,
+        createdAt: activity.createdAt,
+        targetData
+      };
+    }));
+  },
+
+  async recordUserActivity(userId: number, type: string, targetId: number): Promise<void> {
+    await db.insert(userActivity).values({
+      userId,
+      type,
+      targetId,
+      createdAt: new Date()
+    });
+  },
+
+  // Get user's liked projects
+  async getUserLikedProjects(userId: number, currentUserId: number = 0): Promise<Project[]> {
+    // Get all project IDs liked by the user
+    const likedProjectIds = await db.select({ projectId: likes.projectId })
+      .from(likes)
+      .where(and(
+        eq(likes.userId, userId),
+        isNull(likes.commentId),
+        isNull(likes.replyId)
+      ));
+
+    if (likedProjectIds.length === 0) {
+      return [];
+    }
+
+    // Get the full projects with all details
+    const likedProjects = await Promise.all(
+      likedProjectIds.map(async ({ projectId }) => {
+        if (projectId === null) return null;
+        return await this.getProjectById(projectId, currentUserId);
+      })
+    );
+
+    // Filter out any null projects (might have been deleted)
+    return likedProjects.filter(project => project !== null) as Project[];
   }
 };
