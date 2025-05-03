@@ -593,14 +593,14 @@ const BlogEditor = () => {
                               }
                               
                               try {
-                                setIsSubmitting(true);
+                                setIsUploadingImage(true);
                                 
                                 // Create FormData
                                 const formData = new FormData();
                                 formData.append('image', file);
                                 
                                 // Upload the image
-                                const response = await fetch('/api/v1/upload/image', {
+                                const response = await fetch('/api/upload/image', {
                                   method: 'POST',
                                   body: formData,
                                 });
@@ -626,7 +626,7 @@ const BlogEditor = () => {
                                   variant: "destructive"
                                 });
                               } finally {
-                                setIsSubmitting(false);
+                                setIsUploadingImage(false);
                                 // Reset file input
                                 const fileInput = document.getElementById('editorImageUpload') as HTMLInputElement;
                                 if (fileInput) fileInput.value = '';
