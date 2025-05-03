@@ -212,11 +212,30 @@ const BlogEditor = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate summary length
+    if (summary.trim().length < 10) {
+      toast({
+        title: "Validation Error",
+        description: "Summary must be at least 10 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      // Generate slug from title if needed
+      const slug = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
       const postData = {
         title,
+        slug, // Add the slug field
         content,
         summary,
         featuredImage,
@@ -440,13 +459,18 @@ const BlogEditor = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="summary" className="text-base font-medium">Summary</Label>
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="summary" className="text-base font-medium">Summary</Label>
+                      <span className={`text-xs ${summary.length < 10 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        {summary.length}/10+ characters
+                      </span>
+                    </div>
                     <Textarea 
                       id="summary" 
-                      placeholder="Brief summary of your post" 
+                      placeholder="Brief summary of your post (minimum 10 characters)" 
                       value={summary} 
                       onChange={(e) => setSummary(e.target.value)}
-                      className="mt-1.5 resize-none h-20"
+                      className={`mt-1.5 resize-none h-20 ${summary.length < 10 && summary.length > 0 ? 'border-destructive' : ''}`}
                     />
                   </div>
                   
@@ -671,6 +695,56 @@ const BlogEditor = () => {
               <div>
                 <Label htmlFor="featuredImage" className="text-sm font-medium">Featured Image</Label>
                 <div className="mt-1.5 space-y-3">
+                  {featuredImage ? (
+                    <div className="border rounded-md overflow-hidden relative group">
+                      <img 
+                        src={featuredImage} 
+                        alt="Featured image preview" 
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400/EEE/999?text=Image+Error";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="bg-white h-9 text-sm"
+                          onClick={() => setFeaturedImage("")}
+                        >
+                          Remove
+                        </Button>
+                        <Label 
+                          htmlFor="imageUpload" 
+                          className="cursor-pointer flex items-center justify-center h-9 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-sm"
+                        >
+                          Change Image
+                        </Label>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border border-dashed rounded-md p-6 text-center flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
+                         onClick={() => document.getElementById('imageUpload')?.click()}
+                    >
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <ImageIcon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium mb-1">Add Featured Image</p>
+                        <p className="text-sm text-muted-foreground">Upload a high-quality image to make your post stand out</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Label 
+                          htmlFor="imageUpload" 
+                          className="cursor-pointer flex items-center justify-center h-9 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-sm"
+                        >
+                          Upload Image
+                        </Label>
+                        <p className="text-xs text-muted-foreground">or paste URL below</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Input 
@@ -681,87 +755,63 @@ const BlogEditor = () => {
                         className="w-full"
                       />
                     </div>
-                    <div className="relative">
-                      <Label 
-                        htmlFor="imageUpload" 
-                        className="cursor-pointer flex items-center justify-center h-10 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
-                        Upload
-                      </Label>
-                      <input
-                        type="file"
-                        id="imageUpload"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          
-                          // Check file size (max 5MB)
-                          if (file.size > 5 * 1024 * 1024) {
-                            toast({
-                              title: "Error",
-                              description: "Image size should be less than 5MB",
-                              variant: "destructive"
-                            });
-                            return;
-                          }
-                          
-                          try {
-                            setIsSubmitting(true);
-                            
-                            // Create FormData
-                            const formData = new FormData();
-                            formData.append('image', file);
-                            
-                            // Upload the image
-                            const response = await fetch('/api/v1/upload/image', {
-                              method: 'POST',
-                              body: formData,
-                            });
-                            
-                            if (!response.ok) {
-                              throw new Error('Failed to upload image');
-                            }
-                            
-                            const data = await response.json();
-                            setFeaturedImage(data.fileUrl);
-                            
-                            toast({
-                              title: "Success",
-                              description: "Image uploaded successfully",
-                            });
-                          } catch (error) {
-                            console.error('Error uploading image:', error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to upload image",
-                              variant: "destructive"
-                            });
-                          } finally {
-                            setIsSubmitting(false);
-                          }
-                        }}
-                      />
-                    </div>
                   </div>
                   
-                  {featuredImage ? (
-                    <div className="rounded-md overflow-hidden border">
-                      <img 
-                        src={featuredImage} 
-                        alt="Featured image preview" 
-                        className="w-full h-40 object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://placehold.co/600x400/EEE/999?text=Image+Error";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="border rounded-md p-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
-                      <ImageIcon className="h-8 w-8 opacity-50" />
-                      <p className="text-sm">No featured image</p>
-                    </div>
-                  )}
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      // Check file size (max 5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        toast({
+                          title: "Error",
+                          description: "Image size should be less than 5MB",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      
+                      try {
+                        setIsSubmitting(true);
+                        
+                        // Create FormData
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        // Upload the image
+                        const response = await fetch('/api/v1/upload/image', {
+                          method: 'POST',
+                          body: formData,
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error('Failed to upload image');
+                        }
+                        
+                        const data = await response.json();
+                        setFeaturedImage(data.fileUrl);
+                        
+                        toast({
+                          title: "Success",
+                          description: "Image uploaded successfully",
+                        });
+                      } catch (error) {
+                        console.error('Error uploading image:', error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to upload image",
+                          variant: "destructive"
+                        });
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                  />
                 </div>
               </div>
               
