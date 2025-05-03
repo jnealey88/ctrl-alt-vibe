@@ -1611,7 +1611,7 @@ export const storage = {
     return user || null;
   },
 
-  async updateUser(userId: number, userData: Partial<Omit<User, 'id' | 'password'>>): Promise<User | null> {
+  async updateUser(userId: number, userData: any): Promise<any | null> {
     try {
       const [updatedUser] = await db.update(users)
         .set({

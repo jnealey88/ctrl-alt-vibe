@@ -20,6 +20,7 @@ import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerProfileRoutes } from "./routes/profile";
 import path from "path";
 import fs from "fs";
 
@@ -70,6 +71,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register admin routes
   registerAdminRoutes(app);
+  
+  // Register profile routes
+  registerProfileRoutes(app);
   
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
