@@ -4,12 +4,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { BlogPost, BlogCategory, BlogTag } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare } from "lucide-react";
+import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare, BookOpen, Tag, FolderPlus, Edit, FileText, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,10 +72,14 @@ const AdminDashboard = () => {
   const [_, setLocation] = useLocation();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("blog");
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const [commentsSearchQuery, setCommentsSearchQuery] = useState("");
+  const [blogSearchQuery, setBlogSearchQuery] = useState("");
+  const [blogCategorySearchQuery, setBlogCategorySearchQuery] = useState("");
+  const [blogTagSearchQuery, setBlogTagSearchQuery] = useState("");
+  const [blogSubTab, setBlogSubTab] = useState("posts");
   
   useEffect(() => {
     // Redirect non-admin users away from this page
