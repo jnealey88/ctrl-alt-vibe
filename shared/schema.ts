@@ -29,6 +29,7 @@ export const projects = pgTable("projects", {
   viewsCount: integer("views_count").default(0).notNull(),
   sharesCount: integer("shares_count").default(0).notNull(),
   featured: boolean("featured").default(false).notNull(),
+  isPrivate: boolean("is_private").default(false).notNull(), // Controls project visibility
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {
@@ -344,6 +345,7 @@ export const projectInsertSchema = createInsertSchema(projects, {
   projectUrl: (schema) => schema.url("Please enter a valid URL"),
   imageUrl: (schema) => schema.url("Please enter a valid image URL"),
   vibeCodingTool: (schema) => schema.optional(),
+  isPrivate: (schema) => schema.optional(),
 });
 
 export const commentInsertSchema = createInsertSchema(comments, {
@@ -386,6 +388,7 @@ export type Project = {
   isLiked?: boolean;
   isBookmarked?: boolean;
   featured: boolean;
+  isPrivate: boolean;
   createdAt: string;
   updatedAt: string;
 };

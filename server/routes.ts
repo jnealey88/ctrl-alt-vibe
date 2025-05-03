@@ -177,7 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }, { message: "Please provide a valid image URL or upload an image" }),
         vibeCodingTool: z.string().optional(),
         authorId: z.number(),
-        tags: z.array(z.string()).min(1).max(5)
+        tags: z.array(z.string()).min(1).max(5),
+        isPrivate: z.boolean().optional().default(false)
       });
       
       const validatedData = validateProjectWithTags.parse(projectData);
@@ -190,7 +191,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectUrl: validatedData.projectUrl,
         imageUrl: validatedData.imageUrl,
         vibeCodingTool: validatedData.vibeCodingTool,
-        authorId: validatedData.authorId
+        authorId: validatedData.authorId,
+        isPrivate: validatedData.isPrivate
       };
       
       const project = await storage.createProject(projectDataWithoutTags, tags);
@@ -283,6 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           imageUrl: z.string(),
           vibeCodingTool: z.string().optional(),
           tags: z.array(z.string()).min(1).max(5),
+          isPrivate: z.boolean().optional(),
         });
         
         const validated = validateProjectWithTags.parse(req.body);
