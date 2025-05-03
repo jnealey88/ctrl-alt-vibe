@@ -75,10 +75,10 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center">
-                <img src="/logo-black.png" alt="Ctrl Alt Vibe Logo" className="h-8 w-auto" />
+                <img src="/logo-black.png" alt="Ctrl Alt Vibe Logo" className="h-9 w-auto" />
               </Link>
             </div>
-            
+
             {!isMobile && (
               <div className="ml-6 flex space-x-3 lg:space-x-6">
                 {navLinks.map((link) => {
@@ -102,7 +102,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          
+
           {!isMobile && (
             <div className="ml-3 lg:ml-6 flex items-center">
               <form onSubmit={handleSearch} className="relative w-40 lg:w-64">
@@ -117,7 +117,7 @@ const Navbar = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </form>
-              
+
               {user ? (
                 <>
                   <Link href="/submit">
@@ -126,9 +126,9 @@ const Navbar = () => {
                       {isMediumScreen ? "Submit" : "Submit Project"}
                     </Button>
                   </Link>
-                  
+
                   {/* Notification bell removed until functionality is implemented */}
-                  
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="ml-3 bg-white/80 hover:bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
@@ -184,7 +184,7 @@ const Navbar = () => {
               )}
             </div>
           )}
-          
+
           {isMobile && (
             <div className="flex items-center space-x-3">
               {/* Search icon for mobile */}
@@ -217,7 +217,7 @@ const Navbar = () => {
                   </div>
                 </SheetContent>
               </Sheet>
-              
+
               {/* User actions for mobile */}
               {user && (
                 <>
@@ -227,7 +227,7 @@ const Navbar = () => {
                       Submit
                     </Button>
                   </Link>
-                  
+
                   <Link href="/profile">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold uppercase text-primary shadow-sm hover:shadow-md transition-shadow">
                       {user.username.charAt(0)}
@@ -281,7 +281,7 @@ const Navbar = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <h4 className="text-sm font-medium text-gray-500 mb-1 px-1">YOUR ACCOUNT</h4>
                         <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
                           <User className="mr-2 h-5 w-5" /> My Profile
