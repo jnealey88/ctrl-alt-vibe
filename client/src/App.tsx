@@ -21,6 +21,7 @@ import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
@@ -32,6 +33,8 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="flex-grow">
+        {/* ScrollToTop component to reset scroll position on navigation */}
+        <ScrollToTop />
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/browse" component={BrowseProjects} />

@@ -333,7 +333,7 @@ const Home = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Replit</h3>
             <p className="text-gray-600 text-center mb-4">An all-in-one collaborative browser IDE with AI features for coding and learning.</p>
-            <a href="https://replit.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">replit.com</a>
+            <a href="https://replit.com/refer/justin488" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">replit.com</a>
           </div>
           
           <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
