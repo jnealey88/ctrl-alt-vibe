@@ -6,8 +6,12 @@ import { ValidationError, fromZodError } from "zod-validation-error";
 import { 
   commentInsertSchema, 
   projectInsertSchema, 
-  replyInsertSchema
+  replyInsertSchema,
+  comments,
+  commentReplies
 } from "@shared/schema";
+import { db } from "../db";
+import { eq, and } from "drizzle-orm";
 import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
@@ -454,6 +458,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ errors: validationError.details });
       }
       res.status(500).json({ message: 'Failed to create reply' });
+    }
+  });
+  
+  // Delete a comment
+  app.delete(`${apiPrefix}/comments/:id`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to delete a comment" });
+      }
+      
+      const commentId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      // Get the comment to check if it belongs to the user
+      const comment = await db.query.comments.findFirst({
+        where: and(eq(comments.id, commentId), eq(comments.authorId, userId))
+      });
+      
+      if (!comment) {
+        return res.status(403).json({ message: "You can only delete your own comments" });
+      }
+      
+      // Delete the comment
+      await db.delete(comments).where(eq(comments.id, commentId));
+      
+      res.json({ success: true, message: "Comment deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      res.status(500).json({ message: 'Failed to delete comment' });
+    }
+  });
+  
+  // Delete a reply
+  app.delete(`${apiPrefix}/replies/:id`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to delete a reply" });
+      }
+      
+      const replyId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      // Get the reply to check if it belongs to the user
+      const reply = await db.query.commentReplies.findFirst({
+        where: and(eq(commentReplies.id, replyId), eq(commentReplies.authorId, userId))
+      });
+      
+      if (!reply) {
+        return res.status(403).json({ message: "You can only delete your own replies" });
+      }
+      
+      // Delete the reply
+      await db.delete(commentReplies).where(eq(commentReplies.id, replyId));
+      
+      res.json({ success: true, message: "Reply deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      res.status(500).json({ message: 'Failed to delete reply' });
     }
   });
   

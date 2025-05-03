@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Reply, Image, AtSign, Code } from "lucide-react";
+import { Heart, Reply, Image, AtSign, Code, Trash2 } from "lucide-react";
 import type { Comment, CommentReply } from "@shared/schema";
 
 const CommentSection = () => {
