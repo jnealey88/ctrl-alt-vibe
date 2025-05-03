@@ -528,10 +528,10 @@ const BlogEditor = () => {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
-                          data-active={editor?.isActive('codeBlock') ? "true" : "false"}
+                          onClick={() => editor?.chain().focus().toggleCode().run()}
+                          data-active={editor?.isActive('code') ? "true" : "false"}
                         >
-                          <span className={`${editor?.isActive('codeBlock') ? 'text-primary' : ''}`}>Code</span>
+                          <span className={`${editor?.isActive('code') ? 'text-primary' : ''}`}>Code</span>
                         </Button>
                         
                         <div className="h-4 border-r mx-1"></div>
