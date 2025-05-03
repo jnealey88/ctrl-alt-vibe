@@ -85,7 +85,7 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
   };
 
   return (
-    <Card className={cn("bg-white rounded-xl overflow-hidden shadow-card hover:shadow-lg transition-shadow duration-300", className)}>
+    <Card className={cn("bg-white rounded-xl overflow-hidden shadow-card hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]", className)}>
       <Link href={`/projects/${project.id}`}>
           <img 
             className="h-48 w-full object-cover cursor-pointer" 

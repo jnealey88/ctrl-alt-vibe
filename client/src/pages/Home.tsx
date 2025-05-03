@@ -121,14 +121,14 @@ const Home = () => {
   ];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <SEO 
         title="AI-Assisted Coding Projects Community"
         description="Discover, share, and engage with innovative AI-assisted coding projects from the developer community. Showcase your work and connect with fellow developers."
         keywords={seoKeywords}
       />
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-slate-800 via-gray-900 to-slate-800 rounded-xl overflow-hidden mb-12">
+      <div className="relative bg-gradient-to-r from-slate-800 via-gray-900 to-slate-800 rounded-xl overflow-hidden mb-16 shadow-xl">
         {/* Modern geometric pattern overlay */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full">
@@ -164,7 +164,7 @@ const Home = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+      <div className="mb-12 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-foreground font-space">{getPageTitle()}</h2>
           <p className="text-gray-500">Discover what the community is vibing with</p>
@@ -205,7 +205,7 @@ const Home = () => {
 
       {/* Project Grid */}
       {isLoadingProjects && page === 1 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl overflow-hidden shadow-card animate-pulse">
               <div className="h-48 w-full bg-gray-200"></div>
@@ -246,7 +246,7 @@ const Home = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {projects.map(project => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -255,7 +255,7 @@ const Home = () => {
 
       {/* Load More */}
       {hasMore && (
-        <div className="flex justify-center mb-16">
+        <div className="flex justify-center mb-20">
           <Button 
             variant="outline"
             className="px-6 py-3 rounded-md shadow-sm"
@@ -268,7 +268,7 @@ const Home = () => {
       )}
 
       {/* Explore More Projects CTA */}
-      <div className="flex flex-col items-center mb-16 text-center">
+      <div className="flex flex-col items-center mb-24 text-center py-8 px-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-sm">
         <h2 className="text-2xl md:text-3xl font-bold mb-4">Discover More AI-Powered Projects</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-6">
           Browse our collection of AI-assisted coding projects, filter by tags, search for specific technologies, or sort by popularity.
@@ -284,7 +284,7 @@ const Home = () => {
 
       {/* Featured Project */}
       {featuredProject && (
-        <div className="mb-16">
+        <div className="mb-24">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground font-space">Featured Project</h2>
             <Link href="/browse?sort=featured" className="text-primary hover:text-primary/80 text-sm font-medium">
@@ -318,14 +318,14 @@ const Home = () => {
       )}
 
       {/* Vibe Coding Platforms */}
-      <div className="mb-16">
+      <div className="mb-24">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground font-space mb-6 text-center">Popular AI Coding Platforms</h2>
         <p className="text-gray-600 max-w-3xl mx-auto mb-12 text-center">
           Discover the tools that are revolutionizing how developers build software with AI assistance.
         </p>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
             <div className="h-14 w-14 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-primary">
                 <path fill="currentColor" d="M12.265 2C6.246 2 1.378 6.92 1.378 12.938c0 6.02 4.87 10.94 10.887 10.94 6.02 0 10.887-4.92 10.887-10.94C23.152 6.92 18.285 2 12.265 2zm0 19.735c-4.875 0-8.795-3.92-8.795-8.797 0-4.877 3.92-8.798 8.795-8.798 4.877 0 8.797 3.92 8.797 8.798 0 4.876-3.92 8.797-8.797 8.797z"/>
@@ -336,7 +336,7 @@ const Home = () => {
             <a href="https://replit.com/refer/justin488" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">replit.com</a>
           </div>
           
-          <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+          <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
             <div className="h-14 w-14 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 text-purple-600">
                 <path fill="currentColor" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8h4v2h-6V7h2v5z"/>
