@@ -35,7 +35,7 @@ const BlogEditor = () => {
   // Form state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [excerpt, setExcerpt] = useState("");
+  const [summary, setSummary] = useState("");
   const [featuredImage, setFeaturedImage] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -133,7 +133,7 @@ const BlogEditor = () => {
       const post = blogPostData.post;
       setTitle(post.title || "");
       setContent(post.content || "");
-      setExcerpt(post.excerpt || "");
+      setSummary(post.summary || "");
       setFeaturedImage(post.featuredImage || "");
       setCategoryId(post.category?.id || null);
       
@@ -171,7 +171,7 @@ const BlogEditor = () => {
       const postData = {
         title,
         content,
-        excerpt,
+        summary,
         featuredImage,
         categoryId: categoryId || undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
@@ -296,12 +296,12 @@ const BlogEditor = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="excerpt" className="text-base font-medium">Excerpt/Summary</Label>
+                    <Label htmlFor="summary" className="text-base font-medium">Summary</Label>
                     <Textarea 
-                      id="excerpt" 
+                      id="summary" 
                       placeholder="Brief summary of your post" 
-                      value={excerpt} 
-                      onChange={(e) => setExcerpt(e.target.value)}
+                      value={summary} 
+                      onChange={(e) => setSummary(e.target.value)}
                       className="mt-1.5 resize-none h-20"
                     />
                   </div>
@@ -321,10 +321,10 @@ const BlogEditor = () => {
                     <p className="text-muted-foreground italic">No title</p>
                   )}
                   
-                  {excerpt && (
+                  {summary && (
                     <div className="mb-6 text-muted-foreground">
-                      <p className="text-sm font-medium">Excerpt:</p>
-                      <p>{excerpt}</p>
+                      <p className="text-sm font-medium">Summary:</p>
+                      <p>{summary}</p>
                     </div>
                   )}
                   
