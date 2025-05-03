@@ -1280,8 +1280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload endpoint
-  app.post(`${apiPrefix}/upload/image`, upload.single('image'), (req, res) => {
+  // File upload endpoint with image optimization
+  app.post(`${apiPrefix}/upload/image`, upload.single('image'), async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "You must be logged in to upload images" });
@@ -1291,15 +1291,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'No file uploaded' });
       }
 
-      // Create a URL for the uploaded file
+      // Get the uploaded file path
+      const filePath = req.file.path;
       const fileName = req.file.filename;
-      const fileUrl = `/uploads/${fileName}`;
+      const fileExt = path.extname(fileName).toLowerCase();
       
-      // Return the URL of the uploaded file
-      res.status(201).json({ 
-        fileUrl,
-        message: 'File uploaded successfully' 
-      });
+      // Generate optimized file name
+      const optimizedFileName = `${path.basename(fileName, fileExt)}-optimized${fileExt}`;
+      const optimizedFilePath = path.join(uploadDir, optimizedFileName);
+      
+      try {
+        // Import sharp dynamically to ensure it's loaded
+        const sharp = require('sharp');
+        
+        // Process the image with Sharp based on file type
+        if (fileExt === '.gif' || fileExt === '.svg') {
+          // For GIFs and SVGs, just copy them as is (Sharp doesn't handle animations well)
+          fs.copyFileSync(filePath, optimizedFilePath);
+        } else {
+          // For JPG, PNG, WebP, optimize them
+          await sharp(filePath)
+            .resize({
+              width: 1200, // Limit width to max 1200px
+              height: 1200, // Limit height to max 1200px
+              fit: 'inside', // Maintain aspect ratio
+              withoutEnlargement: true // Don't enlarge smaller images
+            })
+            .jpeg({ quality: 85, progressive: true }) // For JPG output
+            .png({ compressionLevel: 9, progressive: true }) // For PNG output
+            .webp({ quality: 85 }) // For WebP output
+            .toFormat(fileExt === '.png' ? 'png' : fileExt === '.webp' ? 'webp' : 'jpeg')
+            .toFile(optimizedFilePath);
+            
+          // Remove the original file
+          fs.unlinkSync(filePath);
+        }
+        
+        // Create a URL for the optimized file
+        const fileUrl = `/uploads/${optimizedFileName}`;
+        
+        // Return the URL of the optimized file
+        res.status(201).json({ 
+          fileUrl,
+          message: 'File uploaded and optimized successfully' 
+        });
+      } catch (optimizationError) {
+        console.error('Image optimization error:', optimizationError);
+        
+        // If optimization fails, still return the original file
+        const fileUrl = `/uploads/${fileName}`;
+        res.status(201).json({ 
+          fileUrl,
+          message: 'File uploaded successfully (without optimization)' 
+        });
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       res.status(500).json({ message: 'Failed to upload file' });
@@ -1309,8 +1354,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add monitoring and health check routes
   app.use(`${apiPrefix}/monitoring`, monitoringRoutes);
 
-  // Configure Express to serve static files from the uploads directory
-  app.use('/uploads', express.static(uploadDir, { maxAge: '1d' }));
+  // Configure Express to serve static files from the uploads directory with optimized caching
+  app.use('/uploads', express.static(uploadDir, { 
+    maxAge: '7d', // Cache for 7 days
+    immutable: true, // Files with filename hashes never change
+    etag: true, // Generate ETags for better caching
+    lastModified: true, // Use Last-Modified headers
+    index: false, // Don't serve directory indexes
+    redirect: false // Don't redirect to trailing slash
+  }));
 
   const httpServer = createServer(app);
   return httpServer;
