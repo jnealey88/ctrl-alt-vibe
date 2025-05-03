@@ -20,7 +20,7 @@ import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
 import { registerAdminRoutes } from "./routes/admin";
-import { registerProfileRoutes } from "./routes/profile";
+// Profile routes are now directly implemented in this file
 import path from "path";
 import fs from "fs";
 
@@ -72,8 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin routes
   registerAdminRoutes(app);
   
-  // Register profile routes
-  registerProfileRoutes(app);
+  // Profile routes are directly implemented below
 
   // Test route for debugging
   app.get('/api/test-profile-route', (req, res) => {
@@ -81,60 +80,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: 'Test profile route works!' });
   });
 
-  // Direct implementations of profile routes
+  // Direct implementation of profile routes with new approach
+  
+  // Skills endpoint
   app.get('/api/profile/skills', async (req, res) => {
-    console.log('GET /api/profile/skills: Direct route handler called');
-    console.log('User authenticated:', req.isAuthenticated());
+    console.log('GET /api/profile/skills: New implementation called');
     try {
-      if (req.isAuthenticated()) {
-        const userId = req.user!.id;
-        console.log('User ID:', userId);
-        const skills = await storage.getUserSkills(userId);
-        console.log('Skills fetched:', skills);
-        res.json({ skills });
-      } else {
-        // Return an empty array if not authenticated
-        console.log('User not authenticated, returning empty skills array');
-        res.json({ skills: [] });
+      if (!req.isAuthenticated()) {
+        console.log('User not authenticated, returning empty array');
+        return res.json({ skills: [] });
       }
+
+      const userId = req.user!.id;
+      console.log('Authenticated user ID:', userId);
+      
+      // Direct database query to get user skills
+      const result = await db.query.userSkills.findMany({
+        where: eq(userSkills.userId, userId),
+        orderBy: asc(userSkills.category)
+      });
+      
+      console.log('Skills query result:', result);
+      res.json({ skills: result });
     } catch (error) {
-      console.error('Error fetching skills:', error);
-      res.status(500).json({ error: 'Failed to fetch skills data' });
+      console.error('Error in skills endpoint:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
+  // Activity endpoint
   app.get('/api/profile/activity', async (req, res) => {
-    console.log('GET /api/profile/activity: Direct route handler called');
+    console.log('GET /api/profile/activity: New implementation called');
     try {
-      if (req.isAuthenticated()) {
-        const userId = req.user!.id;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const activities = await storage.getUserActivities(userId, limit);
-        res.json({ activities });
-      } else {
-        // Return an empty array if not authenticated
-        res.json({ activities: [] });
+      if (!req.isAuthenticated()) {
+        return res.json({ activities: [] });
       }
+      
+      const userId = req.user!.id;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // Direct database query to get user activities
+      const result = await db.query.userActivity.findMany({
+        where: eq(userActivity.userId, userId),
+        orderBy: desc(userActivity.createdAt),
+        limit: limit
+      });
+      
+      res.json({ activities: result });
     } catch (error) {
-      console.error('Error fetching activities:', error);
-      res.status(500).json({ error: 'Failed to fetch activity data' });
+      console.error('Error in activity endpoint:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
+  // Liked projects endpoint
   app.get('/api/profile/liked', async (req, res) => {
-    console.log('GET /api/profile/liked: Direct route handler called');
+    console.log('GET /api/profile/liked: New implementation called');
     try {
-      if (req.isAuthenticated()) {
-        const userId = req.user!.id;
-        const likedProjects = await storage.getUserLikedProjects(userId, userId);
-        res.json({ projects: likedProjects });
-      } else {
-        // Return an empty array if not authenticated
-        res.json({ projects: [] });
+      if (!req.isAuthenticated()) {
+        return res.json({ projects: [] });
       }
+      
+      const userId = req.user!.id;
+      
+      // Get projects that the user has liked
+      const likedProjects = await storage.getUserLikedProjects(userId, userId);
+      res.json({ projects: likedProjects });
     } catch (error) {
-      console.error('Error fetching liked projects:', error);
-      res.status(500).json({ error: 'Failed to fetch liked projects' });
+      console.error('Error in liked projects endpoint:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
   
