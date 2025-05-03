@@ -24,7 +24,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import CodeBlock from '@tiptap/extension-code-block';
 
 const BlogEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,19 +51,60 @@ const BlogEditor = () => {
   // TipTap editor
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Configure CodeBlock with syntax highlighting classes
+        codeBlock: {
+          HTMLAttributes: {
+            class: 'bg-muted rounded-md p-3 font-mono text-sm my-3 overflow-x-auto',
+          },
+        },
+        heading: {
+          levels: [1, 2, 3],
+          HTMLAttributes: {
+            class: 'font-bold my-4',
+          },
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'border-l-4 border-primary/30 pl-4 italic my-4',
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: 'list-disc pl-5 my-4 space-y-1',
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'list-decimal pl-5 my-4 space-y-1',
+          },
+        },
+      }),
       Placeholder.configure({
         placeholder: 'Write your blog post content here...',
       }),
-      Image,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'rounded-md max-w-full my-4',
+        },
+      }),
       Link.configure({
         openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary underline hover:text-primary/80 transition-colors',
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
       }),
-      CodeBlock,
     ],
     content: content,
     onUpdate: ({ editor }) => {
       setContent(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none',
+      },
     },
   });
 
