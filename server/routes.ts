@@ -730,7 +730,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: z.string().min(50),
         summary: z.string().min(10).max(500), // Required by the schema
         excerpt: z.string().min(20).max(500).optional(),
-        featuredImage: z.string().refine(val => val === '' || /^https?:\/\//.test(val), { message: 'Invalid URL' }).optional(),
+        featuredImage: z.string().refine(val => val === '' || /^https?:\/\//.test(val) || val.startsWith('/uploads/'), { message: 'Invalid URL' }).optional(),
         categoryId: z.number().optional().nullable(),
         authorId: z.number(),
         published: z.boolean().default(false),
@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: z.string().min(50).optional(),
         summary: z.string().min(10).max(500).optional(), // Required field in schema
         excerpt: z.string().min(20).max(500).optional().nullable(),
-        featuredImage: z.string().refine(val => val === '' || val === null || /^https?:\/\//.test(val), { message: 'Invalid URL' }).optional().nullable(),
+        featuredImage: z.string().refine(val => val === '' || val === null || /^https?:\/\//.test(val) || val.startsWith('/uploads/'), { message: 'Invalid URL' }).optional().nullable(),
         categoryId: z.number().optional().nullable(),
         published: z.boolean().optional(),
         tags: z.array(z.number()).optional()
@@ -805,9 +805,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...rest
       };
       
-      // Only include featured_image if featuredImage was provided
+      // Only include featuredImage if it was provided
       if (featuredImage !== undefined) {
-        postDataWithoutTags.featured_image = featuredImage;
+        postDataWithoutTags.featuredImage = featuredImage;
       }
       
       const updatedPost = await storage.updateBlogPost(id, postDataWithoutTags, tags);
