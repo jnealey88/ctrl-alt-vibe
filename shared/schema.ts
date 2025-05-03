@@ -449,6 +449,7 @@ export const blogPostInsertSchema = createInsertSchema(blogPosts, {
   title: (schema) => schema.min(3, "Title must be at least 3 characters"),
   summary: (schema) => schema.min(10, "Summary must be at least 10 characters"),
   content: (schema) => schema.min(50, "Content must be at least 50 characters"),
+  tldr: (schema) => schema.optional(),
 });
 
 export const blogCategoryInsertSchema = createInsertSchema(blogCategories, {

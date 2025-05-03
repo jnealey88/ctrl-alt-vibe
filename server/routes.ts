@@ -626,6 +626,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Blog routes
   
+  // Generate TL;DR summary for a blog post
+  app.post(`${apiPrefix}/blog/posts/:id/generate-tldr`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to generate a TL;DR summary" });
+      }
+
+      // Only admins can generate TL;DR summaries
+      if (!isAdmin(req)) {
+        return res.status(403).json({ message: "Unauthorized. Admin access required" });
+      }
+
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid post ID" });
+      }
+
+      // Get the blog post
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Generate TL;DR summary
+      const tldr = await generateTldrSummary(post.content, post.title);
+
+      // Update the blog post with the generated TL;DR
+      const updatedPost = await storage.updateBlogPost(id, { tldr });
+
+      res.status(200).json({ 
+        success: true, 
+        tldr,
+        post: updatedPost
+      });
+    } catch (error) {
+      console.error("Error generating TL;DR summary:", error);
+      res.status(500).json({ message: "Failed to generate TL;DR summary" });
+    }
+  });
+  
   // Get blog posts with pagination and filtering
   app.get(`${apiPrefix}/blog/posts`, async (req, res) => {
     try {
@@ -730,6 +770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
         content: z.string().min(50),
         summary: z.string().min(10).max(500), // Required by the schema
+        tldr: z.string().optional().nullable(),
         excerpt: z.string().min(20).max(500).optional(),
         featuredImage: z.string().refine(val => val === '' || /^https?:\/\//.test(val) || val.startsWith('/uploads/'), { message: 'Invalid URL' }).optional(),
         categoryId: z.number().optional().nullable(),
@@ -788,6 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }).optional(),
         content: z.string().min(50).optional(),
         summary: z.string().min(10).max(500).optional(), // Required field in schema
+        tldr: z.string().optional().nullable(),
         excerpt: z.string().min(20).max(500).optional().nullable(),
         featuredImage: z.string().refine(val => val === '' || val === null || /^https?:\/\//.test(val) || val.startsWith('/uploads/'), { message: 'Invalid URL' }).optional().nullable(),
         categoryId: z.number().optional().nullable(),
