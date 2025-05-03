@@ -103,14 +103,14 @@ const Navbar = () => {
           
           {!isMobile && (
             <div className="ml-6 flex items-center">
-              <form onSubmit={handleSearch} className="relative rounded-md shadow-sm w-64">
+              <form onSubmit={handleSearch} className="relative w-64">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-gray-400" />
                 </div>
                 <Input
                   type="text"
-                  className="pl-10 h-9"
-                  placeholder="Search projects"
+                  className="pl-10 h-10 bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0"
+                  placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -192,25 +192,29 @@ const Navbar = () => {
               {/* Search icon for mobile */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <button className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
+                  <button className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors">
                     <Search className="h-5 w-5" />
                   </button>
                 </SheetTrigger>
                 <SheetContent side="top" className="w-full pt-16">
                   <div className="px-4 py-6">
-                    <form onSubmit={handleSearch} className="relative rounded-md shadow-sm">
+                    <h3 className="text-lg font-medium mb-3">Search Projects</h3>
+                    <form onSubmit={handleSearch} className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Search className="h-4 w-4 text-gray-400" />
                       </div>
                       <Input
                         type="text"
-                        className="pl-10 h-10 w-full"
-                        placeholder="Search projects..."
+                        className="pl-10 h-12 w-full bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0"
+                        placeholder="Search by title, description or tags..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoFocus
                       />
-                      <Button type="submit" className="mt-2 w-full">Search Projects</Button>
+                      <Button type="submit" className="mt-3 w-full h-12 bg-primary hover:bg-primary/90 transition-colors">
+                        <Search className="h-4 w-4 mr-2" />
+                        Search Projects
+                      </Button>
                     </form>
                   </div>
                 </SheetContent>
@@ -220,13 +224,14 @@ const Navbar = () => {
               {user && (
                 <>
                   <Link href="/submit">
-                    <Button size="sm" className="hidden xs:inline-flex bg-primary hover:bg-primary/90 text-white text-xs px-2 py-1 h-8">
+                    <Button size="sm" className="hidden xs:inline-flex bg-primary hover:bg-primary/90 text-white text-xs px-2 py-1 h-8 transition-colors">
+                      <PlusCircle className="mr-1 h-3 w-3" />
                       Submit
                     </Button>
                   </Link>
                   
                   <Link href="/profile">
-                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold uppercase text-primary">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold uppercase text-primary shadow-sm hover:shadow-md transition-shadow">
                       {user.username.charAt(0)}
                     </div>
                   </Link>
@@ -267,38 +272,53 @@ const Navbar = () => {
 
                     {user ? (
                       <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-gray-500 mb-1">YOUR ACCOUNT</h4>
-                        <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary py-2 text-base font-medium">
+                        <div className="p-3 bg-gray-50 rounded-lg mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary shadow-sm">
+                              {user.username.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-medium">{user.username}</p>
+                              <p className="text-xs text-gray-500 truncate">{user.email || ""}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <h4 className="text-sm font-medium text-gray-500 mb-1 px-1">YOUR ACCOUNT</h4>
+                        <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
                           <User className="mr-2 h-5 w-5" /> My Profile
                         </Link>
                         {user.role === "admin" && (
-                          <Link href="/admin" className="flex items-center text-gray-600 hover:text-primary py-2 text-base font-medium">
+                          <Link href="/admin" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
                             <ShieldCheck className="mr-2 h-5 w-5" /> Admin Dashboard
                           </Link>
                         )}
-                        <Link href="/submit" className="block w-full">
-                          <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                            Submit Project
-                          </Button>
-                        </Link>
+                        <div className="pt-2">
+                          <Link href="/submit" className="block w-full">
+                            <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                              <PlusCircle className="mr-2 h-4 w-4" />
+                              Submit Project
+                            </Button>
+                          </Link>
+                        </div>
                         <Button 
                           onClick={() => logoutMutation.mutate()} 
                           variant="outline" 
-                          className="w-full"
+                          className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
                           disabled={logoutMutation.isPending}
                         >
                           <LogOut className="mr-2 h-4 w-4" />
-                          {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                          {logoutMutation.isPending ? "Logging out..." : "Sign out"}
                         </Button>
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-gray-500 mb-1">ACCOUNT</h4>
+                        <h4 className="text-sm font-medium text-gray-500 mb-3 px-1">ACCOUNT</h4>
                         <Link href="/auth?tab=login" className="block w-full">
-                          <Button variant="outline" className="w-full mb-2">Login</Button>
+                          <Button variant="outline" className="w-full mb-3 h-11">Log in</Button>
                         </Link>
                         <Link href="/auth?tab=register" className="block w-full">
-                          <Button className="w-full">Sign Up</Button>
+                          <Button className="w-full h-11 bg-primary hover:bg-primary/90">Sign up</Button>
                         </Link>
                       </div>
                     )}
