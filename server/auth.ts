@@ -212,16 +212,42 @@ export function setupAuth(app: Express) {
     res.status(200).json(req.user);
   });
 
-  // Google authentication endpoint
+  // Google authentication endpoint with token verification
   app.post("/api/auth/google", async (req, res) => {
     try {
       const { googleId, email, name, picture, token } = req.body;
       
-      if (!googleId || !email) {
+      if (!googleId || !email || !token) {
         return res.status(400).json({ message: "Missing required Google authentication data" });
       }
       
-      console.log("Google OAuth Authentication:", { googleId, email, name });
+      console.log("Google OAuth Authentication request received for:", email);
+      
+      // Verify token with Google
+      try {
+        // Verify the token with Google's OAuth API
+        const verifyTokenUrl = 'https://www.googleapis.com/oauth2/v3/tokeninfo';
+        const verifyResponse = await fetch(`${verifyTokenUrl}?access_token=${token}`);
+        
+        if (!verifyResponse.ok) {
+          console.error('Token verification failed:', await verifyResponse.text());
+          return res.status(401).json({ message: "Invalid Google token" });
+        }
+        
+        const tokenInfo = await verifyResponse.json();
+        
+        // Check that the token is for our application
+        const clientId = process.env.VITE_GOOGLE_CLIENT_ID;
+        if (tokenInfo.aud !== clientId) {
+          console.error('Token was not issued for this application');
+          return res.status(401).json({ message: "Invalid token audience" });
+        }
+        
+        console.log("Google token verified successfully");
+      } catch (verifyError) {
+        console.error("Error verifying Google token:", verifyError);
+        return res.status(401).json({ message: "Failed to verify Google authentication" });
+      }
       
       // Check if user already exists with this email
       let user = await db.query.users.findFirst({
@@ -291,6 +317,140 @@ export function setupAuth(app: Express) {
       }
     } catch (error) {
       console.error("Google authentication error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
+    // Google OAuth callback endpoint - exchanges auth code for tokens
+  app.post("/api/auth/google/callback", async (req, res) => {
+    try {
+      const { code, redirect_uri } = req.body;
+      
+      if (!code || !redirect_uri) {
+        return res.status(400).json({ message: "Missing required callback parameters" });
+      }
+      
+      console.log("Processing Google OAuth callback with code");
+      
+      // Exchange the authorization code for tokens
+      const tokenUrl = 'https://oauth2.googleapis.com/token';
+      const tokenRequestBody = {
+        code,
+        client_id: process.env.VITE_GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri,
+        grant_type: 'authorization_code'
+      };
+      
+      const tokenResponse = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(tokenRequestBody)
+      });
+      
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error('Token exchange error:', errorText);
+        return res.status(401).json({ message: "Failed to exchange authorization code for tokens" });
+      }
+      
+      const tokenData = await tokenResponse.json();
+      const { access_token, id_token } = tokenData;
+      
+      if (!access_token) {
+        return res.status(401).json({ message: "No access token received from Google" });
+      }
+      
+      // Get user profile with the access token
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      });
+      
+      if (!userInfoResponse.ok) {
+        return res.status(401).json({ message: "Failed to get user info from Google" });
+      }
+      
+      const userInfo = await userInfoResponse.json();
+      const { sub: googleId, email, name, picture } = userInfo;
+      
+      if (!googleId || !email) {
+        return res.status(400).json({ message: "Incomplete user information from Google" });
+      }
+      
+      console.log("Google user info retrieved:", { googleId, email, name });
+      
+      // Check if user already exists with this email
+      let user = await db.query.users.findFirst({
+        where: sql`LOWER(${users.email}) = LOWER(${email})`
+      });
+      
+      if (user) {
+        // User exists, log them in
+        console.log("Existing user found with email:", email);
+        req.login(user, (err) => {
+          if (err) {
+            console.error("Login error:", err);
+            return res.status(500).json({ message: "Login failed" });
+          }
+          return res.status(200).json({ user, accessToken: access_token });
+        });
+      } else {
+        // Create a new user with Google data
+        console.log("Creating new user for Google account:", email);
+        
+        // Generate a username from the name or email
+        const baseUsername = name ? 
+          name.toLowerCase().replace(/\s+/g, "_") : 
+          email.split("@")[0];
+        
+        // Check if username already exists and make it unique if needed
+        let username = baseUsername;
+        let counter = 1;
+        let usernameExists = true;
+        
+        while (usernameExists) {
+          const existingUser = await db.query.users.findFirst({
+            where: sql`LOWER(${users.username}) = LOWER(${username})`
+          });
+          
+          if (!existingUser) {
+            usernameExists = false;
+          } else {
+            username = `${baseUsername}_${counter}`;
+            counter++;
+          }
+        }
+        
+        // Create random password for the account (won't be used since login is via Google)
+        const randomPassword = randomBytes(16).toString("hex");
+        
+        // Create the user
+        const newUser = {
+          username,
+          email,
+          password: randomPassword,
+          avatarUrl: picture || null,
+          bio: "",
+          role: "user"
+        };
+        
+        console.log("Creating new user with data:", { username, email });
+        user = await createUser(newUser);
+        
+        req.login(user, (err) => {
+          if (err) {
+            console.error("Registration error:", err);
+            return res.status(500).json({ message: "Registration failed" });
+          }
+          return res.status(201).json({ user, accessToken: access_token });
+        });
+      }
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
       res.status(500).json({ message: "Authentication failed" });
     }
   });

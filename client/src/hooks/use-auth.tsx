@@ -44,31 +44,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkGoogleRedirect = async () => {
       try {
-        // Check if there's an access token in the URL (after Google OAuth redirect)
-        const accessToken = handleGoogleRedirect();
+        // Check if there's an authorization code in the URL (after Google OAuth redirect)
+        const authCode = handleGoogleRedirect();
         
-        if (accessToken) {
-          // Get user info from Google with the access token
-          const googleUserInfo = await getGoogleUserInfo(accessToken);
+        if (authCode) {
+          console.log("Authorization code received, exchanging for tokens");
           
-          // Authenticate with our backend using Google user info
-          const res = await apiRequest("POST", "/api/auth/google", { 
-            googleId: googleUserInfo.sub,
-            email: googleUserInfo.email,
-            name: googleUserInfo.name,
-            picture: googleUserInfo.picture,
-            // Send the token so backend can verify
-            token: accessToken
+          // Call our backend to exchange the authorization code for tokens
+          const res = await apiRequest("POST", "/api/auth/google/callback", { 
+            code: authCode,
+            redirect_uri: `${window.location.origin}/auth`
           });
           
-          const user = await res.json();
-          queryClient.setQueryData(["/api/user"], user);
+          const userData = await res.json();
+          
+          // Update the user in the query cache
+          queryClient.setQueryData(["/api/user"], userData.user);
+          
           toast({
             title: "Google login successful",
-            description: `Welcome, ${user.username || googleUserInfo.name}!`,
+            description: `Welcome, ${userData.user.username}!`,
           });
           
-          // Clean fragment from URL without triggering a page reload
+          // Clean query parameters from URL without triggering a page reload
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       } catch (error) {
