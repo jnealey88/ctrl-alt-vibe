@@ -11,6 +11,10 @@ import {
   bookmarks,
   codingTools,
   shares,
+  blogPosts,
+  blogCategories,
+  blogTags,
+  blogPostTags,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -21,7 +25,13 @@ import type {
   InsertReply,
   CodingTool,
   InsertCodingTool,
-  InsertShare
+  InsertShare,
+  BlogPost,
+  BlogCategory,
+  BlogTag,
+  InsertBlogPost,
+  InsertBlogCategory,
+  InsertBlogTag
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -48,6 +58,405 @@ const getProperCasedTag = (tagName: string): string => {
 };
 
 export const storage = {
+  // Blog methods
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return await db.query.blogCategories.findMany({
+      orderBy: (categories) => [asc(categories.name)]
+    });
+  },
+
+  async getBlogCategory(id: number): Promise<BlogCategory | null> {
+    return await db.query.blogCategories.findFirst({
+      where: eq(blogCategories.id, id)
+    });
+  },
+
+  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | null> {
+    return await db.query.blogCategories.findFirst({
+      where: eq(blogCategories.slug, slug)
+    });
+  },
+
+  async createBlogCategory(categoryData: Omit<InsertBlogCategory, 'id' | 'createdAt' | 'updatedAt'>): Promise<BlogCategory> {
+    const [category] = await db.insert(blogCategories).values({
+      ...categoryData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return category;
+  },
+
+  async updateBlogCategory(id: number, categoryData: Partial<Omit<InsertBlogCategory, 'id' | 'createdAt' | 'updatedAt'>>): Promise<BlogCategory | null> {
+    const [category] = await db.update(blogCategories)
+      .set({
+        ...categoryData,
+        updatedAt: new Date()
+      })
+      .where(eq(blogCategories.id, id))
+      .returning();
+    return category || null;
+  },
+
+  async deleteBlogCategory(id: number): Promise<boolean> {
+    try {
+      await db.delete(blogCategories).where(eq(blogCategories.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting blog category:', error);
+      return false;
+    }
+  },
+
+  async getBlogTags(): Promise<BlogTag[]> {
+    return await db.query.blogTags.findMany({
+      orderBy: (tags) => [asc(tags.name)]
+    });
+  },
+
+  async getBlogTag(id: number): Promise<BlogTag | null> {
+    return await db.query.blogTags.findFirst({
+      where: eq(blogTags.id, id)
+    });
+  },
+
+  async getBlogTagBySlug(slug: string): Promise<BlogTag | null> {
+    return await db.query.blogTags.findFirst({
+      where: eq(blogTags.slug, slug)
+    });
+  },
+
+  async createBlogTag(tagData: Omit<InsertBlogTag, 'id' | 'createdAt'>): Promise<BlogTag> {
+    const [tag] = await db.insert(blogTags).values({
+      ...tagData,
+      createdAt: new Date()
+    }).returning();
+    return tag;
+  },
+
+  async updateBlogTag(id: number, tagData: Partial<Omit<InsertBlogTag, 'id' | 'createdAt'>>): Promise<BlogTag | null> {
+    const [tag] = await db.update(blogTags)
+      .set(tagData)
+      .where(eq(blogTags.id, id))
+      .returning();
+    return tag || null;
+  },
+
+  async deleteBlogTag(id: number): Promise<boolean> {
+    try {
+      await db.delete(blogTags).where(eq(blogTags.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting blog tag:', error);
+      return false;
+    }
+  },
+
+  async getBlogPosts(options: { 
+    limit?: number; 
+    offset?: number; 
+    publishedOnly?: boolean;
+    categoryId?: number;
+    tagId?: number;
+    authorId?: number;
+  } = {}): Promise<{ posts: BlogPost[]; total: number }> {
+    const { limit = 10, offset = 0, publishedOnly = true, categoryId, tagId, authorId } = options;
+    
+    let postsQuery = db.select()
+      .from(blogPosts)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(blogPosts.createdAt));
+
+    // Filter conditions
+    if (publishedOnly) {
+      postsQuery = postsQuery.where(eq(blogPosts.published, true));
+    }
+
+    if (categoryId) {
+      postsQuery = postsQuery.where(eq(blogPosts.categoryId, categoryId));
+    }
+
+    if (authorId) {
+      postsQuery = postsQuery.where(eq(blogPosts.authorId, authorId));
+    }
+
+    let postResults = await postsQuery;
+
+    // If filtering by tag, we need to do a separate query with a join
+    if (tagId) {
+      postResults = await db.select()
+        .from(blogPosts)
+        .innerJoin(blogPostTags, eq(blogPosts.id, blogPostTags.postId))
+        .where(eq(blogPostTags.tagId, tagId))
+        .limit(limit)
+        .offset(offset)
+        .orderBy(desc(blogPosts.createdAt));
+      
+      if (publishedOnly) {
+        postResults = postResults.filter(post => post.blog_posts.published);
+      }
+
+      // Extract just the post data
+      postResults = postResults.map(result => result.blog_posts);
+    }
+
+    // Get the total count for pagination
+    let countQuery = db.select({ count: count() }).from(blogPosts);
+    
+    if (publishedOnly) {
+      countQuery = countQuery.where(eq(blogPosts.published, true));
+    }
+
+    if (categoryId) {
+      countQuery = countQuery.where(eq(blogPosts.categoryId, categoryId));
+    }
+
+    if (authorId) {
+      countQuery = countQuery.where(eq(blogPosts.authorId, authorId));
+    }
+
+    // If tag filtering, need a different count query
+    let totalCount;
+    if (tagId) {
+      const taggedPostsCount = await db.select({ count: count() })
+        .from(blogPosts)
+        .innerJoin(blogPostTags, eq(blogPosts.id, blogPostTags.postId))
+        .where(eq(blogPostTags.tagId, tagId));
+      totalCount = Number(taggedPostsCount[0]?.count || 0);
+    } else {
+      const countResult = await countQuery;
+      totalCount = Number(countResult[0]?.count || 0);
+    }
+
+    // Now for each post, get author, category, and tags
+    const enhancedPosts = await Promise.all(postResults.map(async (post) => {
+      const author = await db.query.users.findFirst({
+        where: eq(users.id, post.authorId),
+        columns: {
+          id: true,
+          username: true,
+          avatarUrl: true
+        }
+      });
+
+      let category = null;
+      if (post.categoryId) {
+        category = await db.query.blogCategories.findFirst({
+          where: eq(blogCategories.id, post.categoryId),
+        });
+      }
+
+      // Get tags for this post
+      const postTagResults = await db.select()
+        .from(blogPostTags)
+        .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
+        .where(eq(blogPostTags.postId, post.id));
+
+      const tags = postTagResults.map(result => result.blog_tags.name);
+
+      return {
+        ...post,
+        author: author || { id: 0, username: 'Unknown' },
+        category: category ? { id: category.id, name: category.name, slug: category.slug } : undefined,
+        tags
+      } as BlogPost;
+    }));
+
+    return { posts: enhancedPosts, total: totalCount };
+  },
+
+  async getBlogPost(id: number): Promise<BlogPost | null> {
+    const post = await db.query.blogPosts.findFirst({
+      where: eq(blogPosts.id, id)
+    });
+
+    if (!post) return null;
+
+    // Get author
+    const author = await db.query.users.findFirst({
+      where: eq(users.id, post.authorId),
+      columns: {
+        id: true,
+        username: true,
+        avatarUrl: true
+      }
+    });
+
+    // Get category if exists
+    let category = null;
+    if (post.categoryId) {
+      category = await db.query.blogCategories.findFirst({
+        where: eq(blogCategories.id, post.categoryId)
+      });
+    }
+
+    // Get tags
+    const postTagResults = await db.select()
+      .from(blogPostTags)
+      .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
+      .where(eq(blogPostTags.postId, post.id));
+
+    const tags = postTagResults.map(result => result.blog_tags.name);
+
+    return {
+      ...post,
+      author: author || { id: 0, username: 'Unknown' },
+      category: category ? { id: category.id, name: category.name, slug: category.slug } : undefined,
+      tags
+    };
+  },
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+    const post = await db.query.blogPosts.findFirst({
+      where: eq(blogPosts.slug, slug)
+    });
+
+    if (!post) return null;
+
+    // Get author
+    const author = await db.query.users.findFirst({
+      where: eq(users.id, post.authorId),
+      columns: {
+        id: true,
+        username: true,
+        avatarUrl: true
+      }
+    });
+
+    // Get category if exists
+    let category = null;
+    if (post.categoryId) {
+      category = await db.query.blogCategories.findFirst({
+        where: eq(blogCategories.id, post.categoryId)
+      });
+    }
+
+    // Get tags
+    const postTagResults = await db.select()
+      .from(blogPostTags)
+      .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
+      .where(eq(blogPostTags.postId, post.id));
+
+    const tags = postTagResults.map(result => result.blog_tags.name);
+
+    return {
+      ...post,
+      author: author || { id: 0, username: 'Unknown' },
+      category: category ? { id: category.id, name: category.name, slug: category.slug } : undefined,
+      tags
+    };
+  },
+
+  async incrementBlogPostViews(id: number): Promise<void> {
+    await db.update(blogPosts)
+      .set({
+        viewCount: sql`${blogPosts.viewCount} + 1`
+      })
+      .where(eq(blogPosts.id, id));
+  },
+
+  async createBlogPost(postData: Omit<InsertBlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount'>, tagIds: number[] = []): Promise<BlogPost> {
+    // Check if slug already exists
+    const existingPost = await db.query.blogPosts.findFirst({
+      where: eq(blogPosts.slug, postData.slug)
+    });
+
+    if (existingPost) {
+      throw new Error('A post with this slug already exists');
+    }
+
+    // Create the post
+    const [post] = await db.insert(blogPosts).values({
+      ...postData,
+      viewCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      publishedAt: postData.published ? new Date() : null
+    }).returning();
+
+    // Add tags if any
+    if (tagIds.length > 0) {
+      await Promise.all(tagIds.map(tagId => 
+        db.insert(blogPostTags).values({
+          postId: post.id,
+          tagId
+        })
+      ));
+    }
+
+    // Return the full post with author, category, tags
+    return await this.getBlogPost(post.id) as BlogPost;
+  },
+
+  async updateBlogPost(id: number, postData: Partial<Omit<InsertBlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount'>>, tagIds?: number[]): Promise<BlogPost | null> {
+    // Check if slug change and if it already exists
+    if (postData.slug) {
+      const existingPost = await db.query.blogPosts.findFirst({
+        where: and(
+          eq(blogPosts.slug, postData.slug),
+          not(eq(blogPosts.id, id))
+        )
+      });
+
+      if (existingPost) {
+        throw new Error('A post with this slug already exists');
+      }
+    }
+
+    // Check if publishing status changed to published
+    const currentPost = await db.query.blogPosts.findFirst({
+      where: eq(blogPosts.id, id)
+    });
+
+    if (!currentPost) {
+      return null;
+    }
+
+    const isPublishingNow = !currentPost.published && postData.published;
+
+    // Update the post
+    const [post] = await db.update(blogPosts)
+      .set({
+        ...postData,
+        updatedAt: new Date(),
+        publishedAt: isPublishingNow ? new Date() : currentPost.publishedAt
+      })
+      .where(eq(blogPosts.id, id))
+      .returning();
+
+    // If tagIds provided, update tags
+    if (tagIds !== undefined) {
+      // Remove existing tags
+      await db.delete(blogPostTags).where(eq(blogPostTags.postId, id));
+      
+      // Add new tags
+      if (tagIds.length > 0) {
+        await Promise.all(tagIds.map(tagId => 
+          db.insert(blogPostTags).values({
+            postId: id,
+            tagId
+          })
+        ));
+      }
+    }
+
+    // Return the full post with author, category, tags
+    return post ? await this.getBlogPost(post.id) : null;
+  },
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    try {
+      // Delete post tags first due to foreign key constraints
+      await db.delete(blogPostTags).where(eq(blogPostTags.postId, id));
+      // Delete the post
+      await db.delete(blogPosts).where(eq(blogPosts.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      return false;
+    }
+  },
+
   // Projects
 
   async getProjects({ 
