@@ -784,7 +784,7 @@ const BlogEditor = () => {
                         formData.append('image', file);
                         
                         // Upload the image
-                        const response = await fetch('/api/v1/upload/image', {
+                        const response = await fetch('/api/upload/image', {
                           method: 'POST',
                           body: formData,
                         });
