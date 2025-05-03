@@ -17,6 +17,8 @@ import UserProfilePage from "@/pages/user-profile-page";
 import UsersPage from "@/pages/UsersPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import BlogEditor from "@/pages/BlogEditor";
+import BlogPage from "@/pages/BlogPage";
+import BlogPostPage from "@/pages/BlogPostPage";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";

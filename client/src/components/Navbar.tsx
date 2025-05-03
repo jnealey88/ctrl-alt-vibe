@@ -26,7 +26,8 @@ import {
   Home,
   Grid,
   Users,
-  PlusCircle
+  PlusCircle,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +59,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-1" /> },
     { name: "Browse", path: "/browse", icon: <Grid className="h-4 w-4 mr-1" /> },
+    { name: "Blog", path: "/blog", icon: <BookOpen className="h-4 w-4 mr-1" /> },
     { name: "Community", path: "/users", icon: <Users className="h-4 w-4 mr-1" /> }
   ];
 
