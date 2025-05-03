@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { 
-  Loader2, Camera, Mail, FileText, Heart, Eye, Grid, Image, Settings
+  Loader2, Camera, Mail, FileText, Heart, Eye, Grid, Image, Settings, User, LockKeyhole
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -33,11 +33,23 @@ type ProfileResponse = {
 };
 
 const profileEditSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
   email: z.string().email("Please enter a valid email address"),
   bio: z.string().max(300, "Bio must be less than 300 characters").optional(),
 });
 
 type ProfileEditValues = z.infer<typeof profileEditSchema>;
+
+const passwordResetSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8, "Password must be at least 8 characters")
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type PasswordResetValues = z.infer<typeof passwordResetSchema>;
 
 export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
@@ -61,12 +73,35 @@ export default function ProfilePage() {
   });
 
   // Update form values when user data changes
+  // Password reset form 
+  const passwordForm = useForm<PasswordResetValues>({
+    resolver: zodResolver(passwordResetSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  // State for password reset dialog
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  
+  // State to track if this user is a Google OAuth user
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
+
   useEffect(() => {
     if (user) {
       form.reset({
+        username: user.username,
         email: user.email,
         bio: user.bio || "",
       });
+      
+      // Check if this is a Google authenticated user by looking for a very long random password
+      // (Google users have a long random password generated during registration)
+      if (user.password && user.password.length > 30) {
+        setIsGoogleUser(true);
+      }
     }
   }, [user, form]);
 
@@ -137,6 +172,32 @@ export default function ProfilePage() {
     fileInputRef.current?.click();
   };
 
+  // Password reset mutation
+  const passwordResetMutation = useMutation({
+    mutationFn: async (values: PasswordResetValues) => {
+      return await apiRequest("POST", "/api/profile/reset-password", values);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully.",
+      });
+      setIsPasswordDialogOpen(false);
+      passwordForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update password: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePasswordSubmit = (values: PasswordResetValues) => {
+    passwordResetMutation.mutate(values);
+  };
+  
   const handleLogout = () => {
     logoutMutation.mutate();
   };
@@ -347,6 +408,24 @@ export default function ProfilePage() {
             <form onSubmit={form.handleSubmit(handleProfileSubmit)} className="space-y-4 py-2">
               <FormField
                 control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Username
+                      </div>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="your_username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -386,25 +465,114 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
+              <div className="flex justify-between items-center gap-2 pt-4">
+                {!isGoogleUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setIsPasswordDialogOpen(true);
+                    }}
+                  >
+                    <LockKeyhole className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                )}
+                <div className="flex gap-2 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    {updateProfileMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Password Reset Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
+          <Form {...passwordForm}>
+            <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4 py-2">
+              <FormField
+                control={passwordForm.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Your current password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={passwordForm.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="New password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={passwordForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Confirm new password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsEditDialogOpen(false)}
+                  onClick={() => setIsPasswordDialogOpen(false)}
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
-                  disabled={updateProfileMutation.isPending}
+                  disabled={passwordResetMutation.isPending}
                 >
-                  {updateProfileMutation.isPending ? (
+                  {passwordResetMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      Updating...
                     </>
                   ) : (
-                    "Save Changes"
+                    "Update Password"
                   )}
                 </Button>
               </div>

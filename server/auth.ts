@@ -951,23 +951,101 @@ export function setupAuth(app: Express) {
       }
 
       const userId = req.user!.id;
-      const { bio, email } = req.body;
+      const { bio, email, username } = req.body;
+
+      // Check if username already exists (if updating username)
+      if (username && username !== req.user!.username) {
+        const existingUser = await db.query.users.findFirst({
+          where: sql`LOWER(${users.username}) = LOWER(${username}) AND ${users.id} != ${userId}`
+        });
+        
+        if (existingUser) {
+          return res.status(400).json({ message: "Username already taken" });
+        }
+      }
 
       // Only allow updating certain fields
       const updateData: Partial<Express.User> = {};
       if (bio !== undefined) updateData.bio = bio;
       if (email !== undefined) updateData.email = email;
+      if (username !== undefined) updateData.username = username;
 
       const updatedUser = await updateUser(userId, updateData);
 
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       // Update the session with the latest user data
-      req.login(updatedUser, (err) => {
-        if (err) throw err;
-        res.status(200).json(updatedUser);
+      // Use promise-based approach for async login
+      const loginPromise = new Promise<void>((resolve, reject) => {
+        req.login(updatedUser, (err) => {
+          if (err) {
+            console.error("Session update error:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
       });
+      
+      try {
+        await loginPromise;
+        res.status(200).json(updatedUser);
+      } catch (err) {
+        throw err;
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+  
+  // Reset password
+  app.post("/api/profile/reset-password", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user!.id;
+      const { currentPassword, newPassword } = req.body;
+      
+      // Get current user with password
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if this is a Google auth user
+      if (user.password && user.password.length > 30) {
+        return res.status(400).json({ 
+          message: "Password reset is not available for accounts linked to Google login" 
+        });
+      }
+      
+      // Verify current password
+      const isValidPassword = await comparePasswords(currentPassword, user.password);
+      
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Update password
+      const hashedPassword = await hashPassword(newPassword);
+      const updatedUser = await updateUser(userId, { password: hashedPassword });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Failed to update password" });
+      }
+      
+      res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 
@@ -988,10 +1066,24 @@ export function setupAuth(app: Express) {
       const updatedUser = await updateUser(userId, { avatarUrl });
 
       // Update the session with the latest user data
-      req.login(updatedUser, (err) => {
-        if (err) throw err;
-        res.status(200).json(updatedUser);
+      // Use promise-based approach for async login
+      const loginPromise = new Promise<void>((resolve, reject) => {
+        req.login(updatedUser, (err) => {
+          if (err) {
+            console.error("Session update error:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
       });
+      
+      try {
+        await loginPromise;
+        res.status(200).json(updatedUser);
+      } catch (err) {
+        throw err;
+      }
     } catch (error) {
       console.error("Error uploading avatar:", error);
       res.status(500).json({ message: "Failed to upload avatar" });
