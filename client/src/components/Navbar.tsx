@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,21 +14,39 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { 
+import {
   Bell,
   Menu,
   Search,
   User,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Home,
+  Grid,
+  Users,
+  PlusCircle
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const isMobile = useMobile();
   const { user, logoutMutation } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+
+  // Track scroll position for navbar styling
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      setScrolled(offset > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +56,18 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Browse", path: "/browse" },
-    { name: "Community", path: "/users" }
+    { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-1" /> },
+    { name: "Browse", path: "/browse", icon: <Grid className="h-4 w-4 mr-1" /> },
+    { name: "Community", path: "/users", icon: <Users className="h-4 w-4 mr-1" /> }
   ];
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className={cn(
+      "sticky top-0 z-50 w-full transition-all duration-300", 
+      scrolled 
+        ? "bg-white/90 backdrop-blur-md shadow-md" 
+        : "bg-white shadow-sm"
+    )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -55,12 +78,25 @@ const Navbar = () => {
             </div>
             
             {!isMobile && (
-              <div className="ml-6 flex space-x-8">
-                {navLinks.map((link) => (
-                  <Link key={link.name} href={link.path} className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                    {link.name}
-                  </Link>
-                ))}
+              <div className="ml-6 flex space-x-6">
+                {navLinks.map((link) => {
+                  const isActive = location === link.path;
+                  return (
+                    <Link 
+                      key={link.name} 
+                      href={link.path} 
+                      className={cn(
+                        "inline-flex items-center px-2 pt-1 text-sm font-medium border-b-2 transition-colors duration-200",
+                        isActive 
+                          ? "border-primary text-primary" 
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      )}
+                    >
+                      {link.icon}
+                      {link.name}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -83,29 +119,36 @@ const Navbar = () => {
               {user ? (
                 <>
                   <Link href="/submit">
-                    <Button className="ml-4 bg-primary hover:bg-primary/90 text-white">
+                    <Button className="ml-4 bg-primary hover:bg-primary/90 text-white group transition-all">
+                      <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
                       Submit Project
                     </Button>
                   </Link>
                   
-                  <button className="ml-3 bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
+                  <button className="ml-3 bg-white/80 hover:bg-white p-1.5 rounded-full text-gray-400 hover:text-gray-700 focus:outline-none transition-colors relative">
                     <span className="sr-only">View notifications</span>
-                    <Bell className="h-6 w-6" />
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
                   </button>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="ml-3 bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                      <button className="ml-3 bg-white/80 hover:bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
                         <span className="sr-only">Open user menu</span>
-                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary">
+                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary shadow-sm">
                           {user.username.charAt(0)}
                         </div>
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-56 p-1">
+                      <div className="px-2 py-1.5 mb-1">
+                        <p className="text-sm font-medium text-gray-900">Welcome, {user.username}!</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email || ""}</p>
+                      </div>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link href="/profile" className="flex w-full cursor-pointer">
-                          <User className="mr-2 h-4 w-4" /> Profile
+                          <User className="mr-2 h-4 w-4" /> My Profile
                         </Link>
                       </DropdownMenuItem>
                       {user.role === "admin" && (
@@ -115,19 +158,29 @@ const Navbar = () => {
                           </Link>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => logoutMutation.mutate()} className="cursor-pointer">
-                        <LogOut className="mr-2 h-4 w-4" /> Logout
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => logoutMutation.mutate()} 
+                        className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-50"
+                        disabled={logoutMutation.isPending}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {logoutMutation.isPending ? "Logging out..." : "Sign out"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>
               ) : (
-                <div className="flex ml-4 space-x-2">
+                <div className="flex ml-4 space-x-3">
                   <Link href="/auth?tab=login">
-                    <Button variant="outline">Login</Button>
+                    <Button variant="outline" className="hover:bg-gray-50 transition-colors">
+                      Log in
+                    </Button>
                   </Link>
                   <Link href="/auth?tab=register">
-                    <Button>Sign Up</Button>
+                    <Button className="bg-primary hover:bg-primary/90 transition-colors">
+                      Sign up
+                    </Button>
                   </Link>
                 </div>
               )}
@@ -183,20 +236,33 @@ const Navbar = () => {
               {/* Main menu for mobile */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                  <button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary transition-colors">
                     <span className="sr-only">Open main menu</span>
                     <Menu className="h-6 w-6" />
                   </button>
                 </SheetTrigger>
                 <SheetContent>
                   <div className="flex flex-col space-y-4 mt-6">
-                    <div className="pb-2 mb-2 border-b">
-                      <h4 className="text-sm font-medium text-gray-500 mb-3">NAVIGATION</h4>
-                      {navLinks.map((link) => (
-                        <Link key={link.name} href={link.path} className="block text-gray-600 hover:text-primary py-2 text-base font-medium">
-                          {link.name}
-                        </Link>
-                      ))}
+                    <div className="pb-3 mb-2 border-b">
+                      <h4 className="text-sm font-medium text-gray-500 mb-3 px-1">NAVIGATION</h4>
+                      {navLinks.map((link) => {
+                        const isActive = location === link.path;
+                        return (
+                          <Link 
+                            key={link.name} 
+                            href={link.path} 
+                            className={cn(
+                              "flex items-center text-base font-medium py-2 px-1 rounded-md transition-colors",
+                              isActive 
+                                ? "text-primary bg-primary/10" 
+                                : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                            )}
+                          >
+                            {link.icon}
+                            {link.name}
+                          </Link>
+                        );
+                      })}
                     </div>
 
                     {user ? (
