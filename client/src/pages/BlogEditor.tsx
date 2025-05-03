@@ -18,21 +18,10 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, ArrowLeft, Info, Image as ImageIcon, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// TipTap components
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import Highlight from '@tiptap/extension-highlight';
-import Color from '@tiptap/extension-color';
-import Typography from '@tiptap/extension-typography';
+// Quill editor components
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import 'quill/dist/quill.core.css';
 
 const BlogEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,96 +47,37 @@ const BlogEditor = () => {
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
 
-  // TipTap editor
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        // Configure CodeBlock with syntax highlighting classes
-        codeBlock: {
-          HTMLAttributes: {
-            class: 'bg-muted rounded-md p-3 font-mono text-sm my-3 overflow-x-auto',
-          },
-        },
-        heading: {
-          levels: [1, 2, 3],
-          HTMLAttributes: {
-            class: 'font-bold my-4',
-          },
-        },
-        blockquote: {
-          HTMLAttributes: {
-            class: 'border-l-4 border-primary/30 pl-4 italic my-4',
-          },
-        },
-        bulletList: {
-          HTMLAttributes: {
-            class: 'list-disc pl-5 my-4 space-y-1',
-          },
-        },
-        orderedList: {
-          HTMLAttributes: {
-            class: 'list-decimal pl-5 my-4 space-y-1',
-          },
-        },
-      }),
-      Placeholder.configure({
-        placeholder: 'Write your blog post content here...',
-      }),
-      Image.configure({
-        HTMLAttributes: {
-          class: 'rounded-md max-w-full my-4',
-        },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-primary underline hover:text-primary/80 transition-colors',
-          rel: 'noopener noreferrer',
-          target: '_blank',
-        },
-      }),
-      // New extensions
-      Underline.configure(),
-      Highlight.configure({
-        multicolor: true,
-        HTMLAttributes: {
-          class: 'bg-yellow-200 dark:bg-yellow-800 px-1 rounded',
-        },
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
-      }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class: 'border-collapse table-auto w-full my-4',
-        },
-      }),
-      TableRow.configure(),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class: 'border border-gray-300 dark:border-gray-700 px-4 py-2 text-left font-medium',
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class: 'border border-gray-300 dark:border-gray-700 px-4 py-2 text-left',
-        },
-      }),
-      Color.configure(),
-      Typography.configure(),
+  // Quill editor modules and formats configuration
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'script': 'sub' }, { 'script': 'super' }],
+      [{ 'indent': '-1' }, { 'indent': '+1' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'code-block'],
+      [{ 'table': true }],
+      ['clean']
     ],
-    content: content,
-    onUpdate: ({ editor }) => {
-      setContent(editor.getHTML());
+    clipboard: {
+      // toggle to add extra line breaks when pasting HTML:
+      matchVisual: false,
     },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none',
-      },
-    },
-  });
+    table: true,
+  };
+  
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike', 'blockquote',
+    'color', 'background',
+    'list', 'bullet', 'indent',
+    'link', 'image', 'code-block',
+    'script',
+    'align',
+    'table', 'tableHeader', 'tableRow', 'tableCell'
+  ];
 
   // Fetch blog post in edit mode
   const { data: blogPostData, isLoading: blogPostLoading } = useQuery({
@@ -232,12 +162,10 @@ const BlogEditor = () => {
         setSelectedTags(tagIds);
       }
       
-      // Update Tiptap editor content
-      if (editor && post.content) {
-        editor.commands.setContent(post.content);
-      }
+      // Content is already set via the useState, no need to update ReactQuill manually
     }
-  }, [isEditMode, blogPostData, tagsData, editor]);
+  }, [isEditMode, blogPostData, tagsData]);
+
 
   // Redirect non-admin users away from this page
   useEffect(() => {
@@ -517,259 +445,18 @@ const BlogEditor = () => {
                   
                   <div>
                     <Label htmlFor="editor" className="text-base font-medium">Content</Label>
-                    <div className="border rounded-md mt-1.5 overflow-hidden sticky top-4 z-10">
-                      {/* Editor Toolbar */}
-                      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 p-2 border-b bg-background shadow-sm">
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleBold().run()}
-                          data-active={editor?.isActive('bold') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('bold') ? 'text-primary font-bold' : ''}`}>B</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground italic" 
-                          onClick={() => editor?.chain().focus().toggleItalic().run()}
-                          data-active={editor?.isActive('italic') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('italic') ? 'text-primary' : ''}`}>I</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-                          data-active={editor?.isActive('heading', { level: 2 }) ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('heading', { level: 2 }) ? 'text-primary' : ''}`}>H2</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-                          data-active={editor?.isActive('heading', { level: 3 }) ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('heading', { level: 3 }) ? 'text-primary' : ''}`}>H3</span>
-                        </Button>
-                        
-                        <div className="h-4 border-r mx-1"></div>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                          data-active={editor?.isActive('bulletList') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('bulletList') ? 'text-primary' : ''}`}>• List</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                          data-active={editor?.isActive('orderedList') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('orderedList') ? 'text-primary' : ''}`}>1. List</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleCode().run()}
-                          data-active={editor?.isActive('code') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('code') ? 'text-primary' : ''}`}>Code</span>
-                        </Button>
-                        
-                        <div className="h-4 border-r mx-1"></div>
-                        
-                        <div className="relative">
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 px-2 text-muted-foreground" 
-                            onClick={() => {
-                              document.getElementById('editorImageUpload')?.click();
-                            }}
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                          </Button>
-                          <input
-                            type="file"
-                            id="editorImageUpload"
-                            accept="image/*"
-                            className="sr-only"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file || !editor) return;
-                              
-                              // Check file size (max 5MB)
-                              if (file.size > 5 * 1024 * 1024) {
-                                toast({
-                                  title: "Error",
-                                  description: "Image size should be less than 5MB",
-                                  variant: "destructive"
-                                });
-                                return;
-                              }
-                              
-                              try {
-                                setIsUploadingImage(true);
-                                
-                                // Create FormData
-                                const formData = new FormData();
-                                formData.append('image', file);
-                                
-                                // Upload the image
-                                const response = await fetch('/api/upload/image', {
-                                  method: 'POST',
-                                  body: formData,
-                                });
-                                
-                                if (!response.ok) {
-                                  throw new Error('Failed to upload image');
-                                }
-                                
-                                const data = await response.json();
-                                
-                                // Insert the image at cursor position
-                                editor.chain().focus().setImage({ src: data.fileUrl }).run();
-                                
-                                toast({
-                                  title: "Success",
-                                  description: "Image inserted successfully",
-                                });
-                              } catch (error) {
-                                console.error('Error uploading image:', error);
-                                toast({
-                                  title: "Error",
-                                  description: "Failed to upload image",
-                                  variant: "destructive"
-                                });
-                              } finally {
-                                setIsUploadingImage(false);
-                                // Reset file input
-                                const fileInput = document.getElementById('editorImageUpload') as HTMLInputElement;
-                                if (fileInput) fileInput.value = '';
-                              }
-                            }}
-                          />
-                        </div>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => {
-                            const url = window.prompt('Enter the link URL');
-                            if (url && editor) {
-                              editor.chain().focus().setLink({ href: url }).run();
-                            }
-                          }}
-                          data-active={editor?.isActive('link') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('link') ? 'text-primary' : ''}`}>Link</span>
-                        </Button>
-                        
-                        <div className="h-4 border-r mx-1"></div>
-                        
-                        {/* Text Alignment */}
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().setTextAlign('left').run()}
-                          data-active={editor?.isActive({ textAlign: 'left' }) ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive({ textAlign: 'left' }) ? 'text-primary' : ''}`}>Left</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().setTextAlign('center').run()}
-                          data-active={editor?.isActive({ textAlign: 'center' }) ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive({ textAlign: 'center' }) ? 'text-primary' : ''}`}>Center</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().setTextAlign('right').run()}
-                          data-active={editor?.isActive({ textAlign: 'right' }) ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive({ textAlign: 'right' }) ? 'text-primary' : ''}`}>Right</span>
-                        </Button>
-                        
-                        <div className="h-4 border-r mx-1"></div>
-                        
-                        {/* Table */}
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                        >
-                          <span>Table</span>
-                        </Button>
-                        
-                        {/* Highlight and Underline */}
-                        <div className="h-4 border-r mx-1"></div>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleUnderline().run()}
-                          data-active={editor?.isActive('underline') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('underline') ? 'text-primary underline' : ''}`}>U</span>
-                        </Button>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 px-2 text-muted-foreground" 
-                          onClick={() => editor?.chain().focus().toggleHighlight().run()}
-                          data-active={editor?.isActive('highlight') ? "true" : "false"}
-                        >
-                          <span className={`${editor?.isActive('highlight') ? 'text-primary bg-yellow-200 px-1' : ''}`}>Highlight</span>
-                        </Button>
-                      </div>
-                      
-                      {/* Editor Content */}
-                      <div className="p-4 min-h-[400px] max-h-[600px] overflow-y-auto bg-white dark:bg-gray-950">
-                        <EditorContent editor={editor} />
-                      </div>
+                    <div className="mt-1.5 sticky top-4 z-10">
+                      {/* ReactQuill Editor */}
+                      <ReactQuill
+                        id="editor"
+                        theme="snow"
+                        value={content}
+                        onChange={setContent}
+                        modules={quillModules}
+                        formats={quillFormats}
+                        placeholder="Write your blog post content here..."
+                        className="rounded-md overflow-hidden h-[400px]"
+                      />
                     </div>
                   </div>
                 </div>
