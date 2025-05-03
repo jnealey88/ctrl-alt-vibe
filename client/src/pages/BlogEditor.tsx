@@ -38,6 +38,8 @@ const BlogEditor = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
+  const [tldr, setTldr] = useState<string>("");
+  const [isGeneratingTldr, setIsGeneratingTldr] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -225,6 +227,29 @@ const BlogEditor = () => {
     },
   });
 
+  // Generate TL;DR mutation
+  const generateTldrMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      return apiRequest("POST", `/api/blog/posts/${postId}/generate-tldr`).then(res => res.json());
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "TL;DR Generated",
+        description: "AI-generated summary created successfully."
+      });
+      if (data?.tldr) {
+        setTldr(data.tldr);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to generate TL;DR: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Update blog post mutation
   const updateBlogPostMutation = useMutation({
     mutationFn: async ({ id, postData }: { id: number, postData: any }) => {
@@ -255,6 +280,7 @@ const BlogEditor = () => {
       setTitle(post.title || "");
       setContent(post.content || "");
       setSummary(post.summary || "");
+      setTldr(post.tldr || "");
       setFeaturedImage(post.featuredImage || ""); // Use camelCase for frontend
       setCategoryId(post.category?.id || null);
       
@@ -310,6 +336,7 @@ const BlogEditor = () => {
         slug, // Add the slug field
         content,
         summary,
+        tldr: tldr || null, // Include TL;DR if available
         featuredImage: featuredImage, // Using camelCase for frontend-to-backend communications
         categoryId: categoryId || undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
@@ -420,6 +447,27 @@ const BlogEditor = () => {
       console.error("Error creating tag:", error);
     } finally {
       setIsCreatingTag(false);
+    }
+  };
+
+  // Handle TL;DR generation
+  const handleGenerateTldr = async () => {
+    if (!isEditMode) {
+      toast({
+        title: "Save First",
+        description: "Please save your post before generating a TL;DR summary.",
+        variant: "default"
+      });
+      return;
+    }
+    
+    setIsGeneratingTldr(true);
+    try {
+      await generateTldrMutation.mutateAsync(parseInt(id));
+    } catch (error) {
+      console.error("Error generating TL;DR:", error);
+    } finally {
+      setIsGeneratingTldr(false);
     }
   };
 
@@ -568,6 +616,42 @@ const BlogEditor = () => {
                       className={`mt-1.5 resize-none h-20 ${summary.length < 10 && summary.length > 0 ? 'border-destructive' : ''}`}
                     />
                   </div>
+
+                  <div>
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="tldr" className="text-base font-medium">TL;DR (AI-Generated Summary)</Label>
+                      {isEditMode && (
+                        <Button 
+                          type="button" 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-7 gap-1 text-xs" 
+                          onClick={handleGenerateTldr}
+                          disabled={isGeneratingTldr}
+                        >
+                          {isGeneratingTldr ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-xs">✨</span>
+                              Generate TL;DR
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                    <Textarea 
+                      id="tldr" 
+                      placeholder={isEditMode ? "Click 'Generate TL;DR' to create an AI summary of your post" : "Save your post first to generate a TL;DR"} 
+                      value={tldr} 
+                      onChange={(e) => setTldr(e.target.value)}
+                      className="mt-1.5 resize-none h-20"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">A concise, AI-generated summary will appear at the top of your blog post.</p>
+                  </div>
                   
                   <div>
                     <div className="mb-1.5">
@@ -598,9 +682,16 @@ const BlogEditor = () => {
                   )}
                   
                   {summary && (
-                    <div className="mb-6 text-muted-foreground">
+                    <div className="mb-4 text-muted-foreground">
                       <p className="text-sm font-medium">Summary:</p>
                       <p>{summary}</p>
+                    </div>
+                  )}
+
+                  {tldr && (
+                    <div className="mb-6 p-4 bg-muted/30 rounded-md border">
+                      <p className="text-sm font-medium mb-1">TL;DR:</p>
+                      <p className="italic text-sm">{tldr}</p>
                     </div>
                   )}
                   
