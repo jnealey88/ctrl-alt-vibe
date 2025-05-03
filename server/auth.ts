@@ -220,14 +220,17 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) return res.json(null);
     res.json(req.user);
   });
 
   // Get current user profile with their projects
   app.get("/api/profile", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+      if (!req.isAuthenticated()) {
+        // Return empty data for unauthenticated users
+        return res.json({ user: null, projects: [] });
+      }
       
       const userId = req.user!.id;
       
