@@ -19,6 +19,8 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import BlogEditor from "@/pages/BlogEditor";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -50,6 +52,8 @@ function Router() {
           <Route path="/blog/:slug" component={BlogPostPage} />
           <Route path="/blog" component={BlogPage} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/privacy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
           <Route component={NotFound} />
         </Switch>
       </div>
