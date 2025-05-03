@@ -109,6 +109,47 @@
   height: auto;
 }
 
+/* Table styles */
+.ql-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.ql-editor table td,
+.ql-editor table th {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.ql-editor table th {
+  background-color: #f1f5f9;
+  font-weight: bold;
+}
+
+.ql-editor table tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.dark .ql-editor table {
+  border-color: #374151;
+}
+
+.dark .ql-editor table td,
+.dark .ql-editor table th {
+  border-color: #374151;
+}
+
+.dark .ql-editor table th {
+  background-color: #1f2937;
+}
+
+.dark .ql-editor table tr:nth-child(even) {
+  background-color: #111827;
+}
+
 /* Dark mode Quill button styles */
 .dark .ql-snow.ql-toolbar button,
 .dark .ql-snow .ql-toolbar button {

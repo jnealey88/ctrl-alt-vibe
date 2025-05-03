@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import 'quill/dist/quill.core.css';
+import Quill from 'quill';
 
 const BlogEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,19 +48,73 @@ const BlogEditor = () => {
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
 
+  // Custom handler for table insertion
+  const insertTable = function(this: any) {
+    const quill = this.quill;
+    if (quill) {
+      // Get current selection position
+      const range = quill.getSelection();
+      if (range) {
+        // Create a clean styled table - 3x3
+        const tableHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Header 1</th>
+                <th>Header 2</th>
+                <th>Header 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Row 1, Cell 1</td>
+                <td>Row 1, Cell 2</td>
+                <td>Row 1, Cell 3</td>
+              </tr>
+              <tr>
+                <td>Row 2, Cell 1</td>
+                <td>Row 2, Cell 2</td>
+                <td>Row 2, Cell 3</td>
+              </tr>
+            </tbody>
+          </table>
+        `;
+        
+        // Insert the table at cursor position
+        quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML, 'user');
+        
+        // Move cursor after the table
+        quill.setSelection(range.index + 1, 0);
+        
+        // Add a notification for users
+        toast({
+          title: "Table Inserted",
+          description: "You can edit the table by clicking on cells. Add more rows/columns by copying and pasting.",
+          duration: 3000
+        });
+      }
+    }
+  };
+
   // Quill editor modules and formats configuration
   const quillModules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'script': 'sub' }, { 'script': 'super' }],
-      [{ 'indent': '-1' }, { 'indent': '+1' }],
-      [{ 'align': [] }],
-      ['link', 'image', 'code-block'],
-      ['clean']
-    ],
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'script': 'sub' }, { 'script': 'super' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'align': [] }],
+        ['link', 'image', 'code-block'],
+        ['table'],
+        ['clean']
+      ],
+      handlers: {
+        'table': insertTable
+      }
+    },
     clipboard: {
       // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
@@ -73,7 +128,9 @@ const BlogEditor = () => {
     'list', 'bullet', 'indent',
     'link', 'image', 'code-block',
     'script',
-    'align'
+    'align',
+    // Table related formats
+    'table', 'td', 'th', 'tr', 'tbody'
   ];
 
   // Fetch blog post in edit mode
@@ -473,7 +530,10 @@ const BlogEditor = () => {
                   )}
                   
                   {content ? (
-                    <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+                    <div 
+                      className="prose max-w-none ql-editor" 
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    />
                   ) : (
                     <p className="text-muted-foreground italic">No content</p>
                   )}
