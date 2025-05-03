@@ -1,0 +1,26 @@
+[vite] connecting...
+[vite] connected.
+Warning: findDOMNode is deprecated and will be removed in the next major release. Instead, add a ref directly to the element you want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node
+    at ReactQuill2 (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/react-quill.js?v=d6aee06f:12915:30)
+    at div
+    at div
+    at div
+    at div
+    at _c9 (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at BlogEditor (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/pages/BlogEditor.tsx:38:18)
+    at Route (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=d6aee06f:280:16)
+    at ProtectedRoute (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/lib/protected-route.tsx:22:3)
+    at Switch (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=d6aee06f:336:17)
+    at div
+    at div
+    at Router
+    at ErrorBoundary (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/components/ErrorBoundary.tsx:10:5)
+    at AuthProvider (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at QueryClientProvider (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=d6aee06f:2879:3)
+    at _a (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/react-helmet-async.js?v=d6aee06f:624:5)
+    at App (https://6cb7cb1d-f6c8-42d0-8b87-1fd24f07d622-00-3flodifwf63nw.janeway.replit.dev/src/App.tsx?v=pTFEUsAk5h9x9v-jSjokw:160:21)

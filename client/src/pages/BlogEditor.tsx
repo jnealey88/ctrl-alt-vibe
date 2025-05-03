@@ -22,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import 'quill/dist/quill.core.css';
-import Quill from 'quill';
 
 const BlogEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -96,27 +95,20 @@ const BlogEditor = () => {
     }
   };
 
-  // Quill editor modules and formats configuration
+  // Basic editor configuration - avoiding custom modules for better stability
   const quillModules = {
-    toolbar: {
-      container: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'script': 'sub' }, { 'script': 'super' }],
-        [{ 'indent': '-1' }, { 'indent': '+1' }],
-        [{ 'align': [] }],
-        ['link', 'image', 'code-block'],
-        ['table'],
-        ['clean']
-      ],
-      handlers: {
-        'table': insertTable
-      }
-    },
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'script': 'sub' }, { 'script': 'super' }],
+      [{ 'indent': '-1' }, { 'indent': '+1' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'code-block'],
+      ['clean']
+    ],
     clipboard: {
-      // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
     }
   };
@@ -129,9 +121,45 @@ const BlogEditor = () => {
     'link', 'image', 'code-block',
     'script',
     'align',
-    // Table related formats
-    'table', 'td', 'th', 'tr', 'tbody'
   ];
+
+  // Function to insert a table via a normal button
+  const handleInsertTable = () => {
+    // Create table HTML
+    const tableHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+            <th>Header 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Row 1, Cell 1</td>
+            <td>Row 1, Cell 2</td>
+            <td>Row 1, Cell 3</td>
+          </tr>
+          <tr>
+            <td>Row 2, Cell 1</td>
+            <td>Row 2, Cell 2</td>
+            <td>Row 2, Cell 3</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    
+    // Set content with the table added
+    setContent(content + tableHTML);
+    
+    // Notify user
+    toast({
+      title: "Table Inserted",
+      description: "You can edit the table by clicking on cells.",
+      duration: 3000
+    });
+  };
 
   // Fetch blog post in edit mode
   const { data: blogPostData, isLoading: blogPostLoading } = useQuery({
@@ -498,7 +526,27 @@ const BlogEditor = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="editor" className="text-base font-medium">Content</Label>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <Label htmlFor="editor" className="text-base font-medium">Content</Label>
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleInsertTable}
+                        className="flex items-center text-xs"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" 
+                             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" 
+                             strokeLinejoin="round" className="mr-1.5">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="3" y1="9" x2="21" y2="9"></line>
+                          <line x1="3" y1="15" x2="21" y2="15"></line>
+                          <line x1="9" y1="3" x2="9" y2="21"></line>
+                          <line x1="15" y1="3" x2="15" y2="21"></line>
+                        </svg>
+                        Insert Table
+                      </Button>
+                    </div>
                     <div className="mt-1.5 sticky top-4 z-10">
                       {/* ReactQuill Editor */}
                       <ReactQuill
