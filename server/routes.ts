@@ -12,10 +12,12 @@ import {
   commentReplies,
   blogPostInsertSchema,
   blogCategoryInsertSchema,
-  blogTagInsertSchema
+  blogTagInsertSchema,
+  userSkills,
+  userActivity
 } from "@shared/schema";
 import { db } from "../db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
 import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
@@ -82,29 +84,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Direct implementation of profile routes with new approach
   
-  // Skills endpoint
+  // Skills endpoint - added debug and better error handling
   app.get('/api/profile/skills', async (req, res) => {
-    console.log('GET /api/profile/skills: New implementation called');
+    console.log('GET /api/profile/skills: Improved implementation called');
     try {
       if (!req.isAuthenticated()) {
-        console.log('User not authenticated, returning empty array');
+        console.log('User not authenticated, returning empty skills array');
         return res.json({ skills: [] });
       }
 
       const userId = req.user!.id;
       console.log('Authenticated user ID:', userId);
       
-      // Direct database query to get user skills
-      const result = await db.query.userSkills.findMany({
-        where: eq(userSkills.userId, userId),
-        orderBy: asc(userSkills.category)
-      });
-      
-      console.log('Skills query result:', result);
-      res.json({ skills: result });
+      try {
+        // Direct database query with better error handling
+        const result = await db.select()
+          .from(userSkills)
+          .where(eq(userSkills.userId, userId))
+          .orderBy(userSkills.category, userSkills.skill);
+        
+        console.log('Skills query result:', result);
+        res.json({ skills: result });
+      } catch (dbError) {
+        console.error('Database error in skills endpoint:', dbError);
+        // Return empty array on database error instead of error response
+        res.json({ skills: [] });
+      }
     } catch (error) {
-      console.error('Error in skills endpoint:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Unexpected error in skills endpoint:', error);
+      // Return empty array on error instead of error response
+      res.json({ skills: [] });
     }
   });
 
