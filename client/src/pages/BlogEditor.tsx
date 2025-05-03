@@ -58,14 +58,12 @@ const BlogEditor = () => {
       [{ 'indent': '-1' }, { 'indent': '+1' }],
       [{ 'align': [] }],
       ['link', 'image', 'code-block'],
-      [{ 'table': true }],
       ['clean']
     ],
     clipboard: {
       // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
-    },
-    table: true,
+    }
   };
   
   const quillFormats = [
@@ -75,8 +73,7 @@ const BlogEditor = () => {
     'list', 'bullet', 'indent',
     'link', 'image', 'code-block',
     'script',
-    'align',
-    'table', 'tableHeader', 'tableRow', 'tableCell'
+    'align'
   ];
 
   // Fetch blog post in edit mode
