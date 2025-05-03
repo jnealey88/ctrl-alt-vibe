@@ -117,47 +117,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Activity endpoint
+  // Activity endpoint with improved error handling
   app.get('/api/profile/activity', async (req, res) => {
-    console.log('GET /api/profile/activity: New implementation called');
+    console.log('GET /api/profile/activity: Improved implementation called');
     try {
       if (!req.isAuthenticated()) {
+        console.log('User not authenticated, returning empty activity array');
         return res.json({ activities: [] });
       }
       
       const userId = req.user!.id;
+      console.log('Authenticated user ID:', userId);
       const limit = parseInt(req.query.limit as string) || 10;
       
-      // Direct database query to get user activities
-      const result = await db.query.userActivity.findMany({
-        where: eq(userActivity.userId, userId),
-        orderBy: desc(userActivity.createdAt),
-        limit: limit
-      });
-      
-      res.json({ activities: result });
+      try {
+        // Direct database query with better error handling
+        const result = await db.select()
+          .from(userActivity)
+          .where(eq(userActivity.userId, userId))
+          .orderBy(desc(userActivity.createdAt))
+          .limit(limit);
+        
+        console.log('Activity query result:', result);
+        res.json({ activities: result });
+      } catch (dbError) {
+        console.error('Database error in activity endpoint:', dbError);
+        // Return empty array on database error instead of error response
+        res.json({ activities: [] });
+      }
     } catch (error) {
-      console.error('Error in activity endpoint:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Unexpected error in activity endpoint:', error);
+      // Return empty array on error instead of error response
+      res.json({ activities: [] });
     }
   });
 
-  // Liked projects endpoint
+  // Liked projects endpoint with improved error handling
   app.get('/api/profile/liked', async (req, res) => {
-    console.log('GET /api/profile/liked: New implementation called');
+    console.log('GET /api/profile/liked: Improved implementation called');
     try {
       if (!req.isAuthenticated()) {
+        console.log('User not authenticated, returning empty projects array');
         return res.json({ projects: [] });
       }
       
       const userId = req.user!.id;
+      console.log('Authenticated user ID for liked projects:', userId);
       
-      // Get projects that the user has liked
-      const likedProjects = await storage.getUserLikedProjects(userId, userId);
-      res.json({ projects: likedProjects });
+      try {
+        // Get projects that the user has liked
+        const likedProjects = await storage.getUserLikedProjects(userId, userId);
+        console.log('Liked projects result length:', likedProjects?.length || 0);
+        res.json({ projects: likedProjects || [] });
+      } catch (dbError) {
+        console.error('Database error in liked projects endpoint:', dbError);
+        // Return empty array on database error instead of error response
+        res.json({ projects: [] });
+      }
     } catch (error) {
-      console.error('Error in liked projects endpoint:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Unexpected error in liked projects endpoint:', error);
+      // Return empty array on error instead of error response
+      res.json({ projects: [] });
     }
   });
   
