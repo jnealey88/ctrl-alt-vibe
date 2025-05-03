@@ -26,6 +26,21 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
+type UserSkill = {
+  id: number;
+  userId: number;
+  category: string;
+  skill: string;
+  createdAt: string;
+};
+
+type UserActivity = {
+  id: number;
+  type: string;
+  createdAt: string;
+  targetData: any;
+};
+
 type ProfileResponse = {
   user: {
     id: number;
@@ -34,6 +49,18 @@ type ProfileResponse = {
     bio?: string;
     avatarUrl?: string;
   };
+  projects: Project[];
+};
+
+type SkillsResponse = {
+  skills: UserSkill[];
+};
+
+type ActivityResponse = {
+  activities: UserActivity[];
+};
+
+type LikedProjectsResponse = {
   projects: Project[];
 };
 
@@ -51,8 +78,26 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: profileData, isLoading } = useQuery<ProfileResponse>({
+  const { data: profileData, isLoading: isLoadingProfile } = useQuery<ProfileResponse>({
     queryKey: ["/api/profile"],
+    queryFn: getQueryFn({ on401: "throw" }),
+    enabled: !!user,
+  });
+  
+  const { data: skillsData, isLoading: isLoadingSkills } = useQuery<SkillsResponse>({
+    queryKey: ["/api/profile/skills"],
+    queryFn: getQueryFn({ on401: "throw" }),
+    enabled: !!user,
+  });
+  
+  const { data: likedProjectsData, isLoading: isLoadingLiked } = useQuery<LikedProjectsResponse>({
+    queryKey: ["/api/profile/liked"],
+    queryFn: getQueryFn({ on401: "throw" }),
+    enabled: !!user,
+  });
+  
+  const { data: activitiesData, isLoading: isLoadingActivities } = useQuery<ActivityResponse>({
+    queryKey: ["/api/profile/activity"],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!user,
   });
@@ -146,7 +191,7 @@ export default function ProfilePage() {
     logoutMutation.mutate();
   };
 
-  if (isLoading) {
+  if (isLoadingProfile || isLoadingSkills || isLoadingLiked || isLoadingActivities) {
     return (
       <div className="container mx-auto py-10 flex justify-center items-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
