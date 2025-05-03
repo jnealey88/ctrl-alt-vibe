@@ -690,10 +690,84 @@ const BlogEditor = () => {
                         >
                           <span className={`${editor?.isActive('link') ? 'text-primary' : ''}`}>Link</span>
                         </Button>
+                        
+                        <div className="h-4 border-r mx-1"></div>
+                        
+                        {/* Text Alignment */}
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().setTextAlign('left').run()}
+                          data-active={editor?.isActive({ textAlign: 'left' }) ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive({ textAlign: 'left' }) ? 'text-primary' : ''}`}>Left</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().setTextAlign('center').run()}
+                          data-active={editor?.isActive({ textAlign: 'center' }) ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive({ textAlign: 'center' }) ? 'text-primary' : ''}`}>Center</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().setTextAlign('right').run()}
+                          data-active={editor?.isActive({ textAlign: 'right' }) ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive({ textAlign: 'right' }) ? 'text-primary' : ''}`}>Right</span>
+                        </Button>
+                        
+                        <div className="h-4 border-r mx-1"></div>
+                        
+                        {/* Table */}
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                        >
+                          <span>Table</span>
+                        </Button>
+                        
+                        {/* Highlight and Underline */}
+                        <div className="h-4 border-r mx-1"></div>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleUnderline().run()}
+                          data-active={editor?.isActive('underline') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('underline') ? 'text-primary underline' : ''}`}>U</span>
+                        </Button>
+                        
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 px-2 text-muted-foreground" 
+                          onClick={() => editor?.chain().focus().toggleHighlight().run()}
+                          data-active={editor?.isActive('highlight') ? "true" : "false"}
+                        >
+                          <span className={`${editor?.isActive('highlight') ? 'text-primary bg-yellow-200 px-1' : ''}`}>Highlight</span>
+                        </Button>
                       </div>
                       
                       {/* Editor Content */}
-                      <div className="p-4 min-h-[300px]">
+                      <div className="p-4 min-h-[400px] max-h-[600px] overflow-y-auto bg-white dark:bg-gray-950">
                         <EditorContent editor={editor} />
                       </div>
                     </div>
