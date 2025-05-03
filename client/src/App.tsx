@@ -44,6 +44,8 @@ function Router() {
           <ProtectedRoute path="/admin" component={AdminDashboard} />
           <ProtectedRoute path="/blog/new" component={BlogEditor} />
           <ProtectedRoute path="/blog/edit/:id" component={BlogEditor} />
+          <Route path="/blog/:slug" component={BlogPostPage} />
+          <Route path="/blog" component={BlogPage} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

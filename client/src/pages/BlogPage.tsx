@@ -144,10 +144,10 @@ const BlogPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {postsData.posts.map((post: BlogPost) => (
             <Card key={post.id} className="overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg h-full flex flex-col" onClick={() => setLocation(`/blog/${post.slug}`)}>
-              {post.featured_image && (
+              {post.featuredImage && (
                 <div className="h-48 overflow-hidden">
                   <img 
-                    src={post.featured_image} 
+                    src={post.featuredImage} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out" 
                   />

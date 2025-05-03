@@ -13,6 +13,9 @@ import { BlogPost } from "@shared/schema";
 import SEO from "@/components/SEO";
 import { useAuth } from "@/hooks/use-auth";
 
+// Default image to use when a post doesn't have a featured image
+const defaultImage = "/ctrlaltvibelogo.png";
+
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [_, setLocation] = useLocation();
@@ -67,7 +70,7 @@ const BlogPostPage = () => {
             title={`${post.title} | Ctrl Alt Vibe Blog`}
             description={post.summary}
             keywords={post.tags || []}
-            image={post.featured_image}
+            image={post.featuredImage || defaultImage}
           />
           
           <div className="mb-8">
@@ -109,10 +112,10 @@ const BlogPostPage = () => {
               </div>
             </div>
             
-            {post.featured_image && (
+            {post.featuredImage && (
               <div className="mb-8">
                 <img 
-                  src={post.featured_image} 
+                  src={post.featuredImage} 
                   alt={post.title} 
                   className="w-full h-auto rounded-lg shadow-md" 
                 />
