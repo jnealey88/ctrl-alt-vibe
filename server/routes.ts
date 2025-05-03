@@ -74,6 +74,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register profile routes
   registerProfileRoutes(app);
+
+  // Test route for debugging
+  app.get('/api/test-profile-route', (req, res) => {
+    console.log('Test profile route accessed');
+    res.json({ message: 'Test profile route works!' });
+  });
+
+  // Direct implementations of profile routes
+  app.get('/api/profile/skills', async (req, res) => {
+    console.log('GET /api/profile/skills: Direct route handler called');
+    console.log('User authenticated:', req.isAuthenticated());
+    try {
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        console.log('User ID:', userId);
+        const skills = await storage.getUserSkills(userId);
+        console.log('Skills fetched:', skills);
+        res.json({ skills });
+      } else {
+        // Return an empty array if not authenticated
+        console.log('User not authenticated, returning empty skills array');
+        res.json({ skills: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching skills:', error);
+      res.status(500).json({ error: 'Failed to fetch skills data' });
+    }
+  });
+
+  app.get('/api/profile/activity', async (req, res) => {
+    console.log('GET /api/profile/activity: Direct route handler called');
+    try {
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const activities = await storage.getUserActivities(userId, limit);
+        res.json({ activities });
+      } else {
+        // Return an empty array if not authenticated
+        res.json({ activities: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      res.status(500).json({ error: 'Failed to fetch activity data' });
+    }
+  });
+
+  app.get('/api/profile/liked', async (req, res) => {
+    console.log('GET /api/profile/liked: Direct route handler called');
+    try {
+      if (req.isAuthenticated()) {
+        const userId = req.user!.id;
+        const likedProjects = await storage.getUserLikedProjects(userId, userId);
+        res.json({ projects: likedProjects });
+      } else {
+        // Return an empty array if not authenticated
+        res.json({ projects: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching liked projects:', error);
+      res.status(500).json({ error: 'Failed to fetch liked projects' });
+    }
+  });
   
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
