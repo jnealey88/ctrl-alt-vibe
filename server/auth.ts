@@ -212,6 +212,77 @@ export function setupAuth(app: Express) {
     res.status(200).json(req.user);
   });
 
+  // Google authentication endpoint
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { uid, email, displayName, photoURL } = req.body;
+      
+      if (!uid || !email) {
+        return res.status(400).json({ message: "Missing required Google authentication data" });
+      }
+      
+      // Check if user already exists with this email
+      let user = await db.query.users.findFirst({
+        where: sql`LOWER(${users.email}) = LOWER(${email})`
+      });
+      
+      if (user) {
+        // User exists, log them in
+        req.login(user, (err) => {
+          if (err) return res.status(500).json({ message: "Login failed" });
+          return res.status(200).json(user);
+        });
+      } else {
+        // Create a new user with Google data
+        // Generate a username from the display name or email
+        const baseUsername = displayName ? 
+          displayName.toLowerCase().replace(/\s+/g, "_") : 
+          email.split("@")[0];
+        
+        // Check if username already exists and make it unique if needed
+        let username = baseUsername;
+        let counter = 1;
+        let usernameExists = true;
+        
+        while (usernameExists) {
+          const existingUser = await db.query.users.findFirst({
+            where: sql`LOWER(${users.username}) = LOWER(${username})`
+          });
+          
+          if (!existingUser) {
+            usernameExists = false;
+          } else {
+            username = `${baseUsername}_${counter}`;
+            counter++;
+          }
+        }
+        
+        // Create random password for the account (won't be used since login is via Google)
+        const randomPassword = randomBytes(16).toString("hex");
+        
+        // Create the user
+        const newUser = {
+          username,
+          email,
+          password: randomPassword,
+          avatarUrl: photoURL || null,
+          bio: "",
+          role: "user"
+        };
+        
+        user = await createUser(newUser);
+        
+        req.login(user, (err) => {
+          if (err) return res.status(500).json({ message: "Registration failed" });
+          return res.status(201).json(user);
+        });
+      }
+    } catch (error) {
+      console.error("Google authentication error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);

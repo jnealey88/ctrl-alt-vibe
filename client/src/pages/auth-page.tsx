@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
 import SEO from "@/components/SEO";
+import { Separator } from "@/components/ui/separator";
+import { SiGoogle } from "react-icons/si";
 
 const loginFormSchema = z.object({
   username: z.string().min(3, "Username or email must be at least 3 characters"),
@@ -27,7 +29,7 @@ const registerFormSchema = z.object({
 });
 
 export default function AuthPage() {
-  const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  const { user, isLoading, loginMutation, registerMutation, googleLoginMutation } = useAuth();
   
   // Default to login tab, simplified for now
   const [activeTab, setActiveTab] = useState("login");
@@ -152,6 +154,31 @@ export default function AuthPage() {
                     </Button>
                   </form>
                 </Form>
+                
+                <div className="mt-6">
+                  <Separator className="my-4">
+                    <span className="text-xs text-muted-foreground px-2">OR</span>
+                  </Separator>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => googleLoginMutation.mutate()}
+                    disabled={googleLoginMutation.isPending}
+                  >
+                    {googleLoginMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connecting with Google...
+                      </>
+                    ) : (
+                      <>
+                        <SiGoogle className="mr-2 h-4 w-4" />
+                        Continue with Google
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-2">
                 <div className="text-sm text-muted-foreground">
@@ -246,6 +273,31 @@ export default function AuthPage() {
                     </Button>
                   </form>
                 </Form>
+                
+                <div className="mt-6">
+                  <Separator className="my-4">
+                    <span className="text-xs text-muted-foreground px-2">OR</span>
+                  </Separator>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => googleLoginMutation.mutate()}
+                    disabled={googleLoginMutation.isPending}
+                  >
+                    {googleLoginMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connecting with Google...
+                      </>
+                    ) : (
+                      <>
+                        <SiGoogle className="mr-2 h-4 w-4" />
+                        Continue with Google
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-2">
                 <div className="text-sm text-muted-foreground">

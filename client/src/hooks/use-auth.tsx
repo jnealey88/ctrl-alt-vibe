@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   useQuery,
   useMutation,
@@ -7,6 +7,12 @@ import {
 import { InsertUser, User } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  initiateGoogleLogin, 
+  handleGoogleRedirect, 
+  getGoogleUserInfo, 
+  clearGoogleAuth 
+} from "../lib/googleAuth";
 
 type AuthContextType = {
   user: User | null;
@@ -15,6 +21,7 @@ type AuthContextType = {
   loginMutation: UseMutationResult<User, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   registerMutation: UseMutationResult<User, Error, InsertUser>;
+  googleLoginMutation: UseMutationResult<User, Error, void>;
 };
 
 type LoginData = Pick<InsertUser, "username" | "password">;
@@ -27,10 +34,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     error,
     isLoading,
+    refetch
   } = useQuery<User | null, Error>({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
+
+  // Handle Google Auth redirect result when component mounts
+  useEffect(() => {
+    const checkGoogleRedirect = async () => {
+      try {
+        // Check if there's an access token in the URL (after Google OAuth redirect)
+        const accessToken = handleGoogleRedirect();
+        
+        if (accessToken) {
+          // Get user info from Google with the access token
+          const googleUserInfo = await getGoogleUserInfo(accessToken);
+          
+          // Authenticate with our backend using Google user info
+          const res = await apiRequest("POST", "/api/auth/google", { 
+            googleId: googleUserInfo.sub,
+            email: googleUserInfo.email,
+            name: googleUserInfo.name,
+            picture: googleUserInfo.picture,
+            // Send the token so backend can verify
+            token: accessToken
+          });
+          
+          const user = await res.json();
+          queryClient.setQueryData(["/api/user"], user);
+          toast({
+            title: "Google login successful",
+            description: `Welcome, ${user.username || googleUserInfo.name}!`,
+          });
+          
+          // Clean fragment from URL without triggering a page reload
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (error) {
+        console.error("Error handling Google redirect:", error);
+        toast({
+          title: "Login failed",
+          description: "Could not complete Google login",
+          variant: "destructive",
+        });
+        // Clear any partial auth data
+        clearGoogleAuth();
+      }
+    };
+    
+    checkGoogleRedirect();
+  }, [toast]);
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
@@ -94,6 +148,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: async () => {
+      // 1. Sign in with Google using Firebase
+      const firebaseUser = await signInWithGoogle();
+      
+      // 2. Send the Firebase user data to our backend
+      const res = await apiRequest("POST", "/api/auth/google", {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL
+      });
+      
+      return await res.json();
+    },
+    onSuccess: (user: User) => {
+      queryClient.setQueryData(["/api/user"], user);
+      toast({
+        title: "Google login successful",
+        description: `Welcome, ${user.username}!`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Google login failed",
+        description: error.message || "Could not authenticate with Google",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <AuthContext.Provider
       value={{
@@ -103,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
+        googleLoginMutation,
       }}
     >
       {children}
