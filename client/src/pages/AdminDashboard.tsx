@@ -115,6 +115,39 @@ const AdminDashboard = () => {
     enabled: !!user && user.role === "admin"
   });
 
+  // Fetch blog posts
+  const { data: blogPostsData, isLoading: blogPostsLoading } = useQuery<{ posts: BlogPost[] }>({
+    queryKey: ["/api/blog/posts", blogSearchQuery],
+    queryFn: () => {
+      const queryParams = new URLSearchParams();
+      if (blogSearchQuery) queryParams.append("search", blogSearchQuery);
+      return apiRequest("GET", `/api/blog/posts?${queryParams.toString()}`).then(res => res.json());
+    },
+    enabled: !!user && user.role === "admin" && activeTab === "blog" && blogSubTab === "posts"
+  });
+
+  // Fetch blog categories
+  const { data: blogCategoriesData, isLoading: blogCategoriesLoading } = useQuery<{ categories: BlogCategory[] }>({
+    queryKey: ["/api/blog/categories", blogCategorySearchQuery],
+    queryFn: () => {
+      const queryParams = new URLSearchParams();
+      if (blogCategorySearchQuery) queryParams.append("search", blogCategorySearchQuery);
+      return apiRequest("GET", `/api/blog/categories`).then(res => res.json());
+    },
+    enabled: !!user && user.role === "admin" && (activeTab === "blog")
+  });
+
+  // Fetch blog tags
+  const { data: blogTagsData, isLoading: blogTagsLoading } = useQuery<{ tags: BlogTag[] }>({
+    queryKey: ["/api/blog/tags", blogTagSearchQuery],
+    queryFn: () => {
+      const queryParams = new URLSearchParams();
+      if (blogTagSearchQuery) queryParams.append("search", blogTagSearchQuery);
+      return apiRequest("GET", `/api/blog/tags`).then(res => res.json());
+    },
+    enabled: !!user && user.role === "admin" && (activeTab === "blog")
+  });
+
   // Fetch reported comments
   const { data: commentsData, isLoading: commentsLoading } = useQuery<{ comments: Comment[] }>({
     queryKey: ["/api/admin/reported-comments", commentsSearchQuery],
@@ -213,6 +246,133 @@ const AdminDashboard = () => {
     },
   });
 
+  // Blog mutations
+  // Create blog post
+  const createBlogPostMutation = useMutation({
+    mutationFn: async (postData: any) => {
+      return apiRequest("POST", "/api/blog/posts", postData).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Blog Post Created",
+        description: "The blog post has been successfully created.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/posts"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create blog post: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete blog post
+  const deleteBlogPostMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      return apiRequest("DELETE", `/api/blog/posts/${postId}`).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Blog Post Deleted",
+        description: "The blog post has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/posts"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete blog post: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create blog category
+  const createBlogCategoryMutation = useMutation({
+    mutationFn: async (categoryData: any) => {
+      return apiRequest("POST", "/api/blog/categories", categoryData).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Category Created",
+        description: "The blog category has been successfully created.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/categories"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create blog category: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete blog category
+  const deleteBlogCategoryMutation = useMutation({
+    mutationFn: async (categoryId: number) => {
+      return apiRequest("DELETE", `/api/blog/categories/${categoryId}`).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Category Deleted",
+        description: "The blog category has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/categories"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete blog category: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create blog tag
+  const createBlogTagMutation = useMutation({
+    mutationFn: async (tagData: any) => {
+      return apiRequest("POST", "/api/blog/tags", tagData).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Tag Created",
+        description: "The blog tag has been successfully created.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/tags"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create blog tag: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete blog tag
+  const deleteBlogTagMutation = useMutation({
+    mutationFn: async (tagId: number) => {
+      return apiRequest("DELETE", `/api/blog/tags/${tagId}`).then(res => res.json());
+    },
+    onSuccess: () => {
+      toast({
+        title: "Tag Deleted",
+        description: "The blog tag has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog/tags"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete blog tag: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Mutation to update user role
   const updateUserRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: number; role: string }) => {
@@ -263,11 +423,362 @@ const AdminDashboard = () => {
       </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsTrigger value="blog">Blog</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="comments">Reported Comments</TabsTrigger>
         </TabsList>
+        
+        {/* Blog Tab */}
+        <TabsContent value="blog">
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Management</CardTitle>
+              <CardDescription>Create and manage blog content</CardDescription>
+              <div className="mt-4">
+                <Tabs value={blogSubTab} onValueChange={setBlogSubTab} className="w-full">
+                  <TabsList className="grid w-full max-w-md grid-cols-3">
+                    <TabsTrigger value="posts">Posts</TabsTrigger>
+                    <TabsTrigger value="categories">Categories</TabsTrigger>
+                    <TabsTrigger value="tags">Tags</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Posts Sub-Tab */}
+              {blogSubTab === "posts" && (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <Input 
+                      placeholder="Search blog posts..." 
+                      value={blogSearchQuery} 
+                      onChange={(e) => setBlogSearchQuery(e.target.value)} 
+                      className="max-w-sm"
+                    />
+                    <Button onClick={() => setLocation("/blog/new")}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Post
+                    </Button>
+                  </div>
+                  
+                  {blogPostsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : blogPostsData?.posts && blogPostsData.posts.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Author</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Views</TableHead>
+                            <TableHead>Published</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {blogPostsData.posts.map((post) => (
+                            <TableRow key={post.id}>
+                              <TableCell>{post.id}</TableCell>
+                              <TableCell className="font-medium">{post.title}</TableCell>
+                              <TableCell>{post.author?.username || "Unknown"}</TableCell>
+                              <TableCell>{post.category?.name || "Uncategorized"}</TableCell>
+                              <TableCell>{post.viewCount || 0}</TableCell>
+                              <TableCell>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => setLocation(`/blog/edit/${post.id}`)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" className="text-red-500">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Confirm Deletion</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete the blog post "{post.title}"? This action cannot be undone.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => deleteBlogPostMutation.mutate(post.id)}
+                                          disabled={deleteBlogPostMutation.isPending}
+                                        >
+                                          {deleteBlogPostMutation.isPending ? "Deleting..." : "Delete Post"}
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No blog posts found</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4" 
+                        onClick={() => setLocation("/blog/new")}
+                      >
+                        Create your first blog post
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Categories Sub-Tab */}
+              {blogSubTab === "categories" && (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <Input 
+                      placeholder="Search categories..." 
+                      value={blogCategorySearchQuery} 
+                      onChange={(e) => setBlogCategorySearchQuery(e.target.value)} 
+                      className="max-w-sm"
+                    />
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="mr-2 h-4 w-4" />
+                          New Category
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create New Category</DialogTitle>
+                          <DialogDescription>
+                            Add a new category for organizing blog posts
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          const name = formData.get("name") as string;
+                          const description = formData.get("description") as string;
+                          createBlogCategoryMutation.mutate({ name, description });
+                          e.currentTarget.reset();
+                        }}>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <label htmlFor="name" className="text-sm font-medium">Name</label>
+                              <Input id="name" name="name" required />
+                            </div>
+                            <div className="grid gap-2">
+                              <label htmlFor="description" className="text-sm font-medium">Description</label>
+                              <Input id="description" name="description" />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit" disabled={createBlogCategoryMutation.isPending}>
+                              {createBlogCategoryMutation.isPending ? "Creating..." : "Create Category"}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  {blogCategoriesLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : blogCategoriesData?.categories && blogCategoriesData.categories.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Slug</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Created</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {blogCategoriesData.categories.map((category) => (
+                            <TableRow key={category.id}>
+                              <TableCell>{category.id}</TableCell>
+                              <TableCell className="font-medium">{category.name}</TableCell>
+                              <TableCell>{category.slug}</TableCell>
+                              <TableCell>{category.description || "-"}</TableCell>
+                              <TableCell>{new Date(category.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" className="text-red-500">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Confirm Deletion</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete the category "{category.name}"? This may affect blog posts assigned to this category.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => deleteBlogCategoryMutation.mutate(category.id)}
+                                          disabled={deleteBlogCategoryMutation.isPending}
+                                        >
+                                          {deleteBlogCategoryMutation.isPending ? "Deleting..." : "Delete Category"}
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FolderPlus className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No categories found</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Tags Sub-Tab */}
+              {blogSubTab === "tags" && (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <Input 
+                      placeholder="Search tags..." 
+                      value={blogTagSearchQuery} 
+                      onChange={(e) => setBlogTagSearchQuery(e.target.value)} 
+                      className="max-w-sm"
+                    />
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="mr-2 h-4 w-4" />
+                          New Tag
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create New Tag</DialogTitle>
+                          <DialogDescription>
+                            Add a new tag for categorizing blog posts
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          const name = formData.get("name") as string;
+                          createBlogTagMutation.mutate({ name });
+                          e.currentTarget.reset();
+                        }}>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <label htmlFor="tagName" className="text-sm font-medium">Name</label>
+                              <Input id="tagName" name="name" required />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit" disabled={createBlogTagMutation.isPending}>
+                              {createBlogTagMutation.isPending ? "Creating..." : "Create Tag"}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  {blogTagsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : blogTagsData?.tags && blogTagsData.tags.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Slug</TableHead>
+                            <TableHead>Created</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {blogTagsData.tags.map((tag) => (
+                            <TableRow key={tag.id}>
+                              <TableCell>{tag.id}</TableCell>
+                              <TableCell className="font-medium">{tag.name}</TableCell>
+                              <TableCell>{tag.slug}</TableCell>
+                              <TableCell>{new Date(tag.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" className="text-red-500">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Confirm Deletion</DialogTitle>
+                                        <DialogDescription>
+                                          Are you sure you want to delete the tag "{tag.name}"? This may affect blog posts tagged with it.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => deleteBlogTagMutation.mutate(tag.id)}
+                                          disabled={deleteBlogTagMutation.isPending}
+                                        >
+                                          {deleteBlogTagMutation.isPending ? "Deleting..." : "Delete Tag"}
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Tag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No tags found</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Users Tab */}
         <TabsContent value="users">
