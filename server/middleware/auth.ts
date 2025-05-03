@@ -11,6 +11,14 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
 }
 
 /**
+ * Middleware to check if user is authenticated without blocking unauthenticated users
+ */
+export function checkAuthenticated(req: Request, res: Response, next: NextFunction) {
+  // Always proceed, authentication state is checked inside route handlers
+  next();
+}
+
+/**
  * Middleware to check if user is an admin
  */
 export function isAdmin(req: Request, res: Response, next: NextFunction) {

@@ -3,7 +3,7 @@
  */
 import { Express, Request, Response } from "express";
 import { storage } from "../storage";
-import { isAuthenticated } from "../middleware/auth";
+import { isAuthenticated, checkAuthenticated } from "../middleware/auth";
 import { z } from "zod";
 import { ValidationError, fromZodError } from "zod-validation-error";
 import { userSkillInsertSchema } from "@shared/schema";
