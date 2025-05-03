@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import ProjectCard from '@/components/ProjectCard';
+import SEO from '@/components/SEO';
 import { Loader2, Search, X } from 'lucide-react';
 
 interface QueryParams {
@@ -112,8 +113,51 @@ const BrowseProjects = () => {
     setLocation(`/browse${queryString ? `?${queryString}` : ''}`);
   };
 
+  // Generate dynamic SEO title and description based on filters
+  const getSeoTitle = () => {
+    if (selectedTag) return `Projects tagged with "${selectedTag}" | Ctrl Alt Vibe`;
+    if (searchQuery) return `Search results for "${searchQuery}" | Ctrl Alt Vibe`;
+    
+    switch (sortOption) {
+      case 'featured': return 'Featured AI-Assisted Coding Projects | Ctrl Alt Vibe';
+      case 'latest': return 'Latest AI-Assisted Coding Projects | Ctrl Alt Vibe';
+      case 'popular': return 'Popular AI-Assisted Coding Projects | Ctrl Alt Vibe';
+      default: return 'Browse AI-Assisted Coding Projects | Ctrl Alt Vibe';
+    }
+  };
+
+  const getSeoDescription = () => {
+    if (selectedTag) return `Discover AI-assisted coding projects tagged with ${selectedTag}. Browse, filter, and explore projects from the developer community.`;
+    if (searchQuery) return `Browse search results for "${searchQuery}" in our collection of AI-assisted coding projects.`;
+    
+    switch (sortOption) {
+      case 'featured': 
+        return 'Explore our featured selection of innovative AI-assisted coding projects. Discover the best developer showcases curated by our team.';
+      case 'latest': 
+        return 'Discover the newest AI-assisted coding projects submitted to our platform. Stay updated with the latest developer innovations.';
+      case 'popular': 
+        return 'Browse the most popular AI-assisted coding projects. See what is trending in the developer community.';
+      default: 
+        return 'Browse, filter, and discover AI-assisted coding projects from developers around the world. Find inspiration for your next project.';
+    }
+  };
+
+  const seoKeywords = [
+    'AI coding projects', 'developer showcase', 'programming projects',
+    'coding portfolio', 'AI tools', selectedTag, searchQuery,
+    sortOption === 'trending' ? 'trending projects' : '',
+    sortOption === 'latest' ? 'new projects' : '',
+    sortOption === 'popular' ? 'popular projects' : '',
+    sortOption === 'featured' ? 'featured projects' : ''
+  ].filter(Boolean);
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <SEO
+        title={getSeoTitle()}
+        description={getSeoDescription()}
+        keywords={seoKeywords}
+      />
       <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
         <div className="w-full md:w-1/4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">

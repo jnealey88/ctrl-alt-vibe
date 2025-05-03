@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import CommentSection from "@/components/CommentSection";
+import SEO from "@/components/SEO";
 import type { Project } from "@shared/schema";
 
 const ProjectDetail = () => {
@@ -157,8 +158,22 @@ const ProjectDetail = () => {
     }).format(date);
   };
   
+  // Generate keywords based on project tags and title
+  const seoKeywords = [
+    ...project.tags,
+    'AI project', 'coding project', 'developer showcase',
+    'programming', 'tech project', project.vibeCodingTool || 'AI assisted'
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SEO
+        title={project.title}
+        description={project.description}
+        image={project.imageUrl}
+        article={true}
+        keywords={seoKeywords}
+      />
       <div className="bg-white rounded-xl shadow-card overflow-hidden mb-16">
         <div className="relative">
           <img 
