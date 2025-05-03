@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { useParams } from "wouter";
+import { useState, useRef, useCallback } from "react";
+import { useParams, Link } from "wouter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Reply, Image, AtSign, Code, Trash2 } from "lucide-react";
+import { Heart, Reply, Image, AtSign, Code, Trash2, AlertCircle, Calendar, MessageSquare, ThumbsUp, RefreshCw, Filter } from "lucide-react";
 import type { Comment, CommentReply } from "@shared/schema";
 
 const CommentSection = () => {
@@ -21,6 +24,14 @@ const CommentSection = () => {
   const [replyText, setReplyText] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "mostLiked">("newest");
   const [page, setPage] = useState(1);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Function to focus the comment input
+  const focusCommentInput = useCallback(() => {
+    if (commentInputRef.current) {
+      commentInputRef.current.focus();
+    }
+  }, []);
   
   type CommentsResponse = {
     comments: Comment[];
@@ -202,208 +213,317 @@ const CommentSection = () => {
   };
 
   const renderCommentWithReplies = (comment: Comment) => (
-    <div key={comment.id} className="flex space-x-4">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={comment.author.avatarUrl} alt={comment.author.username} />
-        <AvatarFallback>{comment.author.username.substring(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">
-            {comment.author.username}
-            {comment.isAuthor && (
-              <span className="bg-accent/10 text-accent text-xs px-2 py-0.5 rounded ml-2">Creator</span>
-            )}
-          </h3>
-          <p className="text-sm text-gray-500">{formatTimeAgo(comment.createdAt)}</p>
-        </div>
-        <div className="mt-1 text-sm text-gray-700">
-          <p>{comment.content}</p>
-        </div>
-        <div className="mt-2 flex items-center space-x-4 text-sm">
-          <button 
-            className="text-gray-500 hover:text-primary flex items-center"
-            onClick={() => setReplyingTo(comment.id === replyingTo ? null : comment.id)}
-          >
-            <Reply className="h-4 w-4 mr-1" /> Reply
-          </button>
-          <button 
-            className={`text-gray-500 hover:text-secondary flex items-center ${comment.isLiked ? 'text-secondary' : ''}`}
-            onClick={() => handleLikeComment(comment.id, false, comment.isLiked || false)}
-          >
-            <Heart className={`h-4 w-4 mr-1 ${comment.isLiked ? 'fill-secondary' : ''}`} /> {comment.likesCount || 0}
-          </button>
-          {/* Show delete button only for the comment author */}
-          {user?.id === comment.author.id && (
-            <button 
-              className="text-gray-500 hover:text-red-500 flex items-center"
-              onClick={() => handleDeleteComment(comment.id)}
-            >
-              <Trash2 className="h-4 w-4 mr-1" /> Delete
-            </button>
-          )}
-        </div>
-
-        {/* Reply form */}
-        {replyingTo === comment.id && (
-          <div className="mt-4 ml-6">
-            <form onSubmit={handleSubmitReply}>
-              <Textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Write a reply..."
-                className="min-h-[80px]"
-              />
-              <div className="mt-2 flex justify-end">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="mr-2"
-                  onClick={() => setReplyingTo(null)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={replyMutation.isPending || !replyText.trim()}
-                >
-                  Post Reply
-                </Button>
-              </div>
-            </form>
+    <div key={comment.id} className="pt-4 first:pt-0 border-t first:border-t-0 border-gray-100">
+      <div className="flex gap-3">
+        <Link href={`/profile/${comment.author.username}`} className="shrink-0">
+          <Avatar className="h-10 w-10 ring-2 ring-white">
+            <AvatarImage src={comment.author.avatarUrl} alt={comment.author.username} />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {comment.author.username.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        
+        <div className="flex-1 min-w-0">
+          {/* Comment header */}
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2">
+              <Link 
+                href={`/profile/${comment.author.username}`}
+                className="text-sm font-medium text-gray-900 hover:text-primary hover:underline transition-colors"
+              >
+                {comment.author.username}
+              </Link>
+              {comment.isAuthor && (
+                <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/10 text-xs py-0 px-2">
+                  Creator
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> {formatTimeAgo(comment.createdAt)}
+              </span>
+            </div>
           </div>
-        )}
+          
+          {/* Comment content */}
+          <div className="mb-3 text-sm text-gray-700 break-words">
+            <p className="whitespace-pre-line">{comment.content}</p>
+          </div>
+          
+          {/* Comment actions */}
+          <div className="flex items-center gap-4 text-xs">
+            <button 
+              className="text-gray-500 hover:text-primary flex items-center gap-1 transition-colors"
+              onClick={() => setReplyingTo(comment.id === replyingTo ? null : comment.id)}
+              disabled={!user}
+            >
+              <Reply className="h-3.5 w-3.5" /> Reply
+            </button>
+            <button 
+              className={`flex items-center gap-1 transition-colors ${comment.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+              onClick={() => handleLikeComment(comment.id, false, comment.isLiked || false)}
+              disabled={!user}
+            >
+              <Heart className={`h-3.5 w-3.5 ${comment.isLiked ? 'fill-red-500' : ''}`} /> 
+              <span>{comment.likesCount || 0}</span>
+            </button>
+            {/* Show delete button only for the comment author */}
+            {user?.id === comment.author.id && (
+              <button 
+                className="text-gray-500 hover:text-red-500 flex items-center gap-1 transition-colors"
+                onClick={() => handleDeleteComment(comment.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
+            )}
+          </div>
 
-        {/* Replies */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-4 space-y-4">
-            {comment.replies.map((reply: CommentReply) => (
-              <div key={reply.id} className="ml-6 flex space-x-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={reply.author.avatarUrl} alt={reply.author.username} />
-                  <AvatarFallback>{reply.author.username.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-foreground">
-                      {reply.author.username}
-                      {reply.isAuthor && (
-                        <span className="bg-accent/10 text-accent text-xs px-2 py-0.5 rounded ml-2">Creator</span>
-                      )}
-                    </h3>
-                    <p className="text-sm text-gray-500">{formatTimeAgo(reply.createdAt)}</p>
-                  </div>
-                  <div className="mt-1 text-sm text-gray-700">
-                    <p>{reply.content}</p>
-                  </div>
-                  <div className="mt-2 flex items-center space-x-4 text-sm">
-                    <button 
-                      className={`text-gray-500 hover:text-secondary flex items-center ${reply.isLiked ? 'text-secondary' : ''}`}
-                      onClick={() => handleLikeComment(reply.id, true, reply.isLiked || false)}
-                    >
-                      <Heart className={`h-4 w-4 mr-1 ${reply.isLiked ? 'fill-secondary' : ''}`} /> {reply.likesCount || 0}
-                    </button>
-                    {/* Show delete button only for the reply author */}
-                    {user?.id === reply.author.id && (
-                      <button 
-                        className="text-gray-500 hover:text-red-500 flex items-center"
-                        onClick={() => handleDeleteReply(reply.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" /> Delete
-                      </button>
+          {/* Reply form */}
+          {replyingTo === comment.id && (
+            <div className="mt-4 pl-3 border-l-2 border-gray-200">
+              <form onSubmit={handleSubmitReply}>
+                <Textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="min-h-[80px] border-gray-200 focus:border-primary"
+                />
+                <div className="mt-2 flex justify-end gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setReplyingTo(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    size="sm"
+                    disabled={replyMutation.isPending || !replyText.trim()}
+                    className="gap-1"
+                  >
+                    {replyMutation.isPending ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Reply className="h-3.5 w-3.5" />
                     )}
+                    Post Reply
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Replies */}
+          {comment.replies && comment.replies.length > 0 && (
+            <div className="mt-4 space-y-4 pl-3 border-l-2 border-gray-200">
+              {comment.replies.map((reply: CommentReply) => (
+                <div key={reply.id} className="flex gap-3">
+                  <Link href={`/profile/${reply.author.username}`} className="shrink-0">
+                    <Avatar className="h-8 w-8 ring-2 ring-white">
+                      <AvatarImage src={reply.author.avatarUrl} alt={reply.author.username} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                        {reply.author.username.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  
+                  <div className="flex-1 min-w-0">
+                    {/* Reply header */}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <Link 
+                          href={`/profile/${reply.author.username}`}
+                          className="text-sm font-medium text-gray-900 hover:text-primary hover:underline transition-colors"
+                        >
+                          {reply.author.username}
+                        </Link>
+                        {reply.isAuthor && (
+                          <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/10 text-xs py-0 px-2">
+                            Creator
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> {formatTimeAgo(reply.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Reply content */}
+                    <div className="mb-2 text-sm text-gray-700 break-words">
+                      <p className="whitespace-pre-line">{reply.content}</p>
+                    </div>
+                    
+                    {/* Reply actions */}
+                    <div className="flex items-center gap-4 text-xs">
+                      <button 
+                        className={`flex items-center gap-1 transition-colors ${reply.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+                        onClick={() => handleLikeComment(reply.id, true, reply.isLiked || false)}
+                        disabled={!user}
+                      >
+                        <Heart className={`h-3.5 w-3.5 ${reply.isLiked ? 'fill-red-500' : ''}`} /> 
+                        <span>{reply.likesCount || 0}</span>
+                      </button>
+                      {/* Show delete button only for the reply author */}
+                      {user?.id === reply.author.id && (
+                        <button 
+                          className="text-gray-500 hover:text-red-500 flex items-center gap-1 transition-colors"
+                          onClick={() => handleDeleteReply(reply.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="border-t border-gray-200 pt-6 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-foreground font-space">
-          Comments ({data?.totalComments || 0})
-        </h2>
-        <div className="flex space-x-2 text-sm">
-          <button 
-            className={`text-gray-500 hover:text-primary flex items-center ${sortBy === "newest" ? "text-primary" : ""}`}
+    <div className="pt-4 mb-8">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-bold text-foreground">
+            Comments 
+            <Badge variant="outline" className="ml-2 bg-primary/5 hover:bg-primary/10 text-primary">
+              {data?.totalComments || 0}
+            </Badge>
+          </h2>
+        </div>
+        
+        <div className="flex gap-2 bg-gray-50 rounded-md p-1">
+          <Button 
+            size="sm"
+            variant={sortBy === "newest" ? "default" : "ghost"}
+            className={`text-xs px-3 ${sortBy === "newest" ? "bg-primary text-white" : "text-gray-600"}`}
             onClick={() => handleSortChange("newest")}
           >
+            <Calendar className="h-3.5 w-3.5 mr-1" />
             Newest
-          </button>
-          <button 
-            className={`text-gray-500 hover:text-primary flex items-center ${sortBy === "oldest" ? "text-primary" : ""}`}
+          </Button>
+          <Button 
+            size="sm"
+            variant={sortBy === "oldest" ? "default" : "ghost"}
+            className={`text-xs px-3 ${sortBy === "oldest" ? "bg-primary text-white" : "text-gray-600"}`}
             onClick={() => handleSortChange("oldest")}
           >
+            <Calendar className="h-3.5 w-3.5 mr-1" />
             Oldest
-          </button>
-          <button 
-            className={`text-gray-500 hover:text-primary flex items-center ${sortBy === "mostLiked" ? "text-primary" : ""}`}
+          </Button>
+          <Button 
+            size="sm"
+            variant={sortBy === "mostLiked" ? "default" : "ghost"}
+            className={`text-xs px-3 ${sortBy === "mostLiked" ? "bg-primary text-white" : "text-gray-600"}`}
             onClick={() => handleSortChange("mostLiked")}
           >
+            <ThumbsUp className="h-3.5 w-3.5 mr-1" />
             Most Liked
-          </button>
+          </Button>
         </div>
       </div>
       
       {/* Comment form */}
-      <div className="mb-8">
-        <form onSubmit={handleSubmitComment}>
-          <div className="flex items-start space-x-4">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={user?.avatarUrl || undefined} alt={user?.username || 'User'} />
-              <AvatarFallback>{user?.username ? user.username.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
-                <Textarea
-                  id="comment"
-                  rows={3}
-                  className="block w-full resize-none border-0 focus:ring-0 sm:text-sm"
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                />
-                <div className="border-t border-gray-300 py-2 px-3 flex justify-between items-center">
-                  <div className="flex items-center space-x-5">
-                    <button type="button" className="text-gray-500 hover:text-gray-700">
-                      <Image className="h-5 w-5" />
-                    </button>
-                    <button type="button" className="text-gray-500 hover:text-gray-700">
-                      <AtSign className="h-5 w-5" />
-                    </button>
-                    <button type="button" className="text-gray-500 hover:text-gray-700">
-                      <Code className="h-5 w-5" />
-                    </button>
+      <Card className="mb-8 shadow-sm border-gray-200 overflow-hidden">
+        <CardContent className="p-4">
+          <form onSubmit={handleSubmitComment}>
+            <div className="flex items-start gap-4">
+              <Avatar className="h-10 w-10 mt-1 border">
+                <AvatarImage src={user?.avatarUrl || undefined} alt={user?.username || 'User'} />
+                <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  {user?.username ? user.username.substring(0, 2).toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white shadow-sm">
+                  <Textarea
+                    ref={commentInputRef}
+                    id="comment"
+                    rows={3}
+                    className="block w-full resize-none border-0 focus:ring-0 sm:text-sm"
+                    placeholder={user ? "Share your thoughts on this project..." : "Sign in to comment"}
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    disabled={!user}
+                  />
+                  <div className="border-t border-gray-200 py-2 px-3 flex justify-between items-center bg-gray-50">
+                    <div className="flex items-center space-x-3">
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Add image"
+                      >
+                        <Image className="h-5 w-5" />
+                      </button>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Mention user"
+                      >
+                        <AtSign className="h-5 w-5" />
+                      </button>
+                      <button 
+                        type="button" 
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Add code snippet"
+                      >
+                        <Code className="h-5 w-5" />
+                      </button>
+                    </div>
+                    
+                    {!user ? (
+                      <Link href="/login" className="text-primary hover:underline text-sm">
+                        Sign in to comment
+                      </Link>
+                    ) : (
+                      <Button 
+                        type="submit" 
+                        disabled={commentMutation.isPending || !commentText.trim()}
+                        size="sm"
+                        className="gap-1 px-4"
+                      >
+                        {commentMutation.isPending ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <MessageSquare className="h-4 w-4" />
+                        )}
+                        Post Comment
+                      </Button>
+                    )}
                   </div>
-                  <Button 
-                    type="submit" 
-                    disabled={commentMutation.isPending || !commentText.trim()}
-                  >
-                    Post Comment
-                  </Button>
                 </div>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
       
       {isLoading ? (
         <div className="flex justify-center py-6">
-          <p>Loading comments...</p>
+          <p className="text-gray-500 flex items-center gap-2">
+            <RefreshCw className="h-4 w-4 animate-spin" /> Loading comments...
+          </p>
         </div>
       ) : comments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8">
-          <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-        </div>
+        <Alert className="bg-gray-50 border-gray-200">
+          <AlertCircle className="h-4 w-4 text-gray-500" />
+          <AlertDescription className="text-gray-600">
+            No comments yet. Be the first to comment!
+          </AlertDescription>
+        </Alert>
       ) : (
         <>
-          <div className="space-y-6">
+          <div className="space-y-6 bg-white px-5 py-4 rounded-lg border shadow-sm">
             {comments.map(renderCommentWithReplies)}
           </div>
           
@@ -412,8 +532,10 @@ const CommentSection = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLoadMore}
+                size="sm"
+                className="gap-1"
               >
-                Load More Comments
+                <RefreshCw className="h-4 w-4" /> Load More Comments
               </Button>
             </div>
           )}
