@@ -83,7 +83,7 @@
     "openai": "^4.97.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "quill": "^2.0.3",
+    "quill": "^2.0.0-rc.3",
     "quill-better-table": "^1.2.10",
     "quill-table": "^1.0.0",
     "react": "^18.3.1",

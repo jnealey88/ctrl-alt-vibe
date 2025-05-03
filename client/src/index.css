@@ -109,19 +109,22 @@
   height: auto;
 }
 
-/* Table styles */
+/* Table styles for Quill 2.0 */
 .ql-editor table {
   border-collapse: collapse;
   width: 100%;
   margin-bottom: 1rem;
   border: 1px solid #e2e8f0;
+  table-layout: fixed;
 }
 
 .ql-editor table td,
 .ql-editor table th {
   border: 1px solid #e2e8f0;
-  padding: 0.5rem;
+  padding: 0.75rem;
   text-align: left;
+  min-width: 2rem;
+  position: relative;
 }
 
 .ql-editor table th {
@@ -131,6 +134,19 @@
 
 .ql-editor table tr:nth-child(even) {
   background-color: #f8fafc;
+}
+
+/* Table resize handle styles */
+.ql-editor table td:after,
+.ql-editor table th:after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 1;
 }
 
 .dark .ql-editor table {

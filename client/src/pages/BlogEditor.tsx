@@ -18,12 +18,15 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, ArrowLeft, Info, Image as ImageIcon, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Quill editor components
+// Quill editor components (using v2.0)
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+// Import Quill 2.0 styles (core styles are included in snow theme now)
+// Note: Quill 2.0 paths have changed slightly from 1.x
 
 const BlogEditor = () => {
+  // Set up ref for Quill editor (Quill 2.0 approach)
+  const quillRef = useRef<ReactQuill>(null);
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const [_, setLocation] = useLocation();
@@ -548,8 +551,9 @@ const BlogEditor = () => {
                       </Button>
                     </div>
                     <div className="mt-1.5 sticky top-4 z-10">
-                      {/* ReactQuill Editor */}
+                      {/* ReactQuill Editor with Quill 2.0 */}
                       <ReactQuill
+                        ref={quillRef}
                         id="editor"
                         theme="snow"
                         value={content}
