@@ -575,7 +575,7 @@ const BlogEditor = () => {
                                 formData.append('image', file);
                                 
                                 // Upload the image
-                                const response = await fetch('/api/upload', {
+                                const response = await fetch('/api/v1/upload/image', {
                                   method: 'POST',
                                   body: formData,
                                 });
@@ -587,7 +587,7 @@ const BlogEditor = () => {
                                 const data = await response.json();
                                 
                                 // Insert the image at cursor position
-                                editor.chain().focus().setImage({ src: data.imageUrl }).run();
+                                editor.chain().focus().setImage({ src: data.fileUrl }).run();
                                 
                                 toast({
                                   title: "Success",
@@ -714,7 +714,7 @@ const BlogEditor = () => {
                             formData.append('image', file);
                             
                             // Upload the image
-                            const response = await fetch('/api/upload', {
+                            const response = await fetch('/api/v1/upload/image', {
                               method: 'POST',
                               body: formData,
                             });
@@ -724,7 +724,7 @@ const BlogEditor = () => {
                             }
                             
                             const data = await response.json();
-                            setFeaturedImage(data.imageUrl);
+                            setFeaturedImage(data.fileUrl);
                             
                             toast({
                               title: "Success",
