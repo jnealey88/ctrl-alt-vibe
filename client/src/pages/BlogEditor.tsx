@@ -40,6 +40,7 @@ const BlogEditor = () => {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [activeTab, setActiveTab] = useState("content");
   
   // Category and tag creation state
@@ -723,9 +724,8 @@ const BlogEditor = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="border border-dashed rounded-md p-6 text-center flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
-                         onClick={() => document.getElementById('imageUpload')?.click()}
-                    >
+                    <div className="border border-dashed rounded-md p-6 text-center flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors">
+
                       <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                         <ImageIcon className="h-6 w-6 text-primary" />
                       </div>
@@ -777,7 +777,7 @@ const BlogEditor = () => {
                       }
                       
                       try {
-                        setIsSubmitting(true);
+                        setIsUploadingImage(true);
                         
                         // Create FormData
                         const formData = new FormData();
@@ -808,7 +808,7 @@ const BlogEditor = () => {
                           variant: "destructive"
                         });
                       } finally {
-                        setIsSubmitting(false);
+                        setIsUploadingImage(false);
                       }
                     }}
                   />
@@ -923,12 +923,17 @@ const BlogEditor = () => {
               <Button 
                 onClick={handleSubmit} 
                 className="w-full" 
-                disabled={isSubmitting || !title || !content}
+                disabled={isSubmitting || isUploadingImage || !title || !content}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
+                  </>
+                ) : isUploadingImage ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading Image...
                   </>
                 ) : isEditMode ? "Update Post" : "Publish Post"}
               </Button>
