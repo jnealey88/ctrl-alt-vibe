@@ -116,15 +116,17 @@ export const storage = {
   },
 
   async getBlogTag(id: number): Promise<BlogTag | null> {
-    return await db.query.blogTags.findFirst({
+    const tag = await db.query.blogTags.findFirst({
       where: eq(blogTags.id, id)
     });
+    return tag || null;
   },
 
   async getBlogTagBySlug(slug: string): Promise<BlogTag | null> {
-    return await db.query.blogTags.findFirst({
+    const tag = await db.query.blogTags.findFirst({
       where: eq(blogTags.slug, slug)
     });
+    return tag || null;
   },
 
   async createBlogTag(tagData: Omit<InsertBlogTag, 'id' | 'createdAt'>): Promise<BlogTag> {
@@ -286,17 +288,24 @@ export const storage = {
     }
 
     // Get tags
-    const postTagResults = await db.select()
+    const postTagResults = await db.select({
+      blogPostTag: blogPostTags,
+      tag: blogTags
+    })
       .from(blogPostTags)
       .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
       .where(eq(blogPostTags.postId, post.id));
 
-    const tags = postTagResults.map(result => result.blog_tags.name);
+    const tags = postTagResults.map(result => result.tag.name);
 
     return {
       ...post,
-      author: author || { id: 0, username: 'Unknown' },
-      category: category ? { id: category.id, name: category.name, slug: category.slug } : undefined,
+      author: author ? { 
+        id: author.id, 
+        username: author.username, 
+        avatarUrl: author.avatarUrl ? author.avatarUrl : undefined 
+      } : { id: 0, username: 'Unknown' },
+      category: category ? { id: category.id, name: category.name, slug: category.slug } : null,
       tags
     };
   },
@@ -327,17 +336,24 @@ export const storage = {
     }
 
     // Get tags
-    const postTagResults = await db.select()
+    const postTagResults = await db.select({
+      blogPostTag: blogPostTags,
+      tag: blogTags
+    })
       .from(blogPostTags)
       .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
       .where(eq(blogPostTags.postId, post.id));
 
-    const tags = postTagResults.map(result => result.blog_tags.name);
+    const tags = postTagResults.map(result => result.tag.name);
 
     return {
       ...post,
-      author: author || { id: 0, username: 'Unknown' },
-      category: category ? { id: category.id, name: category.name, slug: category.slug } : undefined,
+      author: author ? { 
+        id: author.id, 
+        username: author.username, 
+        avatarUrl: author.avatarUrl ? author.avatarUrl : undefined 
+      } : { id: 0, username: 'Unknown' },
+      category: category ? { id: category.id, name: category.name, slug: category.slug } : null,
       tags
     };
   },
