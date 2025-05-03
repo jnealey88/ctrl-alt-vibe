@@ -16,6 +16,7 @@ import ProfilePage from "@/pages/profile-page";
 import UserProfilePage from "@/pages/user-profile-page";
 import UsersPage from "@/pages/UsersPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import BlogEditor from "@/pages/BlogEditor";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -39,6 +40,8 @@ function Router() {
           <Route path="/profile/:username" component={UserProfilePage} />
           <Route path="/users" component={UsersPage} />
           <ProtectedRoute path="/admin" component={AdminDashboard} />
+          <ProtectedRoute path="/blog/new" component={BlogEditor} />
+          <ProtectedRoute path="/blog/edit/:id" component={BlogEditor} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>
