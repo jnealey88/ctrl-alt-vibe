@@ -29,37 +29,101 @@ import {
 } from 'react-share';
 
 type ShareButtonProps = {
-  projectId: number;
-  projectTitle: string;
-  projectUrl: string;
+  projectId?: number; // Optional for sharing profiles
+  title?: string;
+  url?: string;
+  projectTitle?: string; // For backward compatibility
+  projectUrl?: string; // For backward compatibility
+  contentType?: 'project' | 'profile' | 'blog';
   onShare?: (sharesCount: number) => void;
   className?: string;
+  buttonLabel?: string;
+  iconOnly?: boolean;
+  variant?: 'default' | 'outline' | 'secondary' | 'ghost';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
 };
 
-export function ShareButton({ projectId, projectTitle, projectUrl, onShare, className = '' }: ShareButtonProps) {
+export function ShareButton({ 
+  projectId, 
+  title,
+  url,
+  projectTitle, // For backward compatibility
+  projectUrl, // For backward compatibility 
+  contentType = 'project',
+  onShare, 
+  className = '',
+  buttonLabel = 'Share',
+  iconOnly = false,
+  variant = 'outline',
+  size = 'sm'
+}: ShareButtonProps) {
+  // Handle backward compatibility
+  const finalTitle = title || projectTitle || 'Content';
+  const finalUrl = url || projectUrl || '';
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [sharesCount, setSharesCount] = useState(0); // Local temporary count for non-authenticated users
+  const [sharesCount, setSharesCount] = useState(0);
   
   // Make sure we have an absolute URL
-  const fullProjectUrl = projectUrl.startsWith('http') ? projectUrl : window.location.origin + projectUrl;
+  const fullUrl = finalUrl.startsWith('http') ? finalUrl : `${window.location.origin}${finalUrl}`;
   
-  // Generate a URL to the project detail page
-  const projectDetailUrl = `${window.location.origin}/projects/${projectId}`;
+  // Title for social media shares
+  const getShareTitle = () => {
+    switch(contentType) {
+      case 'profile':
+        return `Check out ${finalTitle}'s profile on Ctrl Alt Vibe`;
+      case 'blog':
+        return `"${finalTitle}" on Ctrl Alt Vibe Blog`;
+      case 'project':
+      default:
+        return `Check out "${finalTitle}" on Ctrl Alt Vibe`;
+    }
+  };
   
-  // Share text for social platforms
-  const shareTitle = `Check out "${projectTitle}" on Ctrl Alt Vibe`;
-  const shareDescription = `I found this amazing AI-assisted project on Ctrl Alt Vibe! Check it out: ${projectTitle}`;
+  // Description for social media shares
+  const getShareDescription = () => {
+    switch(contentType) {
+      case 'profile':
+        return `Check out this developer's profile and projects on Ctrl Alt Vibe!`;
+      case 'blog':
+        return `I found this interesting article on Ctrl Alt Vibe!`;
+      case 'project':
+      default:
+        return `I found this amazing AI-assisted project on Ctrl Alt Vibe!`;
+    }
+  };
   
+  const shareTitle = getShareTitle();
+  const shareDescription = getShareDescription();
+  
+  // Content title based on type
+  const getContentTitle = () => {
+    switch(contentType) {
+      case 'profile':
+        return 'profile';
+      case 'blog':
+        return 'article';
+      case 'project':
+      default:
+        return 'project';
+    }
+  };
+  
+  // Handle copying link to clipboard
   const handleCopyLink = async () => {
     try {
       setIsSharing(true);
-      await navigator.clipboard.writeText(projectDetailUrl);
       
-      // Record the share if user is logged in
-      if (user) {
+      if (!fullUrl) {
+        throw new Error('URL not available');
+      }
+      
+      await navigator.clipboard.writeText(fullUrl);
+      
+      // Record the share if user is logged in and it's a project
+      if (user && projectId && contentType === 'project') {
         const response = await apiRequest('POST', `/api/projects/${projectId}/share`, {
           platform: 'copy_link'
         });
@@ -69,11 +133,10 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
         if (onShare && data.sharesCount) {
           onShare(data.sharesCount);
         }
-      } else {
+      } else if (!user && contentType === 'project' && projectId) {
         // Just show success even if we couldn't track it
         setSharesCount(prev => prev + 1);
         if (onShare) {
-          // This ensures UI updates even if we can't track properly
           onShare(sharesCount + 1);
         }
         setShowAuthDialog(true);
@@ -96,12 +159,13 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
     }
   };
   
+  // Track social sharing events
   const trackSocialShare = async (platform: string) => {
     try {
       setIsSharing(true);
       
-      // Record the share if user is logged in
-      if (user) {
+      // Only track project shares
+      if (user && projectId && contentType === 'project') {
         const response = await apiRequest('POST', `/api/projects/${projectId}/share`, {
           platform
         });
@@ -111,11 +175,10 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
         if (onShare && data.sharesCount) {
           onShare(data.sharesCount);
         }
-      } else {
+      } else if (!user && contentType === 'project' && projectId) {
         // Just show success even if we couldn't track it
         setSharesCount(prev => prev + 1);
         if (onShare) {
-          // This ensures UI updates even if we can't track properly
           onShare(sharesCount + 1);
         }
         // Show the auth dialog after they've shared (allowing the share to go through)
@@ -134,25 +197,25 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button 
-            variant="outline" 
-            size="sm"
-            className={`flex items-center space-x-1 ${className}`}
+            variant={variant} 
+            size={size}
+            className={`flex items-center ${iconOnly ? '' : 'space-x-1'} ${className}`}
           >
             <Share className="h-4 w-4" />
-            <span>Share</span>
+            {!iconOnly && <span>{buttonLabel}</span>}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Share this project</DialogTitle>
+            <DialogTitle>Share this {getContentTitle()}</DialogTitle>
             <DialogDescription>
-              Share this amazing project with your friends and colleagues.
+              Share with your friends and colleagues.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid grid-cols-3 gap-4 py-4">
             <TwitterShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               title={shareTitle} 
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('twitter')}
@@ -162,7 +225,7 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
             </TwitterShareButton>
             
             <FacebookShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('facebook')}
             >
@@ -171,7 +234,7 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
             </FacebookShareButton>
             
             <LinkedinShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               title={shareTitle} 
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('linkedin')}
@@ -181,7 +244,7 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
             </LinkedinShareButton>
             
             <TelegramShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               title={shareTitle}
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('telegram')}
@@ -191,7 +254,7 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
             </TelegramShareButton>
             
             <WhatsappShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               title={shareTitle}
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('whatsapp')}
@@ -201,7 +264,7 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
             </WhatsappShareButton>
             
             <RedditShareButton 
-              url={projectDetailUrl} 
+              url={fullUrl} 
               title={shareTitle}
               className="flex flex-col items-center justify-center"
               onClick={() => trackSocialShare('reddit')}
@@ -213,11 +276,11 @@ export function ShareButton({ projectId, projectTitle, projectUrl, onShare, clas
           
           <div className="flex justify-between space-x-4 items-center">
             <div className="w-full px-3 py-2 border rounded-md text-sm truncate">
-              {projectDetailUrl}
+              {fullUrl || 'URL not available'}
             </div>
             <Button 
               onClick={handleCopyLink} 
-              disabled={isSharing}
+              disabled={isSharing || !fullUrl}
             >
               Copy Link
             </Button>
