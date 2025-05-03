@@ -185,6 +185,7 @@ export const blogPosts = pgTable("blog_posts", {
   title: text("title").notNull(),
   slug: varchar("slug", { length: 200 }).notNull().unique(),
   summary: text("summary").notNull(),
+  tldr: text("tldr"),
   content: text("content").notNull(),
   featuredImage: text("featured_image"),
   published: boolean("published").default(false).notNull(),
