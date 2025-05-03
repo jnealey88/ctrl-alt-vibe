@@ -185,7 +185,21 @@ export const storage = {
     if (tagId) {
       // For tag filtering, we need to do a join query
       const joinResults = await db.select({
-        post: blogPosts,
+        post: {
+          id: blogPosts.id,
+          title: blogPosts.title,
+          slug: blogPosts.slug,
+          summary: blogPosts.summary,
+          content: blogPosts.content,
+          featuredImage: blogPosts.featuredImage,
+          published: blogPosts.published,
+          authorId: blogPosts.authorId,
+          categoryId: blogPosts.categoryId,
+          viewCount: blogPosts.viewCount,
+          createdAt: blogPosts.createdAt,
+          updatedAt: blogPosts.updatedAt,
+          publishedAt: blogPosts.publishedAt
+        },
         blogPostTag: blogPostTags
       })
       .from(blogPosts)
@@ -199,7 +213,21 @@ export const storage = {
       postResults = joinResults.map(result => result.post);
     } else {
       // Standard query without tag filtering
-      postResults = await db.select()
+      postResults = await db.select({
+        id: blogPosts.id,
+        title: blogPosts.title,
+        slug: blogPosts.slug,
+        summary: blogPosts.summary,
+        content: blogPosts.content,
+        featuredImage: blogPosts.featuredImage,
+        published: blogPosts.published,
+        authorId: blogPosts.authorId,
+        categoryId: blogPosts.categoryId,
+        viewCount: blogPosts.viewCount,
+        createdAt: blogPosts.createdAt,
+        updatedAt: blogPosts.updatedAt,
+        publishedAt: blogPosts.publishedAt
+      })
         .from(blogPosts)
         .where(conditions.length ? and(...conditions) : undefined)
         .limit(limit)
@@ -264,7 +292,22 @@ export const storage = {
 
   async getBlogPost(id: number): Promise<BlogPost | null> {
     const post = await db.query.blogPosts.findFirst({
-      where: eq(blogPosts.id, id)
+      where: eq(blogPosts.id, id),
+      columns: {
+        id: true,
+        title: true,
+        slug: true,
+        summary: true,
+        content: true,
+        featuredImage: true,
+        published: true,
+        authorId: true,
+        categoryId: true,
+        viewCount: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true
+      }
     });
 
     if (!post) return null;
@@ -312,7 +355,22 @@ export const storage = {
 
   async getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
     const post = await db.query.blogPosts.findFirst({
-      where: eq(blogPosts.slug, slug)
+      where: eq(blogPosts.slug, slug),
+      columns: {
+        id: true,
+        title: true,
+        slug: true,
+        summary: true,
+        content: true,
+        featuredImage: true,
+        published: true,
+        authorId: true,
+        categoryId: true,
+        viewCount: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true
+      }
     });
 
     if (!post) return null;
