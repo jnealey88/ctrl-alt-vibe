@@ -211,7 +211,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto py-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto py-6 sm:py-10 max-w-7xl px-4 sm:px-6 lg:px-8">
       {/* Hidden file input for avatar upload */}
       <input
         type="file"
@@ -222,7 +222,7 @@ export default function ProfilePage() {
       />
 
       {/* Profile Hero Section - Behance Inspired */}
-      <div className="relative mb-10">
+      <div className="relative mb-6 sm:mb-10">
         {/* Cover Background */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 h-64 rounded-xl overflow-hidden">
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
@@ -230,15 +230,15 @@ export default function ProfilePage() {
         
         <div className="container mx-auto relative">
           {/* Profile Info Section */}
-          <div className="pt-16 pb-20 md:flex items-end gap-8">
+          <div className="pt-10 sm:pt-16 pb-12 sm:pb-20 md:flex items-end gap-8">
             {/* Avatar */}
-            <div className="relative z-10 mb-6 md:mb-0">
+            <div className="relative z-10 mb-4 md:mb-0 mx-auto md:mx-0 w-fit">
               <div className="relative group">
-                <Avatar className="w-32 h-32 rounded-xl border-4 border-white shadow-lg">
+                <Avatar className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl border-4 border-white shadow-lg">
                   {profileData?.user?.avatarUrl ? (
                     <AvatarImage src={profileData.user.avatarUrl} alt={user?.username || "User avatar"} />
                   ) : (
-                    <AvatarFallback className="text-4xl font-bold uppercase bg-primary/20 text-primary">
+                    <AvatarFallback className="text-3xl sm:text-4xl font-bold uppercase bg-primary/20 text-primary">
                       {user?.username?.charAt(0)}
                     </AvatarFallback>
                   )}
@@ -246,7 +246,7 @@ export default function ProfilePage() {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="absolute -bottom-2 -right-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                  className="absolute -bottom-2 -right-2 bg-white rounded-full opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow"
                   onClick={triggerFileInput}
                   disabled={isAvatarUploading}
                 >
@@ -261,19 +261,19 @@ export default function ProfilePage() {
             
             {/* User Info */}
             <div className="flex-1">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+              <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 text-center md:text-left">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{user?.username}</h1>
-                  <div className="text-muted-foreground flex items-center gap-2 mb-3">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{user?.username}</h1>
+                  <div className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 mb-3">
                     <Mail className="h-4 w-4" />
                     {user?.email}
                   </div>
                   {profileData?.user?.bio && (
-                    <p className="max-w-2xl text-sm md:text-base leading-relaxed">{profileData.user.bio}</p>
+                    <p className="max-w-2xl mx-auto md:mx-0 text-sm md:text-base leading-relaxed">{profileData.user.bio}</p>
                   )}
                 </div>
                 
-                <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+                <div className="flex flex-wrap justify-center md:justify-end gap-3 mt-4 md:mt-0 w-full md:w-auto">
                   <Button 
                     onClick={() => setIsEditDialogOpen(true)}
                     size="sm"
@@ -313,48 +313,48 @@ export default function ProfilePage() {
 
       <div className="container mx-auto">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-muted-foreground text-sm">Projects</p>
-                  <h3 className="text-3xl font-bold mt-1 animate-count-up">{profileData?.projects?.length || 0}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold mt-1 animate-count-up">{profileData?.projects?.length || 0}</h3>
                 </div>
-                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Grid className="h-6 w-6 text-primary" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Grid className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-muted-foreground text-sm">Total Likes</p>
-                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                  <h3 className="text-2xl sm:text-3xl font-bold mt-1 animate-count-up">
                     {profileData?.projects?.reduce((total, project) => total + (project.likesCount || 0), 0) || 0}
                   </h3>
                 </div>
-                <div className="h-12 w-12 bg-red-50 rounded-full flex items-center justify-center">
-                  <Heart className="h-6 w-6 text-red-500" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-red-50 rounded-full flex items-center justify-center">
+                  <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-muted-foreground text-sm">Total Views</p>
-                  <h3 className="text-3xl font-bold mt-1 animate-count-up">
+                  <h3 className="text-2xl sm:text-3xl font-bold mt-1 animate-count-up">
                     {profileData?.projects?.reduce((total, project) => total + (project.viewsCount || 0), 0) || 0}
                   </h3>
                 </div>
-                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Eye className="h-6 w-6 text-blue-500" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />
                 </div>
               </div>
             </CardContent>
