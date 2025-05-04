@@ -303,42 +303,33 @@ const Home = () => {
         </Link>
       </div>
       
+      {/* Profile Sharing Banner */}
+      <div className="mb-24 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-sm p-8 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">Share Your Profile With The World</h2>
+        <div className="flex items-center justify-center mb-6">
+          <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </div>
+          <p className="text-lg max-w-3xl">Every user gets a personal profile page with a unique URL you can share on your resume, social media, or portfolio.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex items-center max-w-md">
+            <code className="text-sm text-gray-600 dark:text-gray-300">https://yourdomain.com/profile/your-username</code>
+          </div>
+          <Link href="/profile">
+            <Button variant="outline" className="flex items-center gap-2">
+              View Your Profile
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+      
       {/* Trending Projects Section is already shown at the top */}
 
-      {/* Featured Project */}
-      {featuredProject && (
-        <div className="mb-24">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-foreground font-space">Featured Project</h2>
-            <Link href="/browse?sort=featured" className="text-primary hover:text-primary/80 text-sm font-medium">
-              View All Featured <ArrowRight className="ml-1 h-4 w-4 inline" />
-            </Link>
-          </div>
-          
-          {isLoadingFeatured ? (
-            <div className="bg-white rounded-xl overflow-hidden shadow-card lg:flex animate-pulse">
-              <div className="lg:w-1/2 h-72 bg-gray-200"></div>
-              <div className="p-8 lg:w-1/2">
-                <div className="h-6 bg-gray-200 rounded w-1/4 mb-3"></div>
-                <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-                <div className="h-24 bg-gray-200 rounded mb-6"></div>
-                <div className="flex gap-2 mb-6">
-                  <div className="h-8 bg-gray-200 rounded w-20"></div>
-                  <div className="h-8 bg-gray-200 rounded w-20"></div>
-                </div>
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
-                <div className="flex gap-4">
-                  <div className="h-10 bg-gray-200 rounded w-32"></div>
-                  <div className="h-10 bg-gray-200 rounded w-32"></div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <FeaturedProject project={featuredProject} />
-          )}
-        </div>
-      )}
+      {/* Featured project section has been hidden */}
 
       {/* Vibe Coding Platforms */}
       <div className="mb-24">
