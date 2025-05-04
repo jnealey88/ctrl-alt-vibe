@@ -1691,6 +1691,14 @@ export const storage = {
     return await db.transaction(async (tx) => {
       try {
         // Delete related data first
+        // Delete project views related to the project
+        await tx.delete(projectViews)
+          .where(eq(projectViews.projectId, projectId));
+        
+        // Delete shares related to the project
+        await tx.delete(shares)
+          .where(eq(shares.projectId, projectId));
+        
         // Delete likes related to the project
         await tx.delete(likes)
           .where(eq(likes.projectId, projectId));

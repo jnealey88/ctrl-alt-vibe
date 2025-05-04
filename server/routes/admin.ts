@@ -3,6 +3,7 @@ import { db } from "@db";
 import { users, projects, comments } from "@shared/schema";
 import { eq, sql, desc } from "drizzle-orm";
 import { isAdmin } from "../middleware/auth";
+import { storage } from "../storage";
 
 export function registerAdminRoutes(app: any) {
   // Get all users - Admin only
@@ -119,10 +120,14 @@ export function registerAdminRoutes(app: any) {
     try {
       const projectId = parseInt(req.params.id);
 
-      // Delete the project
-      await db.delete(projects).where(eq(projects.id, projectId));
+      // Use the storage method to properly delete all related data
+      const success = await storage.deleteProject(projectId);
       
-      res.json({ success: true, message: "Project deleted successfully" });
+      if (success) {
+        res.json({ success: true, message: "Project deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete project" });
+      }
     } catch (error) {
       console.error("Error deleting project:", error);
       res.status(500).json({ message: "Failed to delete project" });
