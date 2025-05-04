@@ -1954,5 +1954,162 @@ export const storage = {
 
     // Filter out any null projects (might have been deleted)
     return likedProjects.filter(project => project !== null) as Project[];
+  },
+
+  // Notification Methods
+  async createNotification(data: {
+    userId: number;
+    type: string;
+    actorId?: number;
+    projectId?: number;
+    commentId?: number;
+    replyId?: number;
+  }): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values({
+      userId: data.userId,
+      type: data.type,
+      actorId: data.actorId,
+      projectId: data.projectId,
+      commentId: data.commentId,
+      replyId: data.replyId,
+      read: false,
+      createdAt: new Date()
+    }).returning();
+    
+    return notification;
+  },
+
+  async getUserNotifications(userId: number, options: { limit?: number; offset?: number; unreadOnly?: boolean } = {}): Promise<{ notifications: Notification[]; total: number }> {
+    const { limit = 20, offset = 0, unreadOnly = false } = options;
+    
+    // Build query conditions
+    const conditions = [eq(notifications.userId, userId)];
+    
+    if (unreadOnly) {
+      conditions.push(eq(notifications.read, false));
+    }
+    
+    // Get total count for pagination
+    const countResult = await db.select({ count: count() })
+      .from(notifications)
+      .where(and(...conditions));
+    
+    const total = Number(countResult[0]?.count || 0);
+    
+    // Get notifications with relations
+    const notificationResults = await db.query.notifications.findMany({
+      where: and(...conditions),
+      orderBy: [desc(notifications.createdAt)],
+      limit,
+      offset,
+      with: {
+        actor: {
+          columns: {
+            id: true,
+            username: true,
+            avatarUrl: true
+          }
+        },
+        project: {
+          columns: {
+            id: true,
+            title: true
+          }
+        },
+        comment: {
+          columns: {
+            id: true,
+            content: true
+          }
+        },
+        reply: {
+          columns: {
+            id: true,
+            content: true
+          }
+        }
+      }
+    });
+    
+    // Convert the results to the expected Notification type
+    const formattedNotifications = notificationResults.map(notification => {
+      return {
+        ...notification,
+        actor: notification.actor ? {
+          id: notification.actor.id,
+          username: notification.actor.username,
+          avatarUrl: notification.actor.avatarUrl || undefined
+        } : undefined,
+        project: notification.project ? {
+          id: notification.project.id,
+          title: notification.project.title
+        } : undefined,
+        comment: notification.comment ? {
+          id: notification.comment.id,
+          content: notification.comment.content
+        } : undefined,
+        reply: notification.reply ? {
+          id: notification.reply.id,
+          content: notification.reply.content
+        } : undefined
+      };
+    });
+    
+    return {
+      notifications: formattedNotifications,
+      total
+    };
+  },
+
+  async markNotificationAsRead(notificationId: number, userId: number): Promise<boolean> {
+    try {
+      await db.update(notifications)
+        .set({ read: true })
+        .where(and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, userId)
+        ));
+      return true;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      return false;
+    }
+  },
+
+  async markAllNotificationsAsRead(userId: number): Promise<boolean> {
+    try {
+      await db.update(notifications)
+        .set({ read: true })
+        .where(eq(notifications.userId, userId));
+      return true;
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return false;
+    }
+  },
+
+  async getUnreadNotificationsCount(userId: number): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.read, false)
+      ));
+    
+    return Number(result[0]?.count || 0);
+  },
+
+  async deleteNotification(notificationId: number, userId: number): Promise<boolean> {
+    try {
+      await db.delete(notifications)
+        .where(and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, userId)
+        ));
+      return true;
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
   }
 };
