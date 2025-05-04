@@ -9,7 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Link as LinkIcon } from "lucide-react";
+import { Loader2, ExternalLink } from "lucide-react";
 import { 
   Form, 
   FormControl, 

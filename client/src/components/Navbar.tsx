@@ -28,7 +28,8 @@ import {
   Grid,
   Users,
   PlusCircle,
-  BookOpen
+  BookOpen,
+  ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -138,7 +139,7 @@ const Navbar = () => {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/quick-submit" className="flex w-full cursor-pointer">
-                          <LinkIcon className="mr-2 h-4 w-4" /> Quick URL Submit
+                          <ExternalLink className="mr-2 h-4 w-4" /> Quick URL Submit
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -338,7 +339,7 @@ const Navbar = () => {
                           <SheetClose asChild>
                             <Link href="/quick-submit" className="block w-full">
                               <Button className="w-full bg-primary/80 hover:bg-primary/90 text-white">
-                                <LinkIcon className="mr-2 h-4 w-4" />
+                                <ExternalLink className="mr-2 h-4 w-4" />
                                 Quick URL Submit
                               </Button>
                             </Link>
