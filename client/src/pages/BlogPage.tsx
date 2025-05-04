@@ -87,35 +87,38 @@ const BlogPage = () => {
         </p>
       </div>
       
-      <div className="mb-8 bg-gray-50 p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4 items-start">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-3">
-            <div className="relative flex-1">
+      <div className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 p-5 sm:p-6 rounded-xl shadow-sm border border-primary/10">
+        <div className="flex flex-col gap-4">
+          <form onSubmit={handleSearch} className="flex-1 flex flex-col sm:flex-row gap-3 w-full">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search blog posts..."
-                className="pl-9 border-gray-200 bg-white focus-visible:ring-primary/30"
+                className="pl-9 border-primary/20 bg-white/80 focus-visible:ring-primary/50 shadow-sm w-full"
               />
             </div>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-white shadow-sm transition-all duration-200 hover:shadow-md sm:w-auto">
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
           </form>
           
-          <div className="w-full md:w-auto flex gap-2 items-center">
-            <div className="flex items-center bg-white px-3 py-1.5 rounded-l-md border border-r-0 border-gray-200">
+          <div className="w-full flex gap-2">
+            <div className="hidden sm:flex items-center bg-white/80 px-3 py-1.5 rounded-l-md border border-r-0 border-primary/20 shadow-sm">
               <Filter className="h-4 w-4 text-primary" />
               <span className="text-sm ml-2 font-medium">Category</span>
             </div>
+            <div className="sm:hidden flex items-center bg-white/80 px-3 py-1.5 rounded-l-md border border-r-0 border-primary/20 shadow-sm">
+              <Filter className="h-4 w-4 text-primary" />
+            </div>
             <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="w-[180px] rounded-l-none border-gray-200">
+              <SelectTrigger className="w-full sm:w-[180px] rounded-l-none border-primary/20 bg-white/80 shadow-sm">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[280px] overflow-y-auto">
                 <SelectItem value="all">All Categories</SelectItem>
                 {categoriesLoading ? (
                   <SelectItem value="loading" disabled>Loading...</SelectItem>
@@ -130,26 +133,38 @@ const BlogPage = () => {
         </div>
         
         {(searchQuery || categoryFilter !== "all") && (
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-            <span className="text-sm text-gray-600">Active filters:</span>
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-primary/10">
+            <span className="text-sm text-gray-600 font-medium">Active filters:</span>
             {searchQuery && (
-              <Badge variant="secondary" className="bg-gray-100 hover:bg-gray-200 text-gray-700 gap-1">
+              <Badge variant="secondary" className="bg-white hover:bg-gray-50 text-gray-700 gap-1 shadow-sm border border-primary/10">
                 <Search className="h-3 w-3" />
                 {searchQuery}
-                <button className="ml-1" onClick={() => setSearchQuery("")}>×</button>
+                <button className="ml-1 hover:text-primary font-bold" onClick={() => {
+                  setSearchQuery("");
+                  const params = new URLSearchParams();
+                  if (categoryFilter && categoryFilter !== "all") params.append("category", categoryFilter);
+                  const queryString = params.toString() ? `?${params.toString()}` : "";
+                  setLocation(`/blog${queryString}`, { replace: true });
+                }}>×</button>
               </Badge>
             )}
             {categoryFilter !== "all" && categoriesData?.categories && (
-              <Badge variant="secondary" className="bg-primary/10 hover:bg-primary/20 text-primary gap-1">
+              <Badge variant="secondary" className="bg-primary/10 hover:bg-primary/20 text-primary gap-1 shadow-sm border border-primary/10">
                 <Filter className="h-3 w-3" />
                 {categoriesData.categories.find((c: BlogCategory) => c.slug === categoryFilter)?.name || categoryFilter}
-                <button className="ml-1" onClick={() => setCategoryFilter("all")}>×</button>
+                <button className="ml-1 hover:text-primary/80 font-bold" onClick={() => {
+                  setCategoryFilter("all");
+                  const params = new URLSearchParams();
+                  if (searchQuery) params.append("search", searchQuery);
+                  const queryString = params.toString() ? `?${params.toString()}` : "";
+                  setLocation(`/blog${queryString}`, { replace: true });
+                }}>×</button>
               </Badge>
             )}
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm"
-              className="ml-auto text-xs"
+              className="ml-auto text-xs border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200"
               onClick={() => {
                 setSearchQuery("");
                 setCategoryFilter("all");
@@ -255,23 +270,27 @@ const BlogPage = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No blog posts found</h3>
-          <p className="text-gray-500 mb-6">
+        <div className="text-center py-16 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl shadow-sm border border-primary/10 p-8">
+          <div className="bg-white/50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-sm border border-primary/10">
+            <BookOpen className="h-12 w-12 text-primary/60" />
+          </div>
+          <h3 className="text-2xl font-semibold mb-3 text-gray-800">No blog posts found</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
             {searchQuery || categoryFilter !== "all" 
-              ? "Try adjusting your search or filter criteria"
-              : "Check back soon for new content!"}
+              ? "No posts match your current search or filter criteria. Try adjusting your search terms or selecting a different category."
+              : "We're working on adding new content to our blog. Check back soon for fresh insights and tutorials!"}
           </p>
           {(searchQuery || categoryFilter !== "all") && (
             <Button 
               variant="outline" 
+              className="border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 shadow-sm"
               onClick={() => {
                 setSearchQuery("");
                 setCategoryFilter("all");
                 setLocation("/blog", { replace: true });
               }}
             >
+              <Filter className="h-4 w-4 mr-2" />
               Clear Filters
             </Button>
           )}

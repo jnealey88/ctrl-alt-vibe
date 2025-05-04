@@ -1068,13 +1068,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 10;
       const page = parseInt(req.query.page as string) || 1;
       const offset = (page - 1) * limit;
-      const categoryId = req.query.category ? parseInt(req.query.category as string) : undefined;
+      const categorySlug = req.query.category as string;
       const tagId = req.query.tag ? parseInt(req.query.tag as string) : undefined;
       const authorId = req.query.author ? parseInt(req.query.author as string) : undefined;
       const search = req.query.search as string || undefined;
       
       // Only admins can see unpublished posts
       const publishedOnly = !isAdmin(req);
+      
+      let categoryId: number | undefined;
+      
+      // If categorySlug is provided, get the categoryId from the slug
+      if (categorySlug) {
+        const category = await storage.getBlogCategoryBySlug(categorySlug);
+        if (category) {
+          categoryId = category.id;
+        }
+      }
       
       const result = await storage.getBlogPosts({ 
         limit, 
