@@ -152,8 +152,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Helper to send notification to a specific user
-  // Export this as a global function to be used by other modules
-  global.sendNotificationToUser = (userId: number, notification: any) => {
+  // Use type assertion to avoid TypeScript errors
+  (global as any).sendNotificationToUser = (userId: number, notification: any) => {
     const client = clients.get(userId);
     if (client && client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({
@@ -1554,7 +1554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload endpoint with image optimization
+  // File upload endpoint with more reliable image handling
   app.post(`${apiPrefix}/upload/image`, upload.single('image'), async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
@@ -1570,7 +1570,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = req.file.filename;
       const fileExt = path.extname(fileName).toLowerCase();
       
-      // Generate optimized file name
+      // For simplicity and reliability, just use the original file without optimization
+      // This avoids potential issues with Sharp optimization that might lead to file corruption
+      const fileUrl = `/uploads/${fileName}`;
+      
+      console.log(`File uploaded successfully: ${fileName}, URL: ${fileUrl}`);
+      
+      // Return the URL of the file
+      return res.status(201).json({ 
+        fileUrl,
+        message: 'File uploaded successfully' 
+      });
+      
+      /* Disabled image optimization due to reliability issues
+      // Generate optimized file name 
       const optimizedFileName = `${path.basename(fileName, fileExt)}-optimized${fileExt}`;
       const optimizedFilePath = path.join(uploadDir, optimizedFileName);
       
@@ -1629,6 +1642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'File uploaded successfully (without optimization)' 
         });
       }
+      */
     } catch (error) {
       console.error('Error uploading file:', error);
       res.status(500).json({ message: 'Failed to upload file' });
@@ -1649,7 +1663,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
   
   // Configure avatars with longer cache times (30 days) since they change less frequently
-  const avatarDir = path.join(process.cwd(), "uploads", "avatars");
+  const avatarDir = path.join(uploadDir, "avatars");
+  // Ensure avatar directory exists
+  if (!fs.existsSync(avatarDir)) {
+    fs.mkdirSync(avatarDir, { recursive: true });
+  }
   app.use('/uploads/avatars', express.static(avatarDir, { 
     maxAge: '30d', // Cache for 30 days
     immutable: true, // Files with filename hashes never change
