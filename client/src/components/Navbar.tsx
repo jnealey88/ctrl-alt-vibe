@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useMobile, useMediumScreen } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
+import { NotificationBell } from "./NotificationBell";
 import { 
   Sheet, 
   SheetContent, 
@@ -127,7 +128,8 @@ const Navbar = () => {
                     </Button>
                   </Link>
 
-                  {/* Notification bell removed until functionality is implemented */}
+                  {/* Notification bell */}
+                  <NotificationBell />
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -227,6 +229,9 @@ const Navbar = () => {
                       Submit
                     </Button>
                   </Link>
+                  
+                  {/* Mobile notification bell */}
+                  <NotificationBell />
 
                   <Link href="/profile">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold uppercase text-primary shadow-sm hover:shadow-md transition-shadow">
