@@ -16,7 +16,8 @@ import {
   userSkills,
   userActivity,
   notifications,
-  notificationTypes
+  notificationTypes,
+  projects
 } from "@shared/schema";
 import { db } from "../db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -676,7 +677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (project && project.authorId !== userId) {
         await storage.createNotification({
           userId: project.authorId,
-          type: notificationTypes.NEW_COMMENT,
+          type: "new_comment",
           actorId: userId,
           projectId,
           commentId: comment.id
@@ -684,7 +685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Record user activity
-      await storage.recordUserActivity(userId, activityTypes.COMMENT_ADDED, comment.id);
+      await storage.recordUserActivity(userId, "comment_added", comment.id);
       
       res.status(201).json({ comment });
     } catch (error) {
@@ -715,6 +716,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = replyInsertSchema.parse(replyData);
       const reply = await storage.createCommentReply(validatedData);
+      
+      // Get the comment with project and author details to create notifications
+      const comment = await db.query.comments.findFirst({
+        where: eq(comments.id, commentId),
+        columns: {
+          id: true,
+          authorId: true,
+          projectId: true
+        }
+      });
+      
+      if (comment) {
+        // Notify the comment author if they're not the one replying
+        if (comment.authorId !== userId) {
+          await storage.createNotification({
+            userId: comment.authorId,
+            type: "new_reply",
+            actorId: userId,
+            projectId: comment.projectId,
+            commentId: comment.id,
+            replyId: reply.id
+          });
+        }
+        
+        // Get the project author to notify them as well if needed
+        if (comment.projectId) {
+          const project = await db.query.projects.findFirst({
+            where: eq(projects.id, comment.projectId),
+            columns: {
+              authorId: true
+            }
+          });
+          
+          // Notify project author if they're not the commenter or replier
+          if (project && project.authorId !== userId && project.authorId !== comment.authorId) {
+            await storage.createNotification({
+              userId: project.authorId,
+              type: "new_reply",
+              actorId: userId,
+              projectId: comment.projectId,
+              commentId: comment.id,
+              replyId: reply.id
+            });
+          }
+        }
+        
+        // Record user activity
+        await storage.recordUserActivity(userId, "reply_added", reply.id);
+      }
       
       res.status(201).json({ reply });
     } catch (error) {
