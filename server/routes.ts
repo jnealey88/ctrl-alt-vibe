@@ -28,6 +28,7 @@ import monitoringRoutes from "./routes/monitoring";
 import { registerAdminRoutes } from "./routes/admin";
 // Profile routes are now directly implemented in this file
 import path from "path";
+import { processUrlForProject } from "./utils/url-metadata";
 import fs from "fs";
 import sharp from "sharp";
 
