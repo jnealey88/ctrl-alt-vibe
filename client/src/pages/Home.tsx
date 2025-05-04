@@ -290,18 +290,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Explore More Projects CTA */}
-      <div className="flex flex-col items-center mb-24 text-center py-8 px-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-sm">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">Discover More AI-Powered Projects</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-          Browse our collection of AI-assisted coding projects, filter by tags, search for specific technologies, or sort by popularity.
-        </p>
-        <Link href="/browse">
-          <Button className="px-8 py-3" size="lg">
-            Explore Project Gallery
-          </Button>
-        </Link>
-      </div>
+      {/* Explore More Projects CTA section removed */}
       
       {/* Profile Sharing Banner */}
       <div className="mb-24 bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden">
