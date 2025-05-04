@@ -43,6 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Handle Google Auth redirect result when component mounts
   useEffect(() => {
     const checkGoogleRedirect = async () => {
+      // Only check for Google redirect if we're on the auth page and there's a code parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasAuthCode = urlParams.has('code');
+      const hasState = urlParams.has('state');
+      
+      // Skip if we're not dealing with an OAuth redirect
+      if (!hasAuthCode || !hasState) {
+        return;
+      }
+      
       try {
         // Check if there's an authorization code in the URL (after Google OAuth redirect)
         const authCode = handleGoogleRedirect();
@@ -92,10 +102,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      try {
+        console.log("Attempting login with credentials:", { username: credentials.username });
+        const res = await apiRequest("POST", "/api/login", credentials);
+        const userData = await res.json();
+        console.log("Login response:", userData);
+        return userData;
+      } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
     },
     onSuccess: (user: User) => {
+      console.log("Login successful, setting user data:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
@@ -103,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      console.error("Login mutation error:", error);
       toast({
         title: "Login failed",
         description: error.message || "Invalid username or password",

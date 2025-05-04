@@ -62,6 +62,11 @@ export const handleGoogleRedirect = (): string | null => {
   const state = urlParams.get('state');
   const error = urlParams.get('error');
   
+  // If no code or state is present, we're not in a redirect context
+  if (!code || !state) {
+    return null;
+  }
+  
   // The stored state for CSRF protection
   const storedState = localStorage.getItem('googleAuthState');
   
@@ -74,13 +79,7 @@ export const handleGoogleRedirect = (): string | null => {
     return null;
   }
   
-  // If there's no state parameter, don't perform validation
-  // This allows the function to be called on normal page loads
-  if (!state) {
-    return code;
-  }
-  
-  // Validate state to prevent CSRF attacks when state is present
+  // Validate state to prevent CSRF attacks
   if (state !== storedState) {
     console.error('Invalid state parameter, possible CSRF attack');
     return null;
