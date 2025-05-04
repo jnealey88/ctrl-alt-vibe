@@ -158,7 +158,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
         <div className="w-full md:w-1/4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">

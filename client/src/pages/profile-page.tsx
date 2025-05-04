@@ -211,7 +211,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto py-10">
+    <div className="mx-auto py-10 max-w-7xl px-4 sm:px-6 lg:px-8">
       {/* Hidden file input for avatar upload */}
       <input
         type="file"
