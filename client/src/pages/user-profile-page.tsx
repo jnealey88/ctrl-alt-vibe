@@ -57,7 +57,7 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="mx-auto py-10">
+    <div className="mx-auto py-10 max-w-7xl px-4 sm:px-6 lg:px-8">
       {/* Profile Hero Section - Behance Inspired */}
       <div className="relative mb-10">
         {/* Cover Background */}

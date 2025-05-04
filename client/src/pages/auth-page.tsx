@@ -100,7 +100,7 @@ export default function AuthPage() {
   ];
 
   return (
-    <div className="container mx-auto py-10 flex flex-col md:flex-row items-center justify-center min-h-[calc(100vh-10rem)] relative">
+    <div className="container mx-auto max-w-7xl py-10 flex flex-col md:flex-row items-center justify-center min-h-[calc(100vh-10rem)] relative">
       {/* Background elements for visual appeal */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5"></div>
