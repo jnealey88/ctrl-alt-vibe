@@ -304,26 +304,52 @@ const Home = () => {
       </div>
       
       {/* Profile Sharing Banner */}
-      <div className="mb-24 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-sm p-8 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">Share Your Profile With The World</h2>
-        <div className="flex items-center justify-center mb-6">
-          <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
+      <div className="mb-24 bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden">
+        <div className="grid md:grid-cols-5 items-stretch">
+          {/* Left side - decorative */}
+          <div className="hidden md:block md:col-span-2 bg-gradient-to-br from-primary/80 to-purple-600 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-10 left-10 w-20 h-20 bg-white rounded-full blur-xl"></div>
+              <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-300 rounded-full blur-xl"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-32 w-32 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </div>
           </div>
-          <p className="text-lg max-w-3xl">Every user gets a personal profile page with a unique URL you can share on your resume, social media, or portfolio.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex items-center max-w-md">
-            <code className="text-sm text-gray-600 dark:text-gray-300">https://yourdomain.com/profile/your-username</code>
+          
+          {/* Right side - content */}
+          <div className="p-8 md:p-10 md:col-span-3">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-space">Share Your Developer Profile</h2>
+            <p className="text-lg text-gray-200 mb-8">
+              Showcase your projects and skills with a professional profile page. Every user gets a personal URL you can share on your resume, social media, or portfolio.
+            </p>
+            
+            <div className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex items-center">
+                <div className="bg-primary/20 p-2 rounded mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <code className="text-sm text-gray-300 font-mono">https://ctrlaltvibe.dev/profile/<span className="text-primary">your-username</span></code>
+              </div>
+              
+              <div className="flex gap-3">
+                <Link href="/profile" className="flex-1">
+                  <Button variant="default" className="w-full">
+                    View Your Profile
+                  </Button>
+                </Link>
+                <Link href="/submit" className="flex-1">
+                  <Button variant="outline" className="w-full border-gray-600 text-gray-100 hover:text-white hover:bg-gray-800">
+                    Submit a Project
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link href="/profile">
-            <Button variant="outline" className="flex items-center gap-2">
-              View Your Profile
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </div>
       
