@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { useMobile } from "@/hooks/use-mobile";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -74,6 +75,7 @@ function Router() {
 function App() {
   const { toast } = useToast();
   const [hasShownTip, setHasShownTip] = useState(false);
+  const isMobileDevice = useMobile();
   
   // This hook will trigger confetti when Ctrl+Alt+V or Cmd+Alt+V is pressed
   const { triggerConfetti } = useKeyboardConfetti({
@@ -82,10 +84,10 @@ function App() {
     origin: { y: 0.5 }
   });
 
-  // Show a hint about the keyboard shortcut occasionally
+  // Show a hint about the keyboard shortcut occasionally - only on desktop devices
   useEffect(() => {
-    // Check if the tip has been shown in this session
-    if (!hasShownTip) {
+    // Only show the tip on desktop devices, not on mobile
+    if (!hasShownTip && !isMobileDevice) {
       // Use a 1 in 4 chance to show the tip (25% chance)
       const shouldShowTip = Math.random() < 0.25;
       
@@ -107,8 +109,10 @@ function App() {
       } else {
         setHasShownTip(true); // Don't try again this session
       }
+    } else if (isMobileDevice && !hasShownTip) {
+      setHasShownTip(true); // Mark as shown for mobile devices
     }
-  }, [toast, hasShownTip]);
+  }, [toast, hasShownTip, isMobileDevice]);
 
   // Handle global error logging
   const handleGlobalError = (error: Error, errorInfo: React.ErrorInfo) => {
