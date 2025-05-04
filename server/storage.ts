@@ -1982,7 +1982,7 @@ export const storage = {
   async getUserNotifications(userId: number, options: { limit?: number; offset?: number; unreadOnly?: boolean } = {}): Promise<{ notifications: Notification[]; total: number }> {
     const { limit = 20, offset = 0, unreadOnly = false } = options;
     
-    // Build query conditions
+    // Build query conditions using correct column name format (snake_case in DB)
     const conditions = [eq(notifications.userId, userId)];
     
     if (unreadOnly) {

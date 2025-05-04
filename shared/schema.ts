@@ -548,14 +548,15 @@ export const userActivity = pgTable("user_activity", {
 // Notifications table
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: text("type").notNull(),
-  actorId: integer("actor_id").references(() => users.id), // User who triggered the notification
-  projectId: integer("project_id").references(() => projects.id),
-  commentId: integer("comment_id").references(() => comments.id),
-  replyId: integer("reply_id").references(() => commentReplies.id),
+  actorId: integer("actorId").references(() => users.id), // User who triggered the notification
+  projectId: integer("projectId").references(() => projects.id),
+  commentId: integer("commentId").references(() => comments.id),
+  replyId: integer("replyId").references(() => commentReplies.id),
   read: boolean("read").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => {
   return {
     userIdIdx: index("notifications_user_id_idx").on(table.userId),

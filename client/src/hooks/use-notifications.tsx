@@ -1,94 +1,144 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { apiRequest } from '@/lib/queryClient';
-
-type Notification = {
-  id: number;
-  type: string;
-  read: boolean;
-  createdAt: string;
-  actor?: {
-    id: number;
-    username: string;
-    avatarUrl?: string;
-  };
-  project?: {
-    id: number;
-    title: string;
-  };
-  comment?: {
-    id: number;
-    content: string;
-  };
-  reply?: {
-    id: number;
-    content: string;
-  };
-};
-
-type NotificationsResponse = {
-  notifications: Notification[];
-  total: number;
-};
+import { useAuth } from './use-auth';
+import { useWebSocketNotifications } from './use-websocket-notifications';
+import { toast } from './use-toast';
 
 export function useNotifications() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [unreadOnly, setUnreadOnly] = useState(false);
+  // Initialize WebSocket connection for real-time notifications
+  const { status: wsStatus } = useWebSocketNotifications();
   
-  // Get notifications count
-  const { data: countData, isLoading: isCountLoading } = useQuery<{ count: number }>({
+  // Get notifications
+  const {
+    data: notificationsData,
+    isLoading,
+    isError
+  } = useQuery({
+    queryKey: ['/api/notifications'],
+    queryFn: async () => {
+      if (!user) return { notifications: [], total: 0 };
+      const res = await fetch('/api/notifications');
+      if (!res.ok) throw new Error('Failed to fetch notifications');
+      return res.json();
+    },
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds as a fallback
+    refetchOnWindowFocus: true
+  });
+  
+  // Get unread count
+  const {
+    data: countData,
+    isLoading: isCountLoading,
+    isError: isCountError
+  } = useQuery({
     queryKey: ['/api/notifications/count'],
+    queryFn: async () => {
+      if (!user) return { count: 0 };
+      const res = await fetch('/api/notifications/count');
+      if (!res.ok) throw new Error('Failed to fetch notification count');
+      return res.json();
+    },
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds as a fallback
+    refetchOnWindowFocus: true
   });
   
-  // Get notifications list with optional filters
-  const { data, isLoading } = useQuery<NotificationsResponse>({
-    queryKey: ['/api/notifications', { unreadOnly }],
-    enabled: true
-  });
-  
-  // Mark single notification as read
+  // Mark notification as read
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      await apiRequest('PATCH', `/api/notifications/${notificationId}`);
+      const res = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to mark notification as read');
+      return res.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refresh notification data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/count'] });
     },
+    onError: (error) => {
+      console.error('Error marking notification as read:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark notification as read',
+        variant: 'destructive'
+      });
+    }
   });
   
   // Mark all notifications as read
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('PATCH', '/api/notifications');
+      const res = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to mark all notifications as read');
+      return res.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refresh notification data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/count'] });
+      toast({
+        title: 'Success',
+        description: 'All notifications marked as read',
+        variant: 'default'
+      });
     },
+    onError: (error) => {
+      console.error('Error marking all notifications as read:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark all notifications as read',
+        variant: 'destructive'
+      });
+    }
   });
   
   // Delete notification
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      await apiRequest('DELETE', `/api/notifications/${notificationId}`);
+      const res = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error('Failed to delete notification');
+      return res.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refresh notification data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/count'] });
     },
+    onError: (error) => {
+      console.error('Error deleting notification:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete notification',
+        variant: 'destructive'
+      });
+    }
   });
   
   return {
-    notifications: data?.notifications || [],
-    totalNotifications: data?.total || 0,
+    notifications: notificationsData?.notifications || [],
+    total: notificationsData?.total || 0,
     unreadCount: countData?.count || 0,
     isLoading,
+    isError,
     isCountLoading,
-    unreadOnly,
-    setUnreadOnly,
-    markAsRead: markAsReadMutation.mutate,
-    markAllAsRead: markAllAsReadMutation.mutate,
-    deleteNotification: deleteNotificationMutation.mutate,
+    isCountError,
+    wsStatus,
+    markAsRead: (id: number) => markAsReadMutation.mutate(id),
+    markAllAsRead: () => markAllAsReadMutation.mutate(),
+    deleteNotification: (id: number) => deleteNotificationMutation.mutate(id)
   };
 }

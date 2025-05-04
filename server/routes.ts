@@ -1,5 +1,6 @@
 import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { z } from "zod";
 import { ValidationError, fromZodError } from "zod-validation-error";
@@ -76,6 +77,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register admin routes
   registerAdminRoutes(app);
+  
+  // Create HTTP server once for the entire application
+  const httpServer = createServer(app);
+  
+  // Create WebSocket server on a distinct path
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store connected clients by userId for pushing notifications
+  const clients = new Map<number, WebSocket>();
+  
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('Client connected to WebSocket');
+    
+    // Handle messages from clients
+    ws.on('message', (message: string) => {
+      try {
+        const data = JSON.parse(message);
+        
+        // Handle authentication to associate websocket with user
+        if (data.type === 'auth') {
+          const userId = data.userId;
+          if (userId) {
+            clients.set(userId, ws);
+            console.log(`WebSocket authenticated for user ${userId}`);
+            
+            // Send confirmation
+            ws.send(JSON.stringify({ type: 'auth_success' }));
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+    
+    // Handle client disconnection
+    ws.on('close', () => {
+      console.log('Client disconnected from WebSocket');
+      // Remove client from the clients map
+      clients.forEach((socket, userId) => {
+        if (socket === ws) {
+          clients.delete(userId);
+          console.log(`Removed user ${userId} from WebSocket clients`);
+        }
+      });
+    });
+  });
+  
+  // Helper to send notification to a specific user
+  // Export this as a global function to be used by other modules
+  global.sendNotificationToUser = (userId: number, notification: any) => {
+    const client = clients.get(userId);
+    if (client && client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({
+        type: 'notification',
+        data: notification
+      }));
+      console.log(`Real-time notification sent to user ${userId}`);
+    } else {
+      console.log(`User ${userId} not connected via WebSocket or connection not ready`);
+    }
+  };
   
   // Profile routes are directly implemented below
 
@@ -1572,6 +1634,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     redirect: false // Don't redirect to trailing slash
   }));
 
-  const httpServer = createServer(app);
   return httpServer;
 }
