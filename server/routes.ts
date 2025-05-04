@@ -1308,6 +1308,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (fileExt === '.gif' || fileExt === '.svg') {
           // For GIFs and SVGs, just copy them as is (Sharp doesn't handle animations well)
           fs.copyFileSync(filePath, optimizedFilePath);
+          
+          // After successful copy, we can remove the original
+          fs.unlinkSync(filePath);
+          
+          // Create a URL for the optimized file
+          const fileUrl = `/uploads/${optimizedFileName}`;
+          
+          // Return the URL of the optimized file
+          return res.status(201).json({ 
+            fileUrl,
+            message: 'File uploaded and optimized successfully' 
+          });
         } else {
           // For JPG, PNG, WebP, optimize them
           await sharp(filePath)
@@ -1322,25 +1334,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .webp({ quality: 85 }) // For WebP output
             .toFormat(fileExt === '.png' ? 'png' : fileExt === '.webp' ? 'webp' : 'jpeg')
             .toFile(optimizedFilePath);
-            
-          // Remove the original file
+          
+          // Only delete the original after successful optimization
           fs.unlinkSync(filePath);
+          
+          // Create a URL for the optimized file
+          const fileUrl = `/uploads/${optimizedFileName}`;
+          
+          // Return the URL of the optimized file
+          return res.status(201).json({ 
+            fileUrl,
+            message: 'File uploaded and optimized successfully' 
+          });
         }
-        
-        // Create a URL for the optimized file
-        const fileUrl = `/uploads/${optimizedFileName}`;
-        
-        // Return the URL of the optimized file
-        res.status(201).json({ 
-          fileUrl,
-          message: 'File uploaded and optimized successfully' 
-        });
       } catch (optimizationError) {
         console.error('Image optimization error:', optimizationError);
         
-        // If optimization fails, still return the original file
+        // If optimization fails, use the original file since we haven't deleted it yet
         const fileUrl = `/uploads/${fileName}`;
-        res.status(201).json({ 
+        return res.status(201).json({ 
           fileUrl,
           message: 'File uploaded successfully (without optimization)' 
         });

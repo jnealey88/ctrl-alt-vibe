@@ -150,8 +150,8 @@ export function registerProfileRoutes(app: Express) {
           .webp({ quality: 85 }) // For WebP output
           .toFormat(fileExt === '.png' ? 'png' : fileExt === '.webp' ? 'webp' : 'jpeg')
           .toFile(optimizedFilePath);
-            
-        // Remove the original file
+        
+        // Only remove the original file after successful optimization
         fs.unlinkSync(filePath);
         
         const userId = req.user!.id;
@@ -164,11 +164,11 @@ export function registerProfileRoutes(app: Express) {
           return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json({ avatarUrl });
+        return res.json({ avatarUrl });
       } catch (optimizationError) {
         console.error('Avatar optimization error:', optimizationError);
         
-        // If optimization fails, use the original file
+        // If optimization fails, use the original file since we haven't deleted it yet
         const userId = req.user!.id;
         const avatarUrl = `/uploads/avatars/${fileName}`;
         
@@ -179,7 +179,7 @@ export function registerProfileRoutes(app: Express) {
           return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json({ avatarUrl });
+        return res.json({ avatarUrl });
       }
     } catch (error) {
       console.error('Error uploading avatar:', error);
