@@ -76,7 +76,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center" aria-label="Go to Home Page">
                 <img src="/1ctrlaltvibelogo.png" alt="Ctrl Alt Vibe Logo" className="h-7 w-auto" />
               </Link>
             </div>
@@ -107,16 +107,17 @@ const Navbar = () => {
 
           {!isMobile && (
             <div className="ml-3 lg:ml-6 flex items-center">
-              <form onSubmit={handleSearch} className="relative w-40 lg:w-64">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <form onSubmit={handleSearch} className="relative w-40 lg:w-64" role="search">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
                   <Search className="h-4 w-4 text-gray-400" />
                 </div>
                 <Input
-                  type="text"
+                  type="search"
                   className="pl-10 h-10 bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0 text-sm"
                   placeholder={isMediumScreen ? "Search..." : "Search projects..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search projects"
                 />
               </form>
 
@@ -200,16 +201,17 @@ const Navbar = () => {
                 <SheetContent side="top" className="w-full pt-16">
                   <div className="px-4 py-6">
                     <h3 className="text-lg font-medium mb-3">Search Projects</h3>
-                    <form onSubmit={handleSearch} className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <form onSubmit={handleSearch} className="relative" role="search">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
                         <Search className="h-4 w-4 text-gray-400" />
                       </div>
                       <Input
-                        type="text"
+                        type="search"
                         className="pl-10 h-12 w-full bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0"
                         placeholder="Search by title, description or tags..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="Search projects by title, description or tags"
                         autoFocus
                       />
                       <Button type="submit" className="mt-3 w-full h-12 bg-primary hover:bg-primary/90 transition-colors">

@@ -43,8 +43,12 @@ export const safeNavigate = (url: string): void => {
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Skip to content link for keyboard users */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-white focus:text-primary focus:p-4 focus:shadow-lg focus:outline-none focus:m-4">
+        Skip to main content
+      </a>
       <Navbar />
-      <div className="flex-grow">
+      <main id="main-content" className="flex-grow">
         {/* ScrollToTop component to reset scroll position on navigation */}
         <ScrollToTop />
         <Switch>
@@ -66,7 +70,7 @@ function Router() {
           <Route path="/terms" component={TermsOfService} />
           <Route component={NotFound} />
         </Switch>
-      </div>
+      </main>
       <Footer />
     </div>
   );
