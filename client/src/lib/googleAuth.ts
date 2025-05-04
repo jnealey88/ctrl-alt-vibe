@@ -74,8 +74,14 @@ export const handleGoogleRedirect = (): string | null => {
     return null;
   }
   
-  // Validate state to prevent CSRF attacks
-  if (!state || state !== storedState) {
+  // If there's no state parameter, don't perform validation
+  // This allows the function to be called on normal page loads
+  if (!state) {
+    return code;
+  }
+  
+  // Validate state to prevent CSRF attacks when state is present
+  if (state !== storedState) {
     console.error('Invalid state parameter, possible CSRF attack');
     return null;
   }
