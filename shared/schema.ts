@@ -527,6 +527,15 @@ export const activityTypes = {
   REPLY_ADDED: "reply_added",
 } as const;
 
+// Notification types
+export const notificationTypes = {
+  NEW_COMMENT: "new_comment",
+  NEW_REPLY: "new_reply",
+  PROJECT_LIKED: "project_liked",
+  COMMENT_LIKED: "comment_liked",
+  REPLY_LIKED: "reply_liked"
+} as const;
+
 // User activity table
 export const userActivity = pgTable("user_activity", {
   id: serial("id").primaryKey(),
