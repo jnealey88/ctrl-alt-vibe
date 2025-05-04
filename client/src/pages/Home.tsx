@@ -28,21 +28,36 @@ const TrendingProjects = () => {
       </div>
       
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-card animate-pulse">
-              <div className="h-48 bg-gray-200"></div>
-              <div className="p-4">
-                <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm h-32 sm:h-28 md:h-24 animate-pulse flex">
+              <div className="w-1/3 sm:w-1/4 bg-gray-200"></div>
+              <div className="p-3 flex-1 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <div className="overflow-hidden w-3/4">
+                    <div className="h-5 bg-gray-200 rounded w-full mb-1"></div>
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                  <div className="h-4 w-4 rounded-full bg-gray-200 ml-1"></div>
+                </div>
+                <div className="h-8 bg-gray-200 rounded my-1"></div>
+                <div className="flex justify-between">
+                  <div className="flex gap-1">
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-3 bg-gray-200 rounded w-6"></div>
+                    <div className="h-3 bg-gray-200 rounded w-6"></div>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {trendingProjects.map(project => (
-            <ProjectCard key={project.id} project={project} className="h-full" />
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
       )}
@@ -208,18 +223,26 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-16">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm h-32 sm:h-28 md:h-24 animate-pulse flex">
-              <div className="h-48 w-full bg-gray-200"></div>
-              <div className="p-6">
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                <div className="flex gap-2 mb-4">
-                  <div className="h-6 bg-gray-200 rounded w-16"></div>
-                  <div className="h-6 bg-gray-200 rounded w-16"></div>
+              <div className="w-1/3 sm:w-1/4 bg-gray-200"></div>
+              <div className="p-3 flex-1 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <div className="overflow-hidden w-3/4">
+                    <div className="h-5 bg-gray-200 rounded w-full mb-1"></div>
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                  <div className="h-4 w-4 rounded-full bg-gray-200 ml-1"></div>
                 </div>
+                <div className="h-8 bg-gray-200 rounded my-1"></div>
                 <div className="flex justify-between">
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  <div className="flex gap-1">
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-3 bg-gray-200 rounded w-6"></div>
+                    <div className="h-3 bg-gray-200 rounded w-6"></div>
+                    <div className="h-3 bg-gray-200 rounded w-6"></div>
+                  </div>
                 </div>
               </div>
             </div>
