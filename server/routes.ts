@@ -467,6 +467,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Extract URL metadata for project creation
+  app.post(`${apiPrefix}/extract-url-metadata`, async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "You must be logged in to use this feature" });
+      }
+      
+      // Validate the URL
+      const urlSchema = z.object({
+        url: z.string().url("Please enter a valid URL")
+      });
+      
+      const { url } = urlSchema.parse(req.body);
+      
+      // Process the URL to extract metadata and take a screenshot
+      const metadata = await processUrlForProject(url);
+      
+      if (!metadata.success) {
+        return res.status(400).json({ 
+          message: "Failed to extract data from URL",
+          metadata: {
+            title: "",
+            description: "",
+            imageUrl: ""
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        metadata
+      });
+    } catch (error) {
+      console.error('Error extracting URL metadata:', error);
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ errors: validationError.details });
+      }
+      res.status(500).json({ message: 'Failed to extract URL metadata' });
+    }
+  });
+  
   // Create new project
   app.post(`${apiPrefix}/projects`, async (req, res) => {
     try {
