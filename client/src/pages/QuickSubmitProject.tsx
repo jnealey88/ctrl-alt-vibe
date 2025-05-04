@@ -271,8 +271,8 @@ const QuickSubmitProject = () => {
                       <FormLabel>Tags (Required)</FormLabel>
                       <FormControl>
                         <TagSelector 
-                          selectedTags={field.value} 
-                          onTagsChange={(newTags) => field.onChange(newTags)}
+                          value={field.value} 
+                          onChange={(tags: string[]) => field.onChange(tags)}
                           maxTags={5}
                           className="min-h-[80px] mt-1"
                         />

@@ -123,12 +123,26 @@ const Navbar = () => {
 
               {user ? (
                 <>
-                  <Link href="/submit">
-                    <Button className="ml-3 lg:ml-4 bg-primary hover:bg-primary/90 text-white group transition-all text-xs sm:text-sm">
-                      <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
-                      {isMediumScreen ? "Submit" : "Submit Project"}
-                    </Button>
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="ml-3 lg:ml-4 bg-primary hover:bg-primary/90 text-white group transition-all text-xs sm:text-sm">
+                        <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
+                        {isMediumScreen ? "Submit" : "Submit Project"}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[200px]">
+                      <DropdownMenuItem asChild>
+                        <Link href="/submit" className="flex w-full cursor-pointer">
+                          <User className="mr-2 h-4 w-4" /> Regular Submission
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/quick-submit" className="flex w-full cursor-pointer">
+                          <LinkIcon className="mr-2 h-4 w-4" /> Quick URL Submit
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {/* Notification bell */}
                   <NotificationBell />
@@ -312,12 +326,20 @@ const Navbar = () => {
                             </Link>
                           </SheetClose>
                         )}
-                        <div className="pt-2">
+                        <div className="pt-2 space-y-2">
                           <SheetClose asChild>
                             <Link href="/submit" className="block w-full">
                               <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                Submit Project
+                                Regular Submit
+                              </Button>
+                            </Link>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Link href="/quick-submit" className="block w-full">
+                              <Button className="w-full bg-primary/80 hover:bg-primary/90 text-white">
+                                <LinkIcon className="mr-2 h-4 w-4" />
+                                Quick URL Submit
                               </Button>
                             </Link>
                           </SheetClose>
