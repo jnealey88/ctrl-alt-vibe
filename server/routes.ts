@@ -29,6 +29,7 @@ import { registerAdminRoutes } from "./routes/admin";
 // Profile routes are now directly implemented in this file
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 
 // Set up storage for uploaded files
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -1548,9 +1549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const optimizedFilePath = path.join(uploadDir, optimizedFileName);
       
       try {
-        // Import sharp dynamically to ensure it's loaded
-        const sharp = require('sharp');
-        
+        // Use the imported sharp module
         // Process the image with Sharp based on file type
         if (fileExt === '.gif' || fileExt === '.svg') {
           // For GIFs and SVGs, just copy them as is (Sharp doesn't handle animations well)
