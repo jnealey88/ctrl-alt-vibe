@@ -32,11 +32,37 @@ import fs from "fs";
 import sharp from "sharp";
 
 // Set up storage for uploaded files
-const uploadDir = path.join(process.cwd(), "uploads");
+// Use .replit's storage area if possible for persistent storage
+const persistentStorageDir = process.env.REPLIT_DB_URL ? path.join(process.cwd(), ".replit", "data") : null;
+const uploadDir = persistentStorageDir && fs.existsSync(persistentStorageDir) 
+  ? path.join(persistentStorageDir, "uploads") 
+  : path.join(process.cwd(), "uploads");
 
 // Create the uploads directory if it doesn't exist
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Log upload directory location for debugging
+console.log(`Using upload directory: ${uploadDir}`);
+
+// Ensure old uploads are migrated if needed
+const oldUploadDir = path.join(process.cwd(), "uploads");
+if (uploadDir !== oldUploadDir && fs.existsSync(oldUploadDir)) {
+  try {
+    // Copy any existing files from old location if our upload dir is different
+    const files = fs.readdirSync(oldUploadDir);
+    for (const file of files) {
+      const srcPath = path.join(oldUploadDir, file);
+      const destPath = path.join(uploadDir, file);
+      if (fs.statSync(srcPath).isFile() && !fs.existsSync(destPath)) {
+        fs.copyFileSync(srcPath, destPath);
+        console.log(`Migrated uploaded file: ${file}`);
+      }
+    }
+  } catch (err) {
+    console.error('Error migrating uploads:', err);
+  }
 }
 
 // Configure multer for file storage
