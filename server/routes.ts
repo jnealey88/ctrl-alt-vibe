@@ -1071,6 +1071,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categoryId = req.query.category ? parseInt(req.query.category as string) : undefined;
       const tagId = req.query.tag ? parseInt(req.query.tag as string) : undefined;
       const authorId = req.query.author ? parseInt(req.query.author as string) : undefined;
+      const search = req.query.search as string || undefined;
       
       // Only admins can see unpublished posts
       const publishedOnly = !isAdmin(req);
@@ -1081,7 +1082,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         publishedOnly,
         categoryId,
         tagId,
-        authorId
+        authorId,
+        search
       });
       
       res.json(result);

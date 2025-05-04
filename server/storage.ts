@@ -173,8 +173,9 @@ export const storage = {
     categoryId?: number;
     tagId?: number;
     authorId?: number;
+    search?: string;
   } = {}): Promise<{ posts: BlogPost[]; total: number }> {
-    const { limit = 10, offset = 0, publishedOnly = true, categoryId, tagId, authorId } = options;
+    const { limit = 10, offset = 0, publishedOnly = true, categoryId, tagId, authorId, search } = options;
     
     // Build conditions array for query
     const conditions: any[] = [];
@@ -189,6 +190,17 @@ export const storage = {
     
     if (authorId) {
       conditions.push(eq(blogPosts.authorId, authorId));
+    }
+    
+    // Add search condition if provided
+    if (search) {
+      conditions.push(
+        or(
+          sql`${blogPosts.title} ILIKE ${`%${search}%`}`, 
+          sql`${blogPosts.summary} ILIKE ${`%${search}%`}`,
+          sql`${blogPosts.content} ILIKE ${`%${search}%`}`
+        )
+      );
     }
     
     // Execute query with all conditions
