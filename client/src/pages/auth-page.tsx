@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Redirect, Link } from "wouter";
+import { Redirect, Link, useLocation } from "wouter";
 import { Loader2, EyeIcon, EyeOffIcon, KeyRound, User, Mail, Info } from "lucide-react";
 import SEO from "@/components/SEO";
 import { Separator } from "@/components/ui/separator";
@@ -75,9 +75,17 @@ export default function AuthPage() {
   };
 
   // Redirect to home if already logged in
-  if (user && !isLoading) {
-    return <Redirect to="/" />;
-  }
+  const [location, setLocation] = useLocation();
+  const [redirected, setRedirected] = useState(false);
+  
+  useEffect(() => {
+    if (user && !isLoading && !redirected) {
+      console.log('User authenticated, redirecting to home page:', user.username);
+      // Use manual navigation instead of Redirect to avoid runtime errors
+      setRedirected(true);
+      setLocation('/');
+    }
+  }, [user, isLoading, redirected, setLocation]);
 
   // Determine SEO title and description based on active tab
   const getSeoTitle = () => {
