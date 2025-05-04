@@ -6,7 +6,8 @@ import { NotificationBell } from "./NotificationBell";
 import { 
   Sheet, 
   SheetContent, 
-  SheetTrigger 
+  SheetTrigger,
+  SheetClose
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -256,19 +257,20 @@ const Navbar = () => {
                       {navLinks.map((link) => {
                         const isActive = location === link.path;
                         return (
-                          <Link 
-                            key={link.name} 
-                            href={link.path} 
-                            className={cn(
-                              "flex items-center text-base font-medium py-2 px-1 rounded-md transition-colors",
-                              isActive 
-                                ? "text-primary bg-primary/10" 
-                                : "text-gray-600 hover:text-primary hover:bg-gray-50"
-                            )}
-                          >
-                            {link.icon}
-                            {link.name}
-                          </Link>
+                          <SheetClose asChild key={link.name}>
+                            <Link 
+                              href={link.path} 
+                              className={cn(
+                                "flex items-center text-base font-medium py-2 px-1 rounded-md transition-colors",
+                                isActive 
+                                  ? "text-primary bg-primary/10" 
+                                  : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                              )}
+                            >
+                              {link.icon}
+                              {link.name}
+                            </Link>
+                          </SheetClose>
                         );
                       })}
                     </div>
@@ -288,41 +290,53 @@ const Navbar = () => {
                         </div>
 
                         <h4 className="text-sm font-medium text-gray-500 mb-1 px-1">YOUR ACCOUNT</h4>
-                        <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
-                          <User className="mr-2 h-5 w-5" /> My Profile
-                        </Link>
-                        {user.role === "admin" && (
-                          <Link href="/admin" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
-                            <ShieldCheck className="mr-2 h-5 w-5" /> Admin Dashboard
+                        <SheetClose asChild>
+                          <Link href="/profile" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
+                            <User className="mr-2 h-5 w-5" /> My Profile
                           </Link>
+                        </SheetClose>
+                        {user.role === "admin" && (
+                          <SheetClose asChild>
+                            <Link href="/admin" className="flex items-center text-gray-600 hover:text-primary hover:bg-gray-50 py-2 px-1 text-base font-medium rounded-md transition-colors">
+                              <ShieldCheck className="mr-2 h-5 w-5" /> Admin Dashboard
+                            </Link>
+                          </SheetClose>
                         )}
                         <div className="pt-2">
-                          <Link href="/submit" className="block w-full">
-                            <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                              <PlusCircle className="mr-2 h-4 w-4" />
-                              Submit Project
-                            </Button>
-                          </Link>
+                          <SheetClose asChild>
+                            <Link href="/submit" className="block w-full">
+                              <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Submit Project
+                              </Button>
+                            </Link>
+                          </SheetClose>
                         </div>
-                        <Button 
-                          onClick={() => logoutMutation.mutate()} 
-                          variant="outline" 
-                          className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
-                          disabled={logoutMutation.isPending}
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          {logoutMutation.isPending ? "Logging out..." : "Sign out"}
-                        </Button>
+                        <SheetClose asChild>
+                          <Button 
+                            onClick={() => logoutMutation.mutate()} 
+                            variant="outline" 
+                            className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                            disabled={logoutMutation.isPending}
+                          >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            {logoutMutation.isPending ? "Logging out..." : "Sign out"}
+                          </Button>
+                        </SheetClose>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <h4 className="text-sm font-medium text-gray-500 mb-3 px-1">ACCOUNT</h4>
-                        <Link href="/auth?tab=login" className="block w-full">
-                          <Button variant="outline" className="w-full mb-3 h-11">Log in</Button>
-                        </Link>
-                        <Link href="/auth?tab=register" className="block w-full">
-                          <Button className="w-full h-11 bg-primary hover:bg-primary/90">Sign up</Button>
-                        </Link>
+                        <SheetClose asChild>
+                          <Link href="/auth?tab=login" className="block w-full">
+                            <Button variant="outline" className="w-full mb-3 h-11">Log in</Button>
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link href="/auth?tab=register" className="block w-full">
+                            <Button className="w-full h-11 bg-primary hover:bg-primary/90">Sign up</Button>
+                          </Link>
+                        </SheetClose>
                       </div>
                     )}
                   </div>
