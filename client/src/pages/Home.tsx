@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -66,6 +67,7 @@ const TrendingProjects = () => {
 };
 
 const Home = () => {
+  const { user } = useAuth();
   const [location] = useLocation();
   const [page, setPage] = useState(1);
   const [activeTag, setActiveTag] = useState<string>("all");
@@ -322,7 +324,7 @@ const Home = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
-                <code className="text-sm text-gray-300 font-mono">https://ctrlaltvibe.dev/profile/<span className="text-primary">your-username</span></code>
+                <code className="text-sm text-gray-300 font-mono">https://ctrlaltvibe.dev/profile/<span className="text-white font-bold">{user ? user.username : "your-username"}</span></code>
               </div>
               
               <div className="flex gap-3">
