@@ -343,7 +343,7 @@ const Home = () => {
                   </Button>
                 </Link>
                 <Link href="/submit" className="flex-1">
-                  <Button variant="outline" className="w-full border-gray-600 text-gray-100 hover:text-white hover:bg-gray-800">
+                  <Button variant="outline" className="w-full border-gray-600 bg-gray-700 text-white hover:text-white hover:bg-gray-600">
                     Submit a Project
                   </Button>
                 </Link>
