@@ -85,80 +85,79 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
   };
 
   return (
-    <Card className={cn("bg-white rounded-lg overflow-hidden shadow-sm hover-card-animation", className)}>
-      <div className="flex h-32 sm:h-28 md:h-24">
-        <Link href={`/projects/${project.id}`} className="w-1/3 sm:w-1/4">
-          <img 
-            className="h-full w-full object-cover cursor-pointer" 
-            src={project.imageUrl} 
-            alt={project.title} 
-          />
-        </Link>
-        <CardContent className="p-3 flex-1 flex flex-col justify-between">
+    <Card className={cn("bg-white rounded-lg overflow-hidden shadow-sm hover-card-animation h-full flex flex-col", className)}>
+      <Link href={`/projects/${project.id}`} className="block relative pt-[56.25%] w-full overflow-hidden">
+        <img 
+          className="absolute inset-0 h-full w-full object-cover cursor-pointer transition-transform hover:scale-105 duration-300" 
+          src={project.imageUrl} 
+          alt={project.title} 
+        />
+      </Link>
+      <CardContent className="p-4 flex-1 flex flex-col justify-between">
+        <div className="mb-2">
           <div className="flex justify-between items-start">
-            <div className="overflow-hidden">
-              <Link 
-                href={`/projects/${project.id}`} 
-                className="text-base font-bold text-foreground font-space hover:text-primary line-clamp-1"
-              >
-                {project.title}
-              </Link>
-              <p className="text-gray-500 text-xs">
-                by {project.author && project.author.username ? (
-                  <Link href={`/?user=${project.author.username}`} className="text-primary hover:underline">
-                    {project.author.username}
-                  </Link>
-                ) : (
-                  <span className="text-primary">Anonymous</span>
-                )}
-                <span className="mx-1">·</span>
-                <span>{formatTimeAgo(project.createdAt)}</span>
-              </p>
-            </div>
+            <Link 
+              href={`/projects/${project.id}`} 
+              className="text-lg font-bold text-foreground font-space hover:text-primary line-clamp-1 pr-2"
+            >
+              {project.title}
+            </Link>
             <button
               className={cn(
-                "text-gray-400 hover:text-secondary ml-1",
+                "text-gray-400 hover:text-secondary flex-shrink-0",
                 liked && "text-secondary"
               )}
               onClick={toggleLike}
               disabled={likeMutation.isPending}
             >
-              <Heart className={cn("h-4 w-4", liked && "fill-secondary")} />
+              <Heart className={cn("h-5 w-5", liked && "fill-secondary")} />
             </button>
           </div>
           
-          <p className="text-gray-600 text-xs my-1 line-clamp-2 flex-grow">{project.description}</p>
-          
-          <div className="flex items-center justify-between mt-1">
-            <div className="flex flex-wrap gap-1 overflow-hidden max-w-[70%]">
-              {project.tags && project.tags.length > 0 ? (
-                project.tags.slice(0, 2).map((tag) => (
-                  <Link key={tag} href={`/?tag=${tag}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full truncate max-w-[80px]">
-                    {tag}
-                  </Link>
-                ))
-              ) : (
-                <span className="text-gray-400 text-xs">No tags</span>
-              )}
-              {project.tags && project.tags.length > 2 && (
-                <span className="text-xs text-gray-500">+{project.tags.length - 2}</span>
-              )}
-            </div>
-          
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
-              <span className="flex items-center">
-                <Heart className="h-3 w-3 mr-0.5 text-secondary" /> {likesCount}
-              </span>
-              <span className="flex items-center">
-                <MessageSquare className="h-3 w-3 mr-0.5" /> {project.commentsCount || 0}
-              </span>
-              <span className="hidden sm:flex items-center">
-                <Share2 className="h-3 w-3 mr-0.5" /> {sharesCount}
-              </span>
-            </div>
+          <p className="text-gray-500 text-xs mt-1">
+            by {project.author && project.author.username ? (
+              <Link href={`/?user=${project.author.username}`} className="text-primary hover:underline">
+                {project.author.username}
+              </Link>
+            ) : (
+              <span className="text-primary">Anonymous</span>
+            )}
+            <span className="mx-1">·</span>
+            <span>{formatTimeAgo(project.createdAt)}</span>
+          </p>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{project.description}</p>
+        
+        <div className="mt-auto">
+          <div className="flex flex-wrap gap-1 mb-3 overflow-hidden">
+            {project.tags && project.tags.length > 0 ? (
+              project.tags.slice(0, 3).map((tag) => (
+                <Link key={tag} href={`/?tag=${tag}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full truncate max-w-[100px] hover:bg-gray-200 transition-colors">
+                  {tag}
+                </Link>
+              ))
+            ) : (
+              <span className="text-gray-400 text-xs">No tags</span>
+            )}
+            {project.tags && project.tags.length > 3 && (
+              <span className="text-xs text-gray-500">+{project.tags.length - 3}</span>
+            )}
           </div>
-        </CardContent>
-      </div>
+        
+          <div className="flex items-center space-x-3 text-xs text-gray-500 pt-2 border-t border-gray-100">
+            <span className="flex items-center">
+              <Heart className="h-3.5 w-3.5 mr-1 text-secondary" /> {likesCount}
+            </span>
+            <span className="flex items-center">
+              <MessageSquare className="h-3.5 w-3.5 mr-1" /> {project.commentsCount || 0}
+            </span>
+            <span className="flex items-center">
+              <Share2 className="h-3.5 w-3.5 mr-1" /> {sharesCount}
+            </span>
+          </div>
+        </div>
+      </CardContent>
       
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <DialogContent>

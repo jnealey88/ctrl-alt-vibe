@@ -242,7 +242,7 @@ const BrowseProjects = () => {
 
         <div className="w-full md:w-3/4">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 md:mb-0">
               {selectedTag ? `Projects tagged with "${selectedTag}"` : 
                searchQuery ? `Search results for "${searchQuery}"` : 
                sortOption === 'featured' ? 'Featured Projects' :
@@ -258,7 +258,7 @@ const BrowseProjects = () => {
             </div>
           ) : projectsData?.projects && projectsData.projects.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projectsData.projects.map((project) => (
                   <ProjectCard key={project.id} project={project} />
                 ))}

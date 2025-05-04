@@ -28,7 +28,7 @@ const TrendingProjects = () => {
       </div>
       
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm h-32 sm:h-28 md:h-24 animate-pulse flex">
               <div className="w-1/3 sm:w-1/4 bg-gray-200"></div>
@@ -55,7 +55,7 @@ const TrendingProjects = () => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {trendingProjects.map(project => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -220,7 +220,7 @@ const Home = () => {
 
       {/* Project Grid */}
       {isLoadingProjects && page === 1 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm h-32 sm:h-28 md:h-24 animate-pulse flex">
               <div className="w-1/3 sm:w-1/4 bg-gray-200"></div>
@@ -269,7 +269,7 @@ const Home = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {projects.map(project => (
             <ProjectCard key={project.id} project={project} />
           ))}
