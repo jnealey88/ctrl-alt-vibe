@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "@db";
-import { users, projects, comments } from "@shared/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { users, projects, comments, blogPosts, likes, bookmarks, shares } from "@shared/schema";
+import { eq, sql, desc, count } from "drizzle-orm";
 import { isAdmin } from "../middleware/auth";
 import { storage } from "../storage";
 
@@ -193,6 +193,71 @@ export function registerAdminRoutes(app: any) {
     } catch (error) {
       console.error("Error updating user role:", error);
       res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Get dashboard statistics - Admin only
+  app.get("/api/admin/stats", isAdmin, async (req: Request, res: Response) => {
+    try {
+      // Fetch counts in parallel for efficiency
+      const [usersCount, projectsCount, blogPostsCount, commentsCount, likesCount, bookmarksCount, sharesCount] = await Promise.all([
+        db.select({ count: count() }).from(users).then(result => result[0].count),
+        db.select({ count: count() }).from(projects).then(result => result[0].count),
+        db.select({ count: count() }).from(blogPosts).then(result => result[0].count),
+        db.select({ count: count() }).from(comments).then(result => result[0].count),
+        db.select({ count: count() }).from(likes).then(result => result[0].count),
+        db.select({ count: count() }).from(bookmarks).then(result => result[0].count),
+        db.select({ count: count() }).from(shares).then(result => result[0].count)
+      ]);
+
+      // Get recent user signups (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const recentUsersCount = await db
+        .select({ count: count() })
+        .from(users)
+        .where(sql`${users.createdAt} >= ${sevenDaysAgo}`)
+        .then(result => result[0].count);
+
+      // Get recent projects (last 7 days)
+      const recentProjectsCount = await db
+        .select({ count: count() })
+        .from(projects)
+        .where(sql`${projects.createdAt} >= ${sevenDaysAgo}`)
+        .then(result => result[0].count);
+
+      // Get total project views
+      const projectViewsSum = await db
+        .select({ viewsSum: sql`SUM(${projects.viewsCount})` })
+        .from(projects)
+        .then(result => result[0].viewsSum || 0);
+
+      res.json({
+        stats: {
+          users: {
+            total: usersCount,
+            recent: recentUsersCount
+          },
+          projects: {
+            total: projectsCount,
+            recent: recentProjectsCount,
+            views: projectViewsSum
+          },
+          engagement: {
+            comments: commentsCount,
+            likes: likesCount,
+            bookmarks: bookmarksCount,
+            shares: sharesCount
+          },
+          content: {
+            blogPosts: blogPostsCount
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching admin statistics:", error);
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
     }
   });
 }

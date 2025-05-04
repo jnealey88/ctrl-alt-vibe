@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare, BookOpen, Tag, FolderPlus, Edit, FileText, Plus } from "lucide-react";
+import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare, BookOpen, Tag, FolderPlus, Edit, FileText, Plus, BarChart3, Users, BarChart, Heart, Bookmark, Share2, LineChart, TrendingUp } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
