@@ -75,7 +75,7 @@ export default function AuthPage() {
   };
 
   // Redirect to home if already logged in
-  const [redirected, setRedirected] = useState(false);
+  const [redirected, setRedirected] = useState(false); // Track if we've started a redirect
   
   useEffect(() => {
     if (user && !isLoading && !redirected) {
