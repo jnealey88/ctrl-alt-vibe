@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare, BookOpen, Tag, FolderPlus, Edit, FileText, Plus, BarChart3, Users, BarChart, Heart, Bookmark, Share2, LineChart, TrendingUp } from "lucide-react";
+import { Loader2, Trash2, Star, Shield, User as UserIcon, PenSquare, BookOpen, Tag, FolderPlus, Edit, FileText, Plus, BarChart3, Users, BarChart, Heart, Bookmark, Share2, LineChart, TrendingUp, MessageSquare } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,11 +68,32 @@ type Comment = {
   reportCount?: number;
 };
 
+type Stats = {
+  users: {
+    total: number;
+    recent: number;
+  };
+  projects: {
+    total: number;
+    recent: number;
+    views: number;
+  };
+  engagement: {
+    comments: number;
+    likes: number;
+    bookmarks: number;
+    shares: number;
+  };
+  content: {
+    blogPosts: number;
+  };
+};
+
 const AdminDashboard = () => {
   const [_, setLocation] = useLocation();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("blog");
+  const [activeTab, setActiveTab] = useState("stats");
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const [commentsSearchQuery, setCommentsSearchQuery] = useState("");
@@ -146,6 +167,13 @@ const AdminDashboard = () => {
       return apiRequest("GET", `/api/blog/tags`).then(res => res.json());
     },
     enabled: !!user && user.role === "admin" && (activeTab === "blog")
+  });
+
+  // Fetch platform statistics
+  const { data: statsData, isLoading: statsLoading } = useQuery<{ stats: Stats }>({    
+    queryKey: ["/api/admin/stats"],
+    queryFn: () => apiRequest("GET", "/api/admin/stats").then(res => res.json()),
+    enabled: !!user && user.role === "admin" && activeTab === "stats"
   });
 
   // Fetch reported comments
@@ -423,12 +451,136 @@ const AdminDashboard = () => {
       </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="blog">Blog</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="comments">Reported Comments</TabsTrigger>
         </TabsList>
+        
+        {/* Stats Tab */}
+        <TabsContent value="stats">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Statistics</CardTitle>
+              <CardDescription>Key metrics and growth indicators</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {statsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : statsData?.stats ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Users Stats */}
+                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-medium text-blue-800 dark:text-blue-300">Users</CardTitle>
+                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-blue-700 dark:text-blue-200">{statsData.stats.users.total}</div>
+                      <div className="flex items-center mt-2 text-sm">
+                        <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                        <span className="text-green-600 dark:text-green-400">{statsData.stats.users.recent}</span>
+                        <span className="text-slate-600 dark:text-slate-300 ml-1">new this week</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Projects Stats */}
+                  <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-medium text-purple-800 dark:text-purple-300">Projects</CardTitle>
+                        <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-purple-700 dark:text-purple-200">{statsData.stats.projects.total}</div>
+                      <div className="flex items-center mt-2 text-sm">
+                        <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                        <span className="text-green-600 dark:text-green-400">{statsData.stats.projects.recent}</span>
+                        <span className="text-slate-600 dark:text-slate-300 ml-1">new this week</span>
+                      </div>
+                      <div className="flex items-center mt-1 text-sm">
+                        <BarChart3 className="h-4 w-4 mr-1 text-indigo-500" />
+                        <span className="text-slate-700 dark:text-slate-300">{statsData.stats.projects.views} total views</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Content Stats */}
+                  <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-medium text-amber-800 dark:text-amber-300">Content</CardTitle>
+                        <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-amber-700 dark:text-amber-200">{statsData.stats.content.blogPosts}</div>
+                      <div className="flex items-center mt-2 text-sm">
+                        <Tag className="h-4 w-4 mr-1 text-amber-500" />
+                        <span className="text-slate-700 dark:text-slate-300">Blog posts published</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Engagement Stats */}
+                  <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 border-emerald-200 dark:border-emerald-800">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-medium text-emerald-800 dark:text-emerald-300">Engagement</CardTitle>
+                        <BarChart className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="flex items-center text-sm">
+                            <Heart className="h-4 w-4 mr-1 text-red-500" />
+                            <span className="text-slate-600 dark:text-slate-300">Likes</span>
+                          </div>
+                          <div className="text-xl font-semibold text-emerald-700 dark:text-emerald-200">{statsData.stats.engagement.likes}</div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-sm">
+                            <Bookmark className="h-4 w-4 mr-1 text-blue-500" />
+                            <span className="text-slate-600 dark:text-slate-300">Bookmarks</span>
+                          </div>
+                          <div className="text-xl font-semibold text-emerald-700 dark:text-emerald-200">{statsData.stats.engagement.bookmarks}</div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-sm">
+                            <Share2 className="h-4 w-4 mr-1 text-indigo-500" />
+                            <span className="text-slate-600 dark:text-slate-300">Shares</span>
+                          </div>
+                          <div className="text-xl font-semibold text-emerald-700 dark:text-emerald-200">{statsData.stats.engagement.shares}</div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-sm">
+                            <MessageSquare className="h-4 w-4 mr-1 text-teal-500" />
+                            <span className="text-slate-600 dark:text-slate-300">Comments</span>
+                          </div>
+                          <div className="text-xl font-semibold text-emerald-700 dark:text-emerald-200">{statsData.stats.engagement.comments}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No statistics available</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         {/* Blog Tab */}
         <TabsContent value="blog">
