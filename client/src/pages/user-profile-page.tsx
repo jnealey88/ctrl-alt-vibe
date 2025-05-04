@@ -65,11 +65,11 @@ export default function UserProfilePage() {
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         </div>
         
-        <div className="container mx-auto relative">
+        <div className="container mx-auto relative px-4 sm:px-6">
           {/* Profile Info Section */}
           <div className="pt-10 sm:pt-16 pb-12 sm:pb-20 md:flex items-end gap-8">
             {/* Avatar */}
-            <div className="relative z-10 mb-4 md:mb-0 mx-auto md:mx-0 w-fit">
+            <div className="relative z-10 mb-4 md:mb-0 mx-auto md:ml-2 md:mx-0 w-fit">
               <Avatar className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl border-4 border-white shadow-lg">
                 {profileData.user.avatarUrl ? (
                   <AvatarImage src={profileData.user.avatarUrl} alt={profileData.user.username} />
@@ -110,7 +110,7 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 sm:px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
           <Card>
