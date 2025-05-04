@@ -1,7 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Redirect, Route, useLocation } from "wouter";
+import { Route } from "wouter";
 import { useEffect, useState } from "react";
+import { safeNavigate } from "@/App";
 
 export function ProtectedRoute({
   path,
@@ -11,19 +12,19 @@ export function ProtectedRoute({
   component: React.ComponentType;
 }) {
   const { user, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
   const [redirected, setRedirected] = useState(false);
   
   useEffect(() => {
-    // If not loading and no user, manually perform navigation to prevent error
+    // If not loading and no user, use our safe navigation helper
     if (!isLoading && !user && !redirected) {
       console.log('ProtectedRoute: Redirecting to auth page');
       setRedirected(true);
-      setLocation('/auth');
+      // Use our safer navigation method
+      safeNavigate('/auth');
     } else if (!isLoading && user) {
       console.log('ProtectedRoute: User authenticated, rendering component');
     }
-  }, [isLoading, user, redirected, setLocation]);
+  }, [isLoading, user, redirected]);
 
   if (isLoading) {
     return (
@@ -34,7 +35,7 @@ export function ProtectedRoute({
   }
 
   if (!user) {
-    // We're handling the redirect in the useEffect above
+    // Show loading while redirect happens
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -42,6 +43,7 @@ export function ProtectedRoute({
     );
   }
 
+  // Only render the component if user is authenticated
   return (
     <Route path={path}>
       <Component />

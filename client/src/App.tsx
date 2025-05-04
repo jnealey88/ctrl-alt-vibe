@@ -30,6 +30,15 @@ import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
 import { HelmetProvider } from "react-helmet-async";
 import SEO from "@/components/SEO";
 
+// Helper function to safely navigate to a new URL
+export const safeNavigate = (url: string): void => {
+  // Use setTimeout to break the React rendering cycle
+  // This helps prevent any state updates during rendering
+  setTimeout(() => {
+    window.location.href = url;
+  }, 0);
+};
+
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
