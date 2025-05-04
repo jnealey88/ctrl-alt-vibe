@@ -86,24 +86,31 @@ export function NotificationBell() {
           variant="ghost"
           size="icon"
           className="ml-3 lg:ml-4 relative hover:bg-gray-100 rounded-full w-9 h-9 p-0"
+          aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
+          aria-haspopup="true"
+          aria-expanded={open}
         >
-          <Bell className="h-5 w-5 text-gray-700" />
+          <Bell className="h-5 w-5 text-gray-700" aria-hidden="true" />
           {!isCountLoading && unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+            <span 
+              className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
+              aria-hidden="true"
+            >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0" align="end" aria-labelledby="notifications-title" role="dialog">
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h3 className="font-semibold">Notifications</h3>
+          <h3 className="font-semibold" id="notifications-title">Notifications</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               className="text-xs h-7 px-2 hover:bg-gray-100"
               onClick={() => markAllAsRead()}
+              aria-label="Mark all notifications as read"
             >
               Mark all as read
             </Button>
@@ -112,9 +119,15 @@ export function NotificationBell() {
         <div className="max-h-[300px] overflow-auto">
           {isLoading ? (
             // Loading skeleton
-            <div className="px-4 py-3">
+            <div 
+              className="px-4 py-3" 
+              role="status" 
+              aria-busy="true" 
+              aria-label="Loading notifications"
+            >
+              <p className="sr-only">Loading notifications...</p>
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start space-x-3 mb-3">
+                <div key={i} className="flex items-start space-x-3 mb-3" aria-hidden="true">
                   <Skeleton className="h-9 w-9 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-48" />
@@ -125,21 +138,28 @@ export function NotificationBell() {
             </div>
           ) : notifications.length === 0 ? (
             // Empty state
-            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-              <Bell className="h-8 w-8 text-gray-300 mb-2" />
+            <div 
+              className="flex flex-col items-center justify-center py-8 px-4 text-center"
+              role="status"
+              aria-live="polite"
+            >
+              <Bell className="h-8 w-8 text-gray-300 mb-2" aria-hidden="true" />
               <p className="text-gray-500 text-sm">No notifications yet</p>
             </div>
           ) : (
             // List of notifications
-            <div>
+            <div role="list" aria-label="Notifications">
               {notifications.map((notification: any) => (
                 <Link
                   key={notification.id}
                   href={getNotificationLink(notification)}
                   onClick={() => handleNotificationClick(notification)}
+                  aria-label={`${getNotificationAltText(notification)}${!notification.read ? ' (unread)' : ''}`}
                 >
                   <div
                     className={`flex items-start space-x-3 px-4 py-3 cursor-pointer hover:bg-gray-50 ${!notification.read ? 'bg-blue-50/50' : ''}`}
+                    role="listitem"
+                    aria-current={!notification.read ? 'true' : undefined}
                   >
                     <Avatar className="h-9 w-9">
                       <AvatarImage
@@ -168,14 +188,16 @@ export function NotificationBell() {
                         e.stopPropagation();
                         deleteNotification(notification.id);
                       }}
+                      aria-label={`Dismiss notification from ${notification.actor?.username || 'user'}`}
                     >
-                      <span className="sr-only">Dismiss</span>
+                      <span className="sr-only">Dismiss notification</span>
                       <svg
                         className="h-3 w-3 text-gray-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -207,4 +229,23 @@ function getNotificationLink(notification: any) {
   }
 
   return '/';
+}
+
+// Helper to get screen reader friendly notification text
+function getNotificationAltText(notification: any) {
+  const { type, actor, project, createdAt } = notification;
+  const actorName = actor?.username || 'Someone';
+  const dateStr = format(new Date(createdAt), 'MMMM do, h:mm a');
+  const projectTitle = project?.title || 'your project';
+  
+  switch (type) {
+    case 'new_comment':
+      return `${actorName} commented on your project ${projectTitle} on ${dateStr}`;
+    case 'new_reply':
+      return `${actorName} replied to your comment on ${dateStr}`;
+    case 'liked_project':
+      return `${actorName} liked your project ${projectTitle} on ${dateStr}`;
+    default:
+      return `${actorName} interacted with your content on ${dateStr}`;
+  }
 }
