@@ -31,7 +31,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
 import { HelmetProvider } from "react-helmet-async";
 import SEO from "@/components/SEO";
-import { AccessibilityAnnouncer } from "@/components/ui/accessibility";
+import { SkipToContent, useAnnouncement } from "@/components/ui/accessibility";
 
 // Helper function to safely navigate to a new URL
 export const safeNavigate = (url: string): void => {
@@ -46,11 +46,9 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Skip to content link for keyboard users */}
-      <a href="#main-content" className="skip-link">
-        Skip to main content
-      </a>
+      <SkipToContent targetId="main-content" />
       <Navbar />
-      <main id="main-content" className="flex-grow">
+      <main id="main-content" className="flex-grow" role="main" aria-labelledby="page-title">
         {/* ScrollToTop component to reset scroll position on navigation */}
         <ScrollToTop />
         <Switch>
@@ -83,6 +81,7 @@ function App() {
   const { toast } = useToast();
   const [hasShownTip, setHasShownTip] = useState(false);
   const isMobileDevice = useMobile();
+  const { AnnouncementRegion } = useAnnouncement();
   
   // This hook will trigger confetti when Ctrl+Alt+V or Cmd+Alt+V is pressed
   const { triggerConfetti } = useKeyboardConfetti({
@@ -140,7 +139,7 @@ function App() {
         <AuthProvider>
           <ErrorBoundary onError={handleGlobalError}>
             <SEO />
-            <AccessibilityAnnouncer />
+            <AnnouncementRegion />
             <Router />
           </ErrorBoundary>
           <Toaster />
