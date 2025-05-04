@@ -135,9 +135,17 @@ const Navbar = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="ml-3 bg-white/80 hover:bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
+                      <button 
+                        className="ml-3 bg-white/80 hover:bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200"
+                        aria-label="Open user menu"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                      >
                         <span className="sr-only">Open user menu</span>
-                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary shadow-sm">
+                        <div 
+                          className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold uppercase text-primary shadow-sm"
+                          aria-hidden="true"
+                        >
                           {user.username.charAt(0)}
                         </div>
                       </button>

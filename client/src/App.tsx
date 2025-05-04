@@ -22,6 +22,7 @@ import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import Accessibility from "@/pages/Accessibility";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -30,6 +31,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
 import { HelmetProvider } from "react-helmet-async";
 import SEO from "@/components/SEO";
+import { AccessibilityAnnouncer } from "@/components/ui/accessibility";
 
 // Helper function to safely navigate to a new URL
 export const safeNavigate = (url: string): void => {
@@ -44,7 +46,7 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Skip to content link for keyboard users */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-white focus:text-primary focus:p-4 focus:shadow-lg focus:outline-none focus:m-4">
+      <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
       <Navbar />
@@ -68,6 +70,7 @@ function Router() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/privacy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
+          <Route path="/accessibility" component={Accessibility} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -137,6 +140,7 @@ function App() {
         <AuthProvider>
           <ErrorBoundary onError={handleGlobalError}>
             <SEO />
+            <AccessibilityAnnouncer />
             <Router />
           </ErrorBoundary>
           <Toaster />
