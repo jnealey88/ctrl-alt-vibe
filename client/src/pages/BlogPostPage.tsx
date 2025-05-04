@@ -49,7 +49,7 @@ const BlogPostPage = () => {
   const post = postData?.post as BlogPost;
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {isLoading ? (
         <div className="max-w-3xl mx-auto">
           <div className="mb-8">

@@ -502,7 +502,7 @@ const BlogEditor = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-5xl">
+    <div className="container mx-auto p-4 max-w-7xl">
       <SEO 
         title={isEditMode ? "Edit Blog Post | Ctrl Alt Vibe" : "Create Blog Post | Ctrl Alt Vibe"}
         description={isEditMode ? "Edit your blog post with our easy-to-use editor." : "Create new blog content for the Ctrl Alt Vibe community."}
