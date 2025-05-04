@@ -545,6 +545,25 @@ export const userActivity = pgTable("user_activity", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text("type").notNull(),
+  actorId: integer("actor_id").references(() => users.id), // User who triggered the notification
+  projectId: integer("project_id").references(() => projects.id),
+  commentId: integer("comment_id").references(() => comments.id),
+  replyId: integer("reply_id").references(() => commentReplies.id),
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    userIdIdx: index("notifications_user_id_idx").on(table.userId),
+    createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+    readIdx: index("notifications_read_idx").on(table.read),
+  };
+});
+
 // User skills and activity relations
 export const userSkillsRelations = relations(userSkills, ({ one }) => ({
   user: one(users, { fields: [userSkills.userId], references: [users.id] }),
@@ -552,6 +571,14 @@ export const userSkillsRelations = relations(userSkills, ({ one }) => ({
 
 export const userActivityRelations = relations(userActivity, ({ one }) => ({
   user: one(users, { fields: [userActivity.userId], references: [users.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, { fields: [notifications.userId], references: [users.id] }),
+  actor: one(users, { fields: [notifications.actorId], references: [users.id] }),
+  project: one(projects, { fields: [notifications.projectId], references: [projects.id] }),
+  comment: one(comments, { fields: [notifications.commentId], references: [comments.id] }),
+  reply: one(commentReplies, { fields: [notifications.replyId], references: [commentReplies.id] }),
 }));
 
 // Complete version of usersRelations including skills and activities
@@ -565,6 +592,8 @@ export const extendedUsersRelations = relations(users, ({ many }) => ({
   blogPosts: many(blogPosts),
   skills: many(userSkills),
   activities: many(userActivity),
+  notifications: many(notifications, { relationName: "user" }),
+  notificationsAsActor: many(notifications, { relationName: "actor" }),
 }));
 
 // User skills schema and types
@@ -577,3 +606,26 @@ export type UserActivity = typeof userActivity.$inferSelect;
 export const projectViewInsertSchema = createInsertSchema(projectViews);
 export type ProjectView = typeof projectViews.$inferSelect;
 export type InsertProjectView = z.infer<typeof projectViewInsertSchema>;
+
+// Notifications schema and types
+export const notificationInsertSchema = createInsertSchema(notifications);
+export type Notification = typeof notifications.$inferSelect & {
+  actor?: {
+    id: number;
+    username: string;
+    avatarUrl?: string;
+  };
+  project?: {
+    id: number;
+    title: string;
+  };
+  comment?: {
+    id: number;
+    content: string;
+  };
+  reply?: {
+    id: number;
+    content: string;
+  };
+};
+export type InsertNotification = z.infer<typeof notificationInsertSchema>;

@@ -18,6 +18,8 @@ import {
   userSkills,
   userActivity,
   projectViews,
+  notifications,
+  notificationTypes,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -36,7 +38,9 @@ import type {
   InsertBlogCategory,
   InsertBlogTag,
   ProjectView,
-  InsertProjectView
+  InsertProjectView,
+  Notification,
+  InsertNotification
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
