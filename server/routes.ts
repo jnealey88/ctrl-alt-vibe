@@ -386,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Serve static files from the uploads directory
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  // Static files are served from the main uploads directory configuration below
   
   // Check if user is admin
   const isAdmin = (req: Request) => {

@@ -121,9 +121,9 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     console.log('Using Chromium path:', chromiumPath || 'Default bundled with Puppeteer');
     
     // Launch puppeteer browser with minimal options (no sandbox for cloud environments)
-    const launchOptions: puppeteer.LaunchOptions = {
+    let launchOptions: any = {
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      headless: 'new' // Use the new headless mode
+      headless: true // Use headless mode
     };
     
     if (chromiumPath) {
@@ -141,7 +141,7 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     
     // Wait a bit for any lazy-loaded content
-    await page.waitForTimeout(1000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Take a screenshot
     await page.screenshot({ path: screenshotPath, fullPage: false });
