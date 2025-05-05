@@ -352,9 +352,9 @@ export function registerBlogRoutes(app: Express) {
           // Fallback to original image if optimization fails
           postData.imageUrl = `/uploads/${req.file.filename}`;
         }
-      } else if (!postData.imageUrl) {
+      } else if (!postData.featuredImage) {
         // Set a default image if none provided
-        postData.imageUrl = '/images/default-blog.jpg';
+        postData.featuredImage = '/images/default-blog.jpg';
       }
       
       // Create the post
@@ -408,10 +408,10 @@ export function registerBlogRoutes(app: Express) {
           fs.unlinkSync(req.file.path);
           
           // If there was a previous image that wasn't the default, try to remove it
-          if (existingPost.imageUrl && 
-              !existingPost.imageUrl.includes('default-blog.jpg') && 
-              existingPost.imageUrl.startsWith('/uploads/')) {
-            const oldImagePath = path.join(process.cwd(), existingPost.imageUrl.substr(1));
+          if (existingPost.featuredImage && 
+              !existingPost.featuredImage.includes('default-blog.jpg') && 
+              existingPost.featuredImage.startsWith('/uploads/')) {
+            const oldImagePath = path.join(process.cwd(), existingPost.featuredImage.substr(1));
             fs.unlink(oldImagePath, (err) => {
               if (err) console.error('Failed to remove old image:', err);
             });
@@ -465,10 +465,10 @@ export function registerBlogRoutes(app: Express) {
       }
       
       // Try to remove the post image if it wasn't the default
-      if (existingPost.imageUrl && 
-          !existingPost.imageUrl.includes('default-blog.jpg') && 
-          existingPost.imageUrl.startsWith('/uploads/')) {
-        const imagePath = path.join(process.cwd(), existingPost.imageUrl.substr(1));
+      if (existingPost.featuredImage && 
+          !existingPost.featuredImage.includes('default-blog.jpg') && 
+          existingPost.featuredImage.startsWith('/uploads/')) {
+        const imagePath = path.join(process.cwd(), existingPost.featuredImage.substr(1));
         fs.unlink(imagePath, (err) => {
           if (err) console.error('Failed to remove post image:', err);
         });
