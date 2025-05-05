@@ -124,21 +124,12 @@ const Navbar = () => {
 
               {user ? (
                 <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button className="ml-3 lg:ml-4 bg-primary hover:bg-primary/90 text-white group transition-all text-xs sm:text-sm">
-                        <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
-                        {isMediumScreen ? "Submit" : "Submit Project"}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[200px]">
-                      <DropdownMenuItem asChild>
-                        <Link href="/submit" className="flex w-full cursor-pointer">
-                          <User className="mr-2 h-4 w-4" /> Submit Project
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Link href="/submit">
+                    <Button className="ml-3 lg:ml-4 bg-primary hover:bg-primary/90 text-white group transition-all text-xs sm:text-sm">
+                      <PlusCircle className="mr-1 h-4 w-4 group-hover:scale-110 transition-transform" />
+                      {isMediumScreen ? "Submit" : "Submit Project"}
+                    </Button>
+                  </Link>
 
                   {/* Notification bell */}
                   <NotificationBell />
