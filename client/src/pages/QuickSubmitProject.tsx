@@ -173,7 +173,7 @@ const QuickSubmitProject = () => {
         {!showFullForm ? (
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <LinkIcon className="mr-2 h-5 w-5" />
+              <ExternalLink className="mr-2 h-5 w-5" />
               Quick Project Submission
             </h2>
             <p className="text-muted-foreground mb-6">Enter your project URL and we'll automatically grab the details for you.</p>
