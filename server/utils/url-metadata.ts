@@ -81,7 +81,7 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     
     // Launch puppeteer browser with minimal options (no sandbox for cloud environments)
     browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/a26mlm3sdg0m4vxrbjqfl3v6a3s34d77-chromium-120.0.6099.216/bin/chromium',
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: true
     });
