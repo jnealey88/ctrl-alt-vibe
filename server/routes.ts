@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { ValidationError, fromZodError } from "zod-validation-error";
 import { generateTldrSummary } from "./services/openai";
+import { writeSitemap, generateSitemap } from "./utils/sitemap-generator";
 import { 
   commentInsertSchema, 
   projectInsertSchema, 
