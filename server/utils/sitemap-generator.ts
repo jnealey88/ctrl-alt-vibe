@@ -24,7 +24,6 @@ export async function generateSitemap(): Promise<string> {
 
   // Get projects (only public ones)
   const projects = await storage.getProjects({ 
-    page: 1, 
     limit: 1000, // Get a large number to include most projects
   });
   

@@ -113,6 +113,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create WebSocket server on a distinct path
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
+  // Generate sitemap.xml initially
+  try {
+    console.log('Generating initial sitemap.xml...');
+    await writeSitemap();
+    console.log('Initial sitemap.xml generated successfully');
+  } catch (error) {
+    console.error('Error generating initial sitemap.xml:', error);
+  }
+  
+  // Set up a timer to regenerate the sitemap periodically (once a day)
+  setInterval(async () => {
+    try {
+      console.log('Regenerating sitemap.xml...');
+      await writeSitemap();
+      console.log('Sitemap.xml regenerated successfully');
+    } catch (error) {
+      console.error('Error regenerating sitemap.xml:', error);
+    }
+  }, 24 * 60 * 60 * 1000); // 24 hours
+  
+  // Route to dynamically serve the sitemap
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      // Generate a fresh sitemap
+      const xml = await generateSitemap();
+      res.header('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (error) {
+      console.error('Error serving dynamic sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+  
+  // Route to serve robots.txt
+  app.get('/robots.txt', (req, res) => {
+    try {
+      const robotsTxtPath = path.join(process.cwd(), 'public', 'robots.txt');
+      if (fs.existsSync(robotsTxtPath)) {
+        const content = fs.readFileSync(robotsTxtPath, 'utf8');
+        res.header('Content-Type', 'text/plain');
+        res.send(content);
+      } else {
+        // If file doesn't exist, generate a default one
+        const content = 'User-agent: *\nAllow: /\n\n# Sitemap\nSitemap: https://ctrlaltvibe.com/sitemap.xml\n';
+        res.header('Content-Type', 'text/plain');
+        res.send(content);
+      }
+    } catch (error) {
+      console.error('Error serving robots.txt:', error);
+      res.status(500).send('Error serving robots.txt');
+    }
+  });
+  
   // Store connected clients by userId for pushing notifications
   const clients = new Map<number, WebSocket>();
   
