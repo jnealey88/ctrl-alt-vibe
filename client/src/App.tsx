@@ -10,7 +10,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
 import SubmitProject from "@/pages/SubmitProject";
-import QuickSubmitProject from "@/pages/QuickSubmitProject";
+// QuickSubmitProject removed - URL extraction integrated into main SubmitProject
 import EditProject from "@/pages/EditProject";
 import BrowseProjects from "@/pages/BrowseProjects";
 import AuthPage from "@/pages/auth-page";
@@ -57,7 +57,7 @@ function Router() {
           <Route path="/browse" component={BrowseProjects} />
           <Route path="/projects/:id" component={ProjectDetail} />
           <ProtectedRoute path="/submit" component={SubmitProject} />
-          <ProtectedRoute path="/quick-submit" component={QuickSubmitProject} />
+          {/* Quick submit route removed - URL extraction integrated into main SubmitProject */}
           <ProtectedRoute path="/projects/:id/edit" component={EditProject} />
           <ProtectedRoute path="/profile" component={ProfilePage} />
           <Route path="/profile/:username" component={UserProfilePage} />

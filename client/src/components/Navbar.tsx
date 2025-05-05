@@ -134,12 +134,7 @@ const Navbar = () => {
                     <DropdownMenuContent align="end" className="min-w-[200px]">
                       <DropdownMenuItem asChild>
                         <Link href="/submit" className="flex w-full cursor-pointer">
-                          <User className="mr-2 h-4 w-4" /> Regular Submission
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/quick-submit" className="flex w-full cursor-pointer">
-                          <ExternalLink className="mr-2 h-4 w-4" /> Quick URL Submit
+                          <User className="mr-2 h-4 w-4" /> Submit Project
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -332,15 +327,7 @@ const Navbar = () => {
                             <Link href="/submit" className="block w-full">
                               <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                Regular Submit
-                              </Button>
-                            </Link>
-                          </SheetClose>
-                          <SheetClose asChild>
-                            <Link href="/quick-submit" className="block w-full">
-                              <Button className="w-full bg-primary/80 hover:bg-primary/90 text-white">
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                Quick URL Submit
+                                Submit Project
                               </Button>
                             </Link>
                           </SheetClose>
