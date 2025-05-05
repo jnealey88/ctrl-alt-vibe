@@ -1,5 +1,4 @@
 import { Express, Request, Response } from 'express';
-import { storage } from '../storage';
 import { notificationService } from '../services';
 import { isAuthenticated } from '../middleware/auth';
 
@@ -77,7 +76,7 @@ export function registerNotificationRoutes(app: Express) {
       }
       
       const userId = req.user!.id;
-      const success = await storage.markAllNotificationsAsRead(userId);
+      const success = await notificationService.markAllNotificationsAsRead(userId);
       
       if (success) {
         res.json({ message: 'All notifications marked as read' });
@@ -103,7 +102,7 @@ export function registerNotificationRoutes(app: Express) {
       }
       
       const userId = req.user!.id;
-      const success = await storage.deleteNotification(notificationId, userId);
+      const success = await notificationService.deleteNotification(notificationId, userId);
       
       if (success) {
         res.json({ message: 'Notification deleted' });

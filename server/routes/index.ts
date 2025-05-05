@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { writeSitemap, generateSitemap } from '../utils/sitemap-generator';
 import { registerAdminRoutes } from './admin';
+import { registerAIRoutes } from './ai';
 import { registerBlogRoutes } from './blog';
 import { registerCommentRoutes } from './comments';
 import { registerNotificationRoutes } from './notifications';
@@ -24,6 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register all route modules
   app.use(monitoringRoutes);
   registerAdminRoutes(app);
+  registerAIRoutes(app);
   registerBlogRoutes(app);
   registerCommentRoutes(app);
   registerNotificationRoutes(app);
