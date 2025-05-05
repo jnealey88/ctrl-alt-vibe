@@ -79,7 +79,7 @@ export function registerProjectRoutes(app: Express) {
         result = await storage.getProjects({ page, limit, tag, sort, search, user, currentUserId });
         
         // Cache for 2 minutes
-        cache.set(cacheKey, result, { ttl: 2 * 60 * 1000, tag: 'projects:list' });
+        cache.set(cacheKey, result, { ttl: 2 * 60 * 1000, tags: ['projects:list'] });
       } else {
         console.log(`Cache hit for ${cacheKey}`);
       }
@@ -109,7 +109,7 @@ export function registerProjectRoutes(app: Express) {
         result = { project };
         
         // Cache for 5 minutes
-        cache.set(cacheKey, result, { ttl: 5 * 60 * 1000, tag: 'projects:featured' });
+        cache.set(cacheKey, result, { ttl: 5 * 60 * 1000, tags: ['projects:featured'] });
       } else {
         console.log(`Cache hit for ${cacheKey}`);
       }
@@ -141,7 +141,7 @@ export function registerProjectRoutes(app: Express) {
         result = { projects };
         
         // Cache for 5 minutes
-        cache.set(cacheKey, result, { ttl: 5 * 60 * 1000, tag: 'projects:trending' });
+        cache.set(cacheKey, result, { ttl: 5 * 60 * 1000, tags: ['projects:trending'] });
       } else {
         console.log(`Cache hit for ${cacheKey}`);
       }

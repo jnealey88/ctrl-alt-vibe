@@ -1,6 +1,6 @@
 import { Express, Request, Response } from 'express';
 import { storage } from '../storage';
-import cache from '../utils/cache';
+import cache from '../utils/enhanced-cache';
 
 export function registerTagRoutes(app: Express) {
   const apiPrefix = '/api';
@@ -20,7 +20,7 @@ export function registerTagRoutes(app: Express) {
         console.log(`Cache miss for ${cacheKey}`);
         tags = await storage.getPopularTags(limit);
         // Cache for 10 minutes - these don't change very frequently
-        cache.set(cacheKey, tags, { ttl: 10 * 60 * 1000, tag: 'tags' });
+        cache.set(cacheKey, tags, { ttl: 10 * 60 * 1000, tags: ['tags'] });
       }
       
       res.json({ tags });
