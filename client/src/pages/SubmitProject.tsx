@@ -186,21 +186,33 @@ const SubmitProject = () => {
       return;
     }
     
+    // Prepare URL - add https:// prefix if missing
+    let processedUrl = extractUrl;
+    if (!processedUrl.startsWith('http')) {
+      processedUrl = `https://${processedUrl}`;
+    }
+    
     // Basic URL validation
-    if (!extractUrl.startsWith('http')) {
+    try {
+      new URL(processedUrl);
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Please enter a valid URL starting with http:// or https://",
+        description: "Please enter a valid URL.",
         variant: "destructive",
       });
       return;
     }
     
     setIsExtractingUrl(true);
-    extractMutation.mutate(extractUrl);
+    extractMutation.mutate(processedUrl);
   };
   
   const onSubmit = (data: FormValues) => {
+    // Format projectUrl if needed by adding https:// prefix
+    if (data.projectUrl && !data.projectUrl.startsWith('http')) {
+      data.projectUrl = `https://${data.projectUrl}`;
+    }
     submitMutation.mutate(data);
   };
   
@@ -328,7 +340,7 @@ const SubmitProject = () => {
                   <div className="flex-1">
                     <Input 
                       type="url" 
-                      placeholder="https://your-project-url.com" 
+                      placeholder="example.com (or full URL)" 
                       value={extractUrl}
                       onChange={(e) => setExtractUrl(e.target.value)}
                       className="w-full"
@@ -375,7 +387,7 @@ const SubmitProject = () => {
                   <FormItem>
                     <FormLabel>Project URL</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="https://" type="url" />
+                      <Input {...field} placeholder="example.com (or full URL)" type="url" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
