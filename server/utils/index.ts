@@ -1,18 +1,13 @@
 /**
- * Utils index file - export all utility functions
+ * Utils module exports
  */
 
-// Export basic cache
-import basicCache from './cache';
-
-// Export enhanced cache with tag-based invalidation
+import cache from './cache';
 import enhancedCache from './enhanced-cache';
+import * as urlMetadata from './url-metadata';
 
-// Default to the enhanced cache for better functionality
-export const cache = enhancedCache;
-
-// But also export the basic cache for specific use cases
-export const simpleCache = basicCache;
-
-// Re-export common utilities that are used across the application
-export * from './url-metadata';
+export {
+  cache,
+  enhancedCache,
+  urlMetadata
+};

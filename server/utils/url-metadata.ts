@@ -1,243 +1,115 @@
-import puppeteer from 'puppeteer';
+/**
+ * URL metadata extraction utility for OpenGraph and other metadata
+ */
+
 import ogs from 'open-graph-scraper';
-import path from 'path';
-import fs from 'fs';
-import { promisify } from 'util';
-import crypto from 'crypto';
+import cache from './cache';
 
-const writeFileAsync = promisify(fs.writeFile);
-
-// Ensure the uploads directory exists
-// Use the same path as defined in routes.ts
-let uploadsDir: string;
-// First check if we're in a Replit environment where persistent storage is available
-const persistentStorageDir = process.env.REPLIT_DB_URL ? path.join(process.cwd(), ".replit", "data") : null;
-if (persistentStorageDir && fs.existsSync(persistentStorageDir)) {
-  uploadsDir = path.join(persistentStorageDir, "uploads");
-} else {
-  uploadsDir = path.join(process.cwd(), 'uploads');
-}
-
-// Make sure uploads directory exists
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log(`Created uploads directory at ${uploadsDir}`);
-} else {
-  console.log(`Using uploads directory at ${uploadsDir}`);
+export interface URLMetadata {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  url: string;
+  siteName?: string;
+  type?: string;
 }
 
 /**
- * Generate a random filename with a specific extension
+ * Fetch metadata for a URL including OpenGraph tags
+ * @param url URL to fetch metadata from
+ * @returns Metadata including title, description, image, etc.
  */
-const generateFilename = (extension: string) => {
-  const randomStr = crypto.randomBytes(16).toString('hex');
-  return `${randomStr}${extension}`;
-};
+export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
+  if (!url) {
+    throw new Error('URL is required');
+  }
 
-/**
- * Extract metadata from a URL
- */
-export async function extractUrlMetadata(url: string) {
+  // Generate cache key based on URL
+  const cacheKey = `url_metadata:${url}`;
+  
+  // Check cache first
+  const cachedMetadata = cache.get<URLMetadata>(cacheKey);
+  if (cachedMetadata) {
+    return cachedMetadata;
+  }
+
   try {
-    // Use open-graph-scraper to extract metadata
-    const { result } = await ogs({ url });
-    
-    // Handle image extraction without TypeScript errors
-    let imageUrl = '';
-    try {
-      // Try to get image URL from various possible formats
-      if (result.ogImage) {
-        if (Array.isArray(result.ogImage) && result.ogImage.length > 0) {
-          const firstImage = result.ogImage[0];
-          imageUrl = typeof firstImage === 'object' && firstImage && 'url' in firstImage ? String(firstImage.url) : '';
-        } else if (typeof result.ogImage === 'object' && result.ogImage && 'url' in result.ogImage) {
-          imageUrl = String(result.ogImage.url);
-        }
-      } else if (result.twitterImage) {
-        if (Array.isArray(result.twitterImage) && result.twitterImage.length > 0) {
-          const firstImage = result.twitterImage[0];
-          imageUrl = typeof firstImage === 'object' && firstImage && 'url' in firstImage ? String(firstImage.url) : '';
-        } else if (typeof result.twitterImage === 'object' && result.twitterImage && 'url' in result.twitterImage) {
-          imageUrl = String(result.twitterImage.url);
-        }
-      }
-    } catch (e) {
-      console.error('Error extracting image URL:', e);
-    }
-    
-    return {
-      title: result.ogTitle || result.twitterTitle || '',
-      description: result.ogDescription || result.twitterDescription || '',
-      imageUrl,
-      success: true
+    const options = { url, timeout: 10000 };
+    const { result } = await ogs(options);
+
+    const metadata: URLMetadata = {
+      url,
+      title: result.ogTitle || result.twitterTitle || result.title,
+      description: result.ogDescription || result.twitterDescription || result.description,
+      imageUrl: result.ogImage?.[0]?.url || result.twitterImage?.[0]?.url,
+      siteName: result.ogSiteName,
+      type: result.ogType,
     };
+
+    // Cache the result for 24 hours
+    cache.set(cacheKey, metadata, { ttl: 24 * 60 * 60 * 1000 });
+
+    return metadata;
   } catch (error) {
-    console.error('Error extracting metadata:', error);
-    return {
-      title: '',
-      description: '',
-      imageUrl: '',
-      success: false
-    };
+    console.error(`Error fetching metadata for URL ${url}:`, error);
+    
+    // Return basic data on error
+    const basicMetadata: URLMetadata = { url };
+    
+    // Cache the basic metadata for a shorter period (1 hour)
+    cache.set(cacheKey, basicMetadata, { ttl: 60 * 60 * 1000 });
+    
+    return basicMetadata;
   }
 }
 
 /**
- * Take a screenshot of a website URL
+ * Invalidate cached metadata for a specific URL
+ * @param url URL to invalidate cache for
  */
-export async function takeWebsiteScreenshot(url: string): Promise<{ success: boolean; fileUrl: string }> {
-  let browser;
+export function invalidateURLMetadata(url: string): void {
+  if (!url) return;
+  
+  const cacheKey = `url_metadata:${url}`;
+  cache.delete(cacheKey);
+}
+
+/**
+ * Invalidate all cached URL metadata
+ */
+export function invalidateAllURLMetadata(): void {
+  // Basic cache doesn't have tag invalidation, so we can't use it directly
+  // This would need enhancedCache if we want this functionality
+}
+
+/**
+ * Process a URL for a project by extracting metadata
+ * @param url URL to process for project information
+ * @returns Object containing success status and metadata
+ */
+export async function processUrlForProject(url: string): Promise<{ 
+  success: boolean; 
+  title?: string; 
+  description?: string; 
+  imageUrl?: string;
+  url: string;
+}> {
   try {
-    // Make sure uploads directory exists
-    try {
-      if (!fs.existsSync(uploadsDir)) {
-        console.log(`Creating uploads directory at ${uploadsDir}`);
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-    } catch (fsError) {
-      console.error('Error checking/creating uploads directory:', fsError);
-    }
+    // Get metadata from URL
+    const metadata = await fetchURLMetadata(url);
     
-    // Create screenshot filename
-    const filename = generateFilename('.png');
-    const screenshotPath = path.join(uploadsDir, filename);
-    
-    console.log('Attempting to take screenshot of:', url);
-    console.log('Screenshot will be saved to:', screenshotPath);
-    
-    // Find Chromium executable
-    const chromiumPaths = [
-      // Check environment variable first
-      process.env.PUPPETEER_EXECUTABLE_PATH,
-      // Check common Nix store paths
-      '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-      // Check standard path from system install
-      '/usr/bin/chromium',
-      '/usr/bin/chromium-browser',
-      // Add chromium from the system dependency installation
-      'chromium'
-    ].filter(Boolean); // Remove undefined/null entries
-    
-    let chromiumPath = null;
-    for (const path of chromiumPaths) {
-      try {
-        if (path && fs.existsSync(path)) {
-          chromiumPath = path;
-          console.log(`Found Chromium at: ${path}`);
-          break;
-        }
-      } catch (e) {
-        // Continue checking other paths
-      }
-    }
-    
-    console.log('Using Chromium path:', chromiumPath || 'Default bundled with Puppeteer');
-    
-    // Launch puppeteer browser with minimal options (no sandbox for cloud environments)
-    let launchOptions: any = {
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      headless: true // Use headless mode
+    return {
+      success: true,
+      title: metadata.title || '',
+      description: metadata.description || '',
+      imageUrl: metadata.imageUrl || '',
+      url: metadata.url
     };
-    
-    if (chromiumPath) {
-      launchOptions.executablePath = chromiumPath;
-    }
-    
-    browser = await puppeteer.launch(launchOptions);
-    
-    const page = await browser.newPage();
-    
-    // Set a viewport size that matches the project card aspect ratio (16:9)
-    await page.setViewport({ width: 1280, height: 720 });
-    
-    // Navigate to the page with a timeout
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    
-    // Wait a bit for any lazy-loaded content
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Calculate a clip region to capture a 16:9 aspect ratio from the top of the page
-    const clip = {
-      x: 0,
-      y: 0,
-      width: 1280,
-      height: 720 // 16:9 ratio (1280 / 16 * 9 = 720)
-    };
-    
-    // Take a screenshot with the specific clip area
-    await page.screenshot({ 
-      path: screenshotPath, 
-      clip,
-      fullPage: false,
-      omitBackground: false
-    });
-    
-    // Verify the file was created
-    if (fs.existsSync(screenshotPath)) {
-      console.log('Screenshot saved successfully to:', screenshotPath);
-      return {
-        success: true,
-        fileUrl: `/uploads/${filename}`
-      };
-    } else {
-      console.error('Screenshot file not found after saving');
-      return {
-        success: false,
-        fileUrl: ''
-      };
-    }
   } catch (error) {
-    console.error('Error taking screenshot:', error);
+    console.error(`Error processing URL for project: ${url}`, error);
     return {
       success: false,
-      fileUrl: ''
-    };
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-}
-
-/**
- * Fetch all metadata and screenshot for a URL
- */
-export async function processUrlForProject(url: string) {
-  try {
-    // First get the metadata
-    const metadata = await extractUrlMetadata(url);
-    
-    // Then try to take a screenshot
-    let screenshotResult = { success: false, fileUrl: '' };
-    try {
-      screenshotResult = await takeWebsiteScreenshot(url);
-    } catch (error) {
-      console.error('Screenshot failed, falling back to OG image:', error);
-    }
-    
-    // Prepare the image URL
-    let imageUrl = '';
-    if (screenshotResult.success) {
-      // We have a screenshot from our server
-      imageUrl = screenshotResult.fileUrl;
-    } else if (metadata.imageUrl && (metadata.imageUrl.startsWith('http://') || metadata.imageUrl.startsWith('https://'))) {
-      // We have an OG image with a valid URL
-      imageUrl = metadata.imageUrl;
-    }
-
-    return {
-      title: metadata.title,
-      description: metadata.description,
-      imageUrl: imageUrl,
-      success: metadata.success || screenshotResult.success
-    };
-  } catch (error) {
-    console.error('Failed to process URL for project:', error);
-    return {
-      title: '',
-      description: '',
-      imageUrl: '',
-      success: false
+      url
     };
   }
 }
