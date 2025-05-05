@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
-import { Upload, Image } from "lucide-react";
+import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
 
 // Import Quill editor components (using v2.0)
@@ -77,6 +77,9 @@ const SubmitProject = () => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isExtractingUrl, setIsExtractingUrl] = useState(false);
+  const [showUrlExtraction, setShowUrlExtraction] = useState(false);
+  const [extractUrl, setExtractUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quillRef = useRef<ReactQuill>(null);
   
@@ -97,6 +100,46 @@ const SubmitProject = () => {
     },
   });
   
+  // Mutation for extracting URL metadata
+  const extractMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const response = await apiRequest("POST", "/api/extract-url-metadata", { url });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success && data.metadata) {
+        // Populate the form with the extracted metadata
+        form.setValue("title", data.metadata.title || "");
+        form.setValue("description", data.metadata.description || "");
+        form.setValue("projectUrl", extractUrl);
+        form.setValue("imageUrl", data.metadata.imageUrl || "");
+        
+        toast({
+          title: "URL Processed",
+          description: "We've extracted the details from your URL.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to extract metadata from URL. Please try again.",
+          variant: "destructive",
+        });
+      }
+      setIsExtractingUrl(false);
+      setShowUrlExtraction(false);
+    },
+    onError: (error) => {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to extract metadata from URL. Please try again.",
+        variant: "destructive",
+      });
+      setIsExtractingUrl(false);
+    },
+  });
+
+  // Mutation for submitting the project
   const submitMutation = useMutation({
     mutationFn: async (data: FormValues) => {
       const response = await apiRequest("POST", "/api/projects", data);
@@ -118,6 +161,31 @@ const SubmitProject = () => {
       });
     },
   });
+  
+  // Function to handle URL extraction
+  const handleExtractUrl = () => {
+    if (!extractUrl) {
+      toast({
+        title: "Error",
+        description: "Please enter a URL first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Basic URL validation
+    if (!extractUrl.startsWith('http')) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid URL starting with http:// or https://",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsExtractingUrl(true);
+    extractMutation.mutate(extractUrl);
+  };
   
   const onSubmit = (data: FormValues) => {
     submitMutation.mutate(data);
@@ -232,6 +300,43 @@ const SubmitProject = () => {
         <div className="p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-foreground font-space">Submit Your Project</h2>
+          </div>
+          
+          <div className="mb-8">
+            <Card className="p-4 border border-gray-200 bg-gray-50">
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <ExternalLink className="h-5 w-5 mr-2 text-primary" />
+                  <h3 className="text-lg font-medium">Quick Project Import</h3>
+                </div>
+                <p className="text-sm text-gray-600">Enter your project URL and we'll automatically extract its title, description, and screenshot.</p>
+                
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input 
+                      type="url" 
+                      placeholder="https://your-project-url.com" 
+                      value={extractUrl}
+                      onChange={(e) => setExtractUrl(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={handleExtractUrl}
+                    disabled={isExtractingUrl}
+                    className="whitespace-nowrap"
+                  >
+                    {isExtractingUrl ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Extracting...
+                      </>
+                    ) : "Extract Info"}
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
           
           <Form {...form}>
