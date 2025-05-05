@@ -147,8 +147,8 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     
     const page = await browser.newPage();
     
-    // Set a reasonable viewport size
-    await page.setViewport({ width: 1280, height: 800 });
+    // Set a viewport size that matches the project card aspect ratio (16:9)
+    await page.setViewport({ width: 1280, height: 720 });
     
     // Navigate to the page with a timeout
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -156,8 +156,21 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     // Wait a bit for any lazy-loaded content
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Take a screenshot
-    await page.screenshot({ path: screenshotPath, fullPage: false });
+    // Calculate a clip region to capture a 16:9 aspect ratio from the top of the page
+    const clip = {
+      x: 0,
+      y: 0,
+      width: 1280,
+      height: 720 // 16:9 ratio (1280 / 16 * 9 = 720)
+    };
+    
+    // Take a screenshot with the specific clip area
+    await page.screenshot({ 
+      path: screenshotPath, 
+      clip,
+      fullPage: false,
+      omitBackground: false
+    });
     
     // Verify the file was created
     if (fs.existsSync(screenshotPath)) {

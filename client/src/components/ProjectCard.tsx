@@ -86,11 +86,17 @@ const ProjectCard = ({ project, className }: ProjectCardProps) => {
 
   return (
     <Card className={cn("bg-white rounded-lg overflow-hidden shadow-sm hover-card-animation h-full flex flex-col", className)}>
-      <Link href={`/projects/${project.id}`} className="block relative pt-[56.25%] w-full overflow-hidden">
+      <Link href={`/projects/${project.id}`} className="block relative pt-[56.25%] w-full overflow-hidden bg-gray-100">
         <img 
-          className="absolute inset-0 h-full w-full object-cover cursor-pointer transition-transform hover:scale-105 duration-300" 
+          className="absolute inset-0 h-full w-full object-cover object-top cursor-pointer transition-transform hover:scale-105 duration-300" 
           src={project.imageUrl} 
-          alt={project.title} 
+          alt={project.title}
+          onError={(e) => {
+            // Set a fallback image if the image fails to load
+            e.currentTarget.src = '/ctrlaltvibelogo.png';
+            e.currentTarget.classList.add('object-contain', 'p-4');
+            e.currentTarget.classList.remove('object-cover', 'object-top');
+          }}
         />
       </Link>
       <CardContent className="p-4 flex-1 flex flex-col justify-between">
