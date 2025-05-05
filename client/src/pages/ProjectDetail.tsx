@@ -221,11 +221,19 @@ const ProjectDetail = () => {
       <div className="bg-white rounded-xl shadow-card overflow-hidden mb-16">
         {/* Hero section with image and floating action buttons */}
         <div className="relative">
-          <img 
-            className="w-full h-80 object-cover" 
-            src={project.imageUrl} 
-            alt={project.title} 
-          />
+          <div className="w-full h-80 bg-gray-100 relative overflow-hidden">
+            <img 
+              className="w-full h-full object-cover object-top" 
+              src={project.imageUrl} 
+              alt={project.title}
+              onError={(e) => {
+                // Set a fallback image if the image fails to load
+                e.currentTarget.src = '/ctrlaltvibelogo.png';
+                e.currentTarget.classList.add('object-contain', 'p-4');
+                e.currentTarget.classList.remove('object-cover', 'object-top');
+              }}
+            />
+          </div>
           <div className="absolute top-4 right-4 flex space-x-2">
             <Button 
               size="icon" 
