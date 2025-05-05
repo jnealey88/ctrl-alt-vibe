@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
 import { 
   Form, 
   FormControl, 
@@ -28,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
-import { Upload, Image, Loader2 } from "lucide-react";
+import { Upload, Image } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
 
 // Import Quill editor components (using v2.0)
