@@ -6,6 +6,7 @@ import { z } from "zod";
 import { ValidationError, fromZodError } from "zod-validation-error";
 import { generateTldrSummary } from "./services/openai";
 import { writeSitemap, generateSitemap } from "./utils/sitemap-generator";
+import cache from "./utils/cache";
 import { 
   commentInsertSchema, 
   projectInsertSchema, 
@@ -462,6 +463,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.query.user as string;
       const currentUserId = req.user?.id || 0;
       
+      // Build a cache key based on all query parameters
+      // Only cache if there's no search term (search results shouldn't be cached)
+      if (!search) {
+        const cacheKey = `projects:list:page:${page}:limit:${limit}:tag:${tag || 'none'}:sort:${sort || 'default'}:user:${user || 'none'}:currentUser:${currentUserId}`;
+        
+        // Try to get data from cache first
+        let result = cache.get(cacheKey);
+        
+        // If not in cache, fetch from database and cache the result
+        if (!result) {
+          result = await storage.getProjects({ page, limit, tag, search, sort, user, currentUserId });
+          // Cache for 2 minutes
+          cache.set(cacheKey, result, { ttl: 2 * 60 * 1000, tag: 'projects:list' });
+        }
+        
+        return res.json(result);
+      }
+      
+      // For search queries, don't use cache
       const result = await storage.getProjects({ page, limit, tag, search, sort, user, currentUserId });
       res.json(result);
     } catch (error) {
@@ -474,7 +494,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/projects/featured`, async (req, res) => {
     try {
       const currentUserId = req.user?.id || 0;
-      const featured = await storage.getFeaturedProject(currentUserId);
+      
+      // Create a cache key based on the user ID
+      // Each user needs their own cache since isLiked/isBookmarked flags depend on user
+      const cacheKey = `projects:featured:user:${currentUserId}`;
+      
+      // Try to get data from cache first
+      let featured = cache.get(cacheKey);
+      
+      // If not in cache, fetch from database and cache the result
+      if (!featured) {
+        featured = await storage.getFeaturedProject(currentUserId);
+        // Cache for 5 minutes
+        cache.set(cacheKey, featured, { ttl: 5 * 60 * 1000, tag: 'projects:featured' });
+      }
+      
       res.json({ project: featured });
     } catch (error) {
       console.error('Error fetching featured project:', error);
@@ -487,7 +521,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = parseInt(req.query.limit as string) || 4;
       const currentUserId = req.user?.id || 0;
-      const trending = await storage.getTrendingProjects(limit, currentUserId);
+      
+      // Create a cache key based on limit and user ID
+      const cacheKey = `projects:trending:limit:${limit}:user:${currentUserId}`;
+      
+      // Try to get data from cache first
+      let trending = cache.get(cacheKey);
+      
+      // If not in cache, fetch from database and cache the result
+      if (!trending) {
+        trending = await storage.getTrendingProjects(limit, currentUserId);
+        // Cache for 5 minutes
+        cache.set(cacheKey, trending, { ttl: 5 * 60 * 1000, tag: 'projects:trending' });
+      }
+      
       res.json({ projects: trending });
     } catch (error) {
       console.error('Error fetching trending projects:', error);
@@ -1075,7 +1122,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/tags/popular`, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 5;
-      const tags = await storage.getPopularTags(limit);
+      
+      // Create a cache key based on the limit parameter
+      const cacheKey = `tags:popular:${limit}`;
+      
+      // Try to get data from cache first
+      let tags = cache.get<string[]>(cacheKey);
+      
+      // If not in cache, fetch from database and cache the result
+      if (!tags) {
+        tags = await storage.getPopularTags(limit);
+        // Cache for 10 minutes - these don't change very frequently
+        cache.set(cacheKey, tags, { ttl: 10 * 60 * 1000, tag: 'tags' });
+      }
+      
       res.json({ tags });
     } catch (error) {
       console.error('Error fetching popular tags:', error);
