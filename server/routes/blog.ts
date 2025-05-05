@@ -240,13 +240,14 @@ export function registerBlogRoutes(app: Express) {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
       const categoryId = req.query.category ? parseInt(req.query.category as string) : undefined;
       const tagId = req.query.tag ? parseInt(req.query.tag as string) : undefined;
       const authorId = req.query.author ? parseInt(req.query.author as string) : undefined;
       const search = req.query.search as string;
       
       const result = await storage.getBlogPosts({
-        page,
+        offset,
         limit,
         categoryId,
         tagId,
