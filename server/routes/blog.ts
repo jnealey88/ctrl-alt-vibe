@@ -343,14 +343,14 @@ export function registerBlogRoutes(app: Express) {
             .toFile(optimizedImagePath);
           
           // Now use the optimized image instead
-          postData.imageUrl = `/uploads/opt-${req.file.filename}`;
+          postData.featuredImage = `/uploads/opt-${req.file.filename}`;
           
           // Remove the original if optimization succeeded
           fs.unlinkSync(req.file.path);
         } catch (sharpError) {
           console.error('Error optimizing image:', sharpError);
           // Fallback to original image if optimization fails
-          postData.imageUrl = `/uploads/${req.file.filename}`;
+          postData.featuredImage = `/uploads/${req.file.filename}`;
         }
       } else if (!postData.featuredImage) {
         // Set a default image if none provided
@@ -402,7 +402,7 @@ export function registerBlogRoutes(app: Express) {
             .toFile(optimizedImagePath);
           
           // Now use the optimized image instead
-          postData.imageUrl = `/uploads/opt-${req.file.filename}`;
+          postData.featuredImage = `/uploads/opt-${req.file.filename}`;
           
           // Remove the original if optimization succeeded
           fs.unlinkSync(req.file.path);
@@ -419,7 +419,7 @@ export function registerBlogRoutes(app: Express) {
         } catch (sharpError) {
           console.error('Error optimizing image:', sharpError);
           // Fallback to original image if optimization fails
-          postData.imageUrl = `/uploads/${req.file.filename}`;
+          postData.featuredImage = `/uploads/${req.file.filename}`;
         }
       }
       
