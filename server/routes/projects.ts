@@ -251,9 +251,9 @@ export function registerProjectRoutes(app: Express) {
       const project = await storage.createProject(projectData, tagNames);
       
       // Invalidate relevant caches
-      cache.invalidateByTag('projects:list');
-      cache.invalidateByTag('projects:featured');
-      cache.invalidateByTag('projects:trending');
+      cache.invalidateTag('projects:list');
+      cache.invalidateTag('projects:featured');
+      cache.invalidateTag('projects:trending');
       
       // Record activity
       await storage.recordUserActivity(req.user!.id, 'project_created', project.id);
@@ -333,11 +333,11 @@ export function registerProjectRoutes(app: Express) {
       }
       
       // Invalidate relevant caches
-      cache.invalidateByTag('projects:list');
+      cache.invalidateTag('projects:list');
       if (existingProject.featured || projectData.featured) {
-        cache.invalidateByTag('projects:featured');
+        cache.invalidateTag('projects:featured');
       }
-      cache.invalidateByTag('projects:trending');
+      cache.invalidateTag('projects:trending');
       
       // Record activity
       await storage.recordUserActivity(req.user!.id, 'project_updated', projectId);
@@ -388,11 +388,11 @@ export function registerProjectRoutes(app: Express) {
       }
       
       // Invalidate relevant caches
-      cache.invalidateByTag('projects:list');
+      cache.invalidateTag('projects:list');
       if (existingProject.featured) {
-        cache.invalidateByTag('projects:featured');
+        cache.invalidateTag('projects:featured');
       }
-      cache.invalidateByTag('projects:trending');
+      cache.invalidateTag('projects:trending');
       
       // Record activity
       await storage.recordUserActivity(req.user!.id, 'project_deleted', projectId);
@@ -423,10 +423,10 @@ export function registerProjectRoutes(app: Express) {
       await storage.likeProject(projectId, userId);
       
       // Invalidate caches
-      cache.invalidateByTag('projects:list');
-      cache.invalidateByTag('projects:trending');
+      cache.invalidateTag('projects:list');
+      cache.invalidateTag('projects:trending');
       if (project.featured) {
-        cache.invalidateByTag('projects:featured');
+        cache.invalidateTag('projects:featured');
       }
       
       // Record activity
@@ -487,10 +487,10 @@ export function registerProjectRoutes(app: Express) {
       await storage.unlikeProject(projectId, userId);
       
       // Invalidate caches
-      cache.invalidateByTag('projects:list');
-      cache.invalidateByTag('projects:trending');
+      cache.invalidateTag('projects:list');
+      cache.invalidateTag('projects:trending');
       if (project.featured) {
-        cache.invalidateByTag('projects:featured');
+        cache.invalidateTag('projects:featured');
       }
       
       res.json({ success: true });
