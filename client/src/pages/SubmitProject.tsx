@@ -47,8 +47,19 @@ const submitProjectSchema = z.object({
     .max(500, "Description must be less than 500 characters"),
   longDescription: z.string().optional(),
   projectUrl: z.string()
-    .url("Please enter a valid URL")
-    .startsWith("http", "URL must start with http:// or https://"),
+    .refine(val => {
+      // Allow empty strings (will be caught by required validation)
+      if (!val) return true;
+      
+      // Add https:// prefix if missing for validation
+      const urlToValidate = val.startsWith('http') ? val : `https://${val}`;
+      try {
+        new URL(urlToValidate);
+        return true;
+      } catch {
+        return false;
+      }
+    }, "Please enter a valid URL"),
   vibeCodingTool: z.string().optional(),
   isPrivate: z.boolean().default(false),
   imageUrl: z.string()
