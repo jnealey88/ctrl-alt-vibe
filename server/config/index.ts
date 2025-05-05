@@ -1,66 +1,90 @@
-import path from 'path';
-import fs from 'fs';
+/**
+ * Global configuration settings for the application
+ */
 
-// Upload directory configuration
-const persistentStorageDir = process.env.REPLIT_DB_URL ? path.join(process.cwd(), ".replit", "data") : null;
-export const uploadDir = persistentStorageDir && fs.existsSync(persistentStorageDir) 
-  ? path.join(persistentStorageDir, "uploads") 
-  : path.join(process.cwd(), "uploads");
-
-// Create uploads directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  console.log(`Created upload directory: ${uploadDir}`);
-} else {
-  console.log(`Using uploads directory at ${uploadDir}`);
-}
-
-// API configuration
-export const apiPrefix = '/api';
-
-// Cache TTL configuration (in milliseconds)
-export const cacheTTL = {
-  short: 1 * 60 * 1000,      // 1 minute
-  medium: 5 * 60 * 1000,     // 5 minutes
-  long: 30 * 60 * 1000,      // 30 minutes
-  veryLong: 60 * 60 * 1000,  // 1 hour
-  day: 24 * 60 * 60 * 1000   // 24 hours
-};
-
-// Pagination defaults
+// Default pagination settings
 export const pagination = {
-  defaultLimit: 10,
+  defaultLimit: 20,
   maxLimit: 100
 };
 
-// File upload configuration
-export const fileUpload = {
-  maxSize: 5 * 1024 * 1024,  // 5MB
-  allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  dimensions: {
-    avatar: { width: 200, height: 200 },
-    projectImage: { width: 800, height: 600 },
-    blogImage: { width: 1200, height: 800 }
+// Cache settings
+export const cacheSettings = {
+  // Default TTL in milliseconds
+  defaultTTL: 60 * 1000, // 1 minute
+  
+  // TTLs for specific cache types
+  ttl: {
+    projects: {
+      list: 2 * 60 * 1000,      // 2 minutes
+      featured: 5 * 60 * 1000,  // 5 minutes
+      trending: 5 * 60 * 1000,  // 5 minutes
+      byId: 5 * 60 * 1000       // 5 minutes
+    },
+    blog: {
+      list: 5 * 60 * 1000,      // 5 minutes
+      byId: 5 * 60 * 1000,      // 5 minutes
+      categories: 30 * 60 * 1000 // 30 minutes
+    },
+    tags: {
+      popular: 10 * 60 * 1000,   // 10 minutes
+      all: 15 * 60 * 1000        // 15 minutes
+    },
+    user: {
+      profile: 2 * 60 * 1000     // 2 minutes
+    }
   }
 };
 
-// Tags configuration
-export const predefinedTags = [
-  "AI Tools", "Analytics", "Art", "Business", 
-  "Chatbots", "Code", "Creative", "Data Visualization", 
-  "Development", "Education", "GPT Models", "Image Generation", 
-  "Machine Learning", "Natural Language Processing", "Productivity", "Tools",
-  "Collaboration", "Content Creation", "Developer Tools", 
-  "Finance", "Gaming", "Health", "Lifestyle", 
-  "Social", "Utilities", "Web Development", "Mobile", 
-  "Design", "Communication"
-];
+// API settings
+export const api = {
+  prefix: '/api',
+  // Rate limiting
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+  }
+};
+
+// File upload settings
+export const uploads = {
+  maxSize: 5 * 1024 * 1024, // 5MB
+  allowedTypes: {
+    image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  },
+  resizeOptions: {
+    project: {
+      width: 800,
+      height: 600,
+      fit: 'inside' as const,
+      withoutEnlargement: true
+    },
+    avatar: {
+      width: 250,
+      height: 250,
+      fit: 'cover' as const
+    },
+    blog: {
+      width: 1200,
+      height: 675,
+      fit: 'inside' as const,
+      withoutEnlargement: true
+    }
+  }
+};
+
+// Open Graph metadata settings
+export const openGraph = {
+  defaultTitle: 'Ctrl Alt Vibe - Connect with Developers',
+  defaultDescription: 'Discover and share amazing coding projects with the developer community.',
+  defaultImage: '/public/social-share-image.svg',
+  siteName: 'Ctrl Alt Vibe'
+};
 
 export default {
-  uploadDir,
-  apiPrefix,
-  cacheTTL,
   pagination,
-  fileUpload,
-  predefinedTags
+  cacheSettings,
+  api,
+  uploads,
+  openGraph
 };

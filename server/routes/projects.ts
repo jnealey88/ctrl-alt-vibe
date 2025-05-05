@@ -4,7 +4,7 @@ import { projectService } from '../services';
 import { z } from 'zod';
 import { ValidationError, fromZodError } from 'zod-validation-error';
 import { projectInsertSchema } from '@shared/schema';
-import cache from '../utils/cache';
+import cache from '../utils/enhanced-cache';
 import { processUrlForProject } from '../utils/url-metadata';
 import { isAuthenticated } from '../middleware/auth';
 import multer from 'multer';

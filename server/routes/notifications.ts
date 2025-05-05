@@ -1,5 +1,6 @@
 import { Express, Request, Response } from 'express';
 import { storage } from '../storage';
+import { notificationService } from '../services';
 import { isAuthenticated } from '../middleware/auth';
 
 export function registerNotificationRoutes(app: Express) {
@@ -17,7 +18,8 @@ export function registerNotificationRoutes(app: Express) {
       const offset = parseInt(req.query.offset as string) || 0;
       const unreadOnly = req.query.unreadOnly === 'true';
       
-      const result = await storage.getUserNotifications(userId, { limit, offset, unreadOnly });
+      // Use the notification service instead of direct storage access
+      const result = await notificationService.getUserNotifications(userId, { limit, offset, unreadOnly });
       res.json(result);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -33,7 +35,7 @@ export function registerNotificationRoutes(app: Express) {
       }
       
       const userId = req.user!.id;
-      const count = await storage.getUnreadNotificationsCount(userId);
+      const count = await notificationService.getUnreadNotificationsCount(userId);
       res.json({ count });
     } catch (error) {
       console.error('Error fetching unread notifications count:', error);
@@ -54,7 +56,7 @@ export function registerNotificationRoutes(app: Express) {
       }
       
       const userId = req.user!.id;
-      const success = await storage.markNotificationAsRead(notificationId, userId);
+      const success = await notificationService.markNotificationAsRead(notificationId, userId);
       
       if (success) {
         res.json({ message: 'Notification marked as read' });
