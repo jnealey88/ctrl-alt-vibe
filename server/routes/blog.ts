@@ -1,5 +1,6 @@
 import { Express, Request, Response } from 'express';
 import { storage } from '../storage';
+import { blogService } from '../services';
 import { z } from 'zod';
 import { ValidationError, fromZodError } from 'zod-validation-error';
 import { blogPostInsertSchema, blogCategoryInsertSchema, blogTagInsertSchema } from '@shared/schema';
