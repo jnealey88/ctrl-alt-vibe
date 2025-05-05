@@ -8,9 +8,22 @@ import crypto from 'crypto';
 const writeFileAsync = promisify(fs.writeFile);
 
 // Ensure the uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+// Use the same path as defined in routes.ts
+let uploadsDir: string;
+// First check if we're in a Replit environment where persistent storage is available
+const persistentStorageDir = process.env.REPLIT_DB_URL ? path.join(process.cwd(), ".replit", "data") : null;
+if (persistentStorageDir && fs.existsSync(persistentStorageDir)) {
+  uploadsDir = path.join(persistentStorageDir, "uploads");
+} else {
+  uploadsDir = path.join(process.cwd(), 'uploads');
+}
+
+// Make sure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log(`Created uploads directory at ${uploadsDir}`);
+} else {
+  console.log(`Using uploads directory at ${uploadsDir}`);
 }
 
 /**
