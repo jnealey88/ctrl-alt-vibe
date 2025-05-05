@@ -75,16 +75,62 @@ export async function extractUrlMetadata(url: string) {
 export async function takeWebsiteScreenshot(url: string): Promise<{ success: boolean; fileUrl: string }> {
   let browser;
   try {
+    // Make sure uploads directory exists
+    try {
+      if (!fs.existsSync(uploadsDir)) {
+        console.log(`Creating uploads directory at ${uploadsDir}`);
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+    } catch (fsError) {
+      console.error('Error checking/creating uploads directory:', fsError);
+    }
+    
     // Create screenshot filename
     const filename = generateFilename('.png');
     const screenshotPath = path.join(uploadsDir, filename);
     
+    console.log('Attempting to take screenshot of:', url);
+    console.log('Screenshot will be saved to:', screenshotPath);
+    
+    // Find Chromium executable
+    const chromiumPaths = [
+      // Check environment variable first
+      process.env.PUPPETEER_EXECUTABLE_PATH,
+      // Check common Nix store paths
+      '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+      // Check standard path from system install
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      // Add chromium from the system dependency installation
+      'chromium'
+    ].filter(Boolean); // Remove undefined/null entries
+    
+    let chromiumPath = null;
+    for (const path of chromiumPaths) {
+      try {
+        if (path && fs.existsSync(path)) {
+          chromiumPath = path;
+          console.log(`Found Chromium at: ${path}`);
+          break;
+        }
+      } catch (e) {
+        // Continue checking other paths
+      }
+    }
+    
+    console.log('Using Chromium path:', chromiumPath || 'Default bundled with Puppeteer');
+    
     // Launch puppeteer browser with minimal options (no sandbox for cloud environments)
-    browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true
-    });
+    const launchOptions: puppeteer.LaunchOptions = {
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      headless: 'new' // Use the new headless mode
+    };
+    
+    if (chromiumPath) {
+      launchOptions.executablePath = chromiumPath;
+    }
+    
+    browser = await puppeteer.launch(launchOptions);
     
     const page = await browser.newPage();
     
@@ -92,15 +138,28 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     await page.setViewport({ width: 1280, height: 800 });
     
     // Navigate to the page with a timeout
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    
+    // Wait a bit for any lazy-loaded content
+    await page.waitForTimeout(1000);
     
     // Take a screenshot
     await page.screenshot({ path: screenshotPath, fullPage: false });
     
-    return {
-      success: true,
-      fileUrl: `/uploads/${filename}`
-    };
+    // Verify the file was created
+    if (fs.existsSync(screenshotPath)) {
+      console.log('Screenshot saved successfully to:', screenshotPath);
+      return {
+        success: true,
+        fileUrl: `/uploads/${filename}`
+      };
+    } else {
+      console.error('Screenshot file not found after saving');
+      return {
+        success: false,
+        fileUrl: ''
+      };
+    }
   } catch (error) {
     console.error('Error taking screenshot:', error);
     return {
