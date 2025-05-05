@@ -81,6 +81,7 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
     
     // Launch puppeteer browser with minimal options (no sandbox for cloud environments)
     browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/a26mlm3sdg0m4vxrbjqfl3v6a3s34d77-chromium-120.0.6099.216/bin/chromium',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: true
     });
@@ -117,16 +118,31 @@ export async function takeWebsiteScreenshot(url: string): Promise<{ success: boo
  * Fetch all metadata and screenshot for a URL
  */
 export async function processUrlForProject(url: string) {
-  // Perform both operations in parallel
-  const [metadata, screenshot] = await Promise.all([
-    extractUrlMetadata(url),
-    takeWebsiteScreenshot(url)
-  ]);
-  
-  return {
-    title: metadata.title,
-    description: metadata.description,
-    imageUrl: screenshot.success ? screenshot.fileUrl : metadata.imageUrl,
-    success: metadata.success || screenshot.success
-  };
+  try {
+    // First get the metadata
+    const metadata = await extractUrlMetadata(url);
+    
+    // Then try to take a screenshot
+    let screenshotResult = { success: false, fileUrl: '' };
+    try {
+      screenshotResult = await takeWebsiteScreenshot(url);
+    } catch (error) {
+      console.error('Screenshot failed, falling back to OG image:', error);
+    }
+    
+    return {
+      title: metadata.title,
+      description: metadata.description,
+      imageUrl: screenshotResult.success ? screenshotResult.fileUrl : metadata.imageUrl,
+      success: metadata.success || screenshotResult.success
+    };
+  } catch (error) {
+    console.error('Failed to process URL for project:', error);
+    return {
+      title: '',
+      description: '',
+      imageUrl: '',
+      success: false
+    };
+  }
 }
