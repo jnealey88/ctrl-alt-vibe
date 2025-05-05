@@ -112,7 +112,9 @@ const SubmitProject = () => {
         form.setValue("title", data.metadata.title || "");
         form.setValue("description", data.metadata.description || "");
         form.setValue("projectUrl", extractUrl);
-        form.setValue("imageUrl", data.metadata.imageUrl || "");
+        // Make sure we have a valid image URL that's either from our uploads directory or a full https URL
+        const imageUrl = data.metadata.imageUrl || "";
+        form.setValue("imageUrl", imageUrl.startsWith('/uploads/') || imageUrl.startsWith('http') ? imageUrl : "");
         
         toast({
           title: "URL Processed",

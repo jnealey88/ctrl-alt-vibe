@@ -130,10 +130,20 @@ export async function processUrlForProject(url: string) {
       console.error('Screenshot failed, falling back to OG image:', error);
     }
     
+    // Prepare the image URL
+    let imageUrl = '';
+    if (screenshotResult.success) {
+      // We have a screenshot from our server
+      imageUrl = screenshotResult.fileUrl;
+    } else if (metadata.imageUrl && (metadata.imageUrl.startsWith('http://') || metadata.imageUrl.startsWith('https://'))) {
+      // We have an OG image with a valid URL
+      imageUrl = metadata.imageUrl;
+    }
+
     return {
       title: metadata.title,
       description: metadata.description,
-      imageUrl: screenshotResult.success ? screenshotResult.fileUrl : metadata.imageUrl,
+      imageUrl: imageUrl,
       success: metadata.success || screenshotResult.success
     };
   } catch (error) {
