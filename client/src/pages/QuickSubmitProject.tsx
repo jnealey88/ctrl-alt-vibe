@@ -163,9 +163,9 @@ const QuickSubmitProject = () => {
   return (
     <div className="container py-8 max-w-4xl">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">Submit Your Project</h1>
+        <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">Add to Your Portfolio</h1>
         <p className="mt-3 text-gray-500 max-w-[600px] mx-auto">
-          Share your amazing project with our community. Just paste a URL and we'll take care of the rest.
+          Build your professional vibe coded portfolio to showcase your AI skills to potential employers and clients. Just paste a URL and we'll take care of the rest.
         </p>
       </div>
       
@@ -174,9 +174,9 @@ const QuickSubmitProject = () => {
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <ExternalLink className="mr-2 h-5 w-5" />
-              Quick Project Submission
+              Quick Portfolio Addition
             </h2>
-            <p className="text-muted-foreground mb-6">Enter your project URL and we'll automatically grab the details for you.</p>
+            <p className="text-muted-foreground mb-6">Enter your project URL and we'll automatically gather details to showcase in your professional portfolio.</p>
             
             <Form {...urlForm}>
               <form onSubmit={urlForm.handleSubmit(onSubmitUrl)} className="space-y-6">
@@ -216,8 +216,8 @@ const QuickSubmitProject = () => {
           </div>
         ) : (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Review Project Details</h2>
-            <p className="text-muted-foreground mb-6">We've extracted info from your URL. Review and submit!</p>
+            <h2 className="text-xl font-semibold mb-4">Prepare for Your Portfolio</h2>
+            <p className="text-muted-foreground mb-6">We've extracted information to showcase in your professional portfolio. Review before adding to your profile!</p>
             
             <Form {...projectForm}>
               <form onSubmit={projectForm.handleSubmit(onSubmitProject)} className="space-y-6">
@@ -314,7 +314,7 @@ const QuickSubmitProject = () => {
                     className="w-full py-3"
                     disabled={submitMutation.isPending}
                   >
-                    {submitMutation.isPending ? "Submitting..." : "Submit Project"}
+                    {submitMutation.isPending ? "Submitting..." : "Add to Portfolio"}
                   </Button>
                 </div>
               </form>
