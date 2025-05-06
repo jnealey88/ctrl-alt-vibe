@@ -412,7 +412,8 @@ export const shareInsertSchema = createInsertSchema(shares, {
 });
 
 export const projectGalleryInsertSchema = createInsertSchema(projectGallery, {
-  imageUrl: (schema) => schema.url("Please enter a valid image URL"),
+  // We're using relative paths like /uploads/image.jpg, not full URLs
+  imageUrl: (schema) => schema.min(1, "Image path is required"),
   caption: (schema) => schema.optional(),
   displayOrder: (schema) => schema.optional(),
 });
