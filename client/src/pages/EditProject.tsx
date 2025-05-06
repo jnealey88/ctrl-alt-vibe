@@ -221,23 +221,22 @@ const EditProject = () => {
   });
   
   const uploadGalleryImages = async () => {
-    if (galleryFiles.length === 0) {
-      return [];
-    }
+    if (galleryFiles.length === 0) return [];
     
     setIsUploading(true);
-    const uploadedImages = [];
+    toast({
+      title: "Uploading gallery images",
+      description: `Uploading ${galleryFiles.length} image${galleryFiles.length > 1 ? 's' : ''}...`
+    });
     
     try {
-      // Upload each gallery image
+      // Create an array to store uploaded image data
+      const uploadedImages = [];
+      
+      // Process each file individually in sequential order
       for (let i = 0; i < galleryFiles.length; i++) {
         const file = galleryFiles[i];
         const caption = galleryCaptions[i] || `Gallery image ${i+1}`;
-        
-        // Create FormData and append the file
-        const formData = new FormData();
-        formData.append('galleryImage', file);
-        formData.append('caption', caption);
         
         // Log details about the file
         console.log(`Uploading gallery image ${i+1}:`, {
@@ -246,54 +245,77 @@ const EditProject = () => {
           fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
         });
         
-        let galleryImage;
         try {
-          console.log(`Sending POST request to /api/projects/${projectId}/gallery`);
+          // Create FormData with the exact field name expected by the server
+          const formData = new FormData();
+          formData.append('galleryImage', file);
+          formData.append('caption', caption);
+          
+          // Use fetch directly to handle file uploads
           const response = await fetch(`/api/projects/${projectId}/gallery`, {
             method: 'POST',
             body: formData,
             credentials: 'include'
           });
           
-          // Get detailed error information if the request fails
+          let responseText;
+          try {
+            responseText = await response.text();
+          } catch (err) {
+            console.error("Failed to get response text:", err);
+            throw new Error("Could not read server response");
+          }
+          
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (err) {
+            console.error("Failed to parse JSON response:", responseText.substring(0, 500));
+            throw new Error("Server response was not valid JSON");
+          }
+          
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Upload failed with status ${response.status}:`, errorText);
-            throw new Error(`Failed to upload gallery image ${i+1}: ${response.statusText || 'Unknown error'}`);
+            const errorMessage = data?.message || response.statusText || "Unknown error";
+            throw new Error(`Failed to upload gallery image: ${errorMessage}`);
           }
           
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            console.error('Response is not JSON:', await response.text());
-            throw new Error('Server did not return JSON response');
-          }
-          
-          const data = await response.json();
-          console.log(`Successfully uploaded gallery image ${i+1}:`, data);
-          
-          // Store the gallery image from the response
-          // Server returns either { galleryImage } directly or inside data
-          galleryImage = data.galleryImage || data;
+          // The server returns { galleryImage: {...} }
+          const galleryImage = data.galleryImage;
           if (!galleryImage) {
-            console.error('Missing gallery image data in response:', data);
-            throw new Error('Server response missing gallery image data');
+            console.error("Response missing galleryImage property:", data);
+            throw new Error("Server response format unexpected");
           }
           
-          // Add to uploaded images
+          console.log(`Successfully uploaded image ${i+1}:`, galleryImage);
           uploadedImages.push(galleryImage);
+          
         } catch (innerError) {
-          console.error(`Error in upload request for image ${i+1}:`, innerError);
-          throw innerError;
+          console.error(`Error uploading image ${i+1}:`, innerError);
+          toast({
+            title: `Failed to upload image ${i+1}`,
+            description: innerError instanceof Error ? innerError.message : "Unknown error",
+            variant: "destructive"
+          });
+          // Continue with the next image instead of stopping the whole process
+          continue;
         }
       }
       
-      // Invalidate gallery cache
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
-      
-      toast({
-        title: "Gallery images uploaded",
-        description: `Successfully uploaded ${uploadedImages.length} gallery images`
-      });
+      // Refresh gallery data
+      if (uploadedImages.length > 0) {
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+        
+        toast({
+          title: "Gallery images uploaded",
+          description: `Successfully uploaded ${uploadedImages.length} of ${galleryFiles.length} images`
+        });
+      } else {
+        toast({
+          title: "Gallery upload failed",
+          description: "None of the images could be uploaded",
+          variant: "destructive"
+        });
+      }
       
       return uploadedImages;
     } catch (error) {
