@@ -227,6 +227,8 @@ const EditProject = () => {
     setIsUploading(true);
     
     try {
+      console.log("Uploading gallery images...", { count: galleryFiles.length });
+      
       // Import the gallery service using dynamic import to avoid circular dependencies
       const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
       
@@ -237,9 +239,19 @@ const EditProject = () => {
         galleryCaptions
       );
       
+      console.log("Gallery upload complete", { uploaded: result.successCount });
+      
       // Refresh gallery data if any uploads were successful
       if (result.successCount > 0) {
         queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+        return result.uploadedImages;
+      } else if (result.failedCount > 0) {
+        // Show more detailed error
+        toast({
+          title: "Gallery upload issues", 
+          description: `${result.failedCount} of ${galleryFiles.length} images failed to upload. You can try again with fewer images.`,
+          variant: "destructive"
+        });
       }
       
       return result.uploadedImages;
@@ -252,6 +264,7 @@ const EditProject = () => {
       });
       return [];
     } finally {
+      console.log("Updating project data...");
       setIsUploading(false);
     }
   };

@@ -255,6 +255,8 @@ const SubmitProject = () => {
     setIsUploading(true);
     
     try {
+      console.log("Uploading gallery images...", { count: galleryFiles.length });
+      
       // Import the gallery service
       const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
       
@@ -264,6 +266,21 @@ const SubmitProject = () => {
         galleryFiles,
         galleryCaptions
       );
+      
+      console.log("Gallery upload complete", { uploaded: result.successCount });
+      
+      // If at least some uploads were successful
+      if (result.successCount > 0) {
+        return result.uploadedImages;
+      } else if (result.failedCount > 0) {
+        // Show more detailed error
+        toast({
+          title: "Gallery upload issues", 
+          description: `${result.failedCount} of ${galleryFiles.length} images failed to upload. You can try adding them later by editing your project.`,
+          variant: "destructive"
+        });
+        return [];
+      }
       
       return result.uploadedImages;
     } catch (error) {
@@ -275,6 +292,7 @@ const SubmitProject = () => {
       });
       return [];
     } finally {
+      console.log("Updating project data...");
       setIsUploading(false);
     }
   };
