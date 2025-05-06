@@ -246,21 +246,45 @@ const EditProject = () => {
           fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
         });
         
-        const response = await fetch(`/api/projects/${projectId}/gallery`, {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-        
-        // Get detailed error information if the request fails
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Upload failed with status ${response.status}:`, errorText);
-          throw new Error(`Failed to upload gallery image ${i+1}: ${response.statusText}`);
+        let galleryImage;
+        try {
+          console.log(`Sending POST request to /api/projects/${projectId}/gallery`);
+          const response = await fetch(`/api/projects/${projectId}/gallery`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          
+          // Get detailed error information if the request fails
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Upload failed with status ${response.status}:`, errorText);
+            throw new Error(`Failed to upload gallery image ${i+1}: ${response.statusText || 'Unknown error'}`);
+          }
+          
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            console.error('Response is not JSON:', await response.text());
+            throw new Error('Server did not return JSON response');
+          }
+          
+          const data = await response.json();
+          console.log(`Successfully uploaded gallery image ${i+1}:`, data);
+          
+          // Store the gallery image from the response
+          // Server returns either { galleryImage } directly or inside data
+          galleryImage = data.galleryImage || data;
+          if (!galleryImage) {
+            console.error('Missing gallery image data in response:', data);
+            throw new Error('Server response missing gallery image data');
+          }
+          
+          // Add to uploaded images
+          uploadedImages.push(galleryImage);
+        } catch (innerError) {
+          console.error(`Error in upload request for image ${i+1}:`, innerError);
+          throw innerError;
         }
-        
-        const data = await response.json();
-        uploadedImages.push(data.galleryImage);
       }
       
       // Invalidate gallery cache
