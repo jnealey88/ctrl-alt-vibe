@@ -55,8 +55,9 @@ export async function uploadGalleryImage(projectId: number, file: File, caption:
 
     // Create FormData for the file upload
     const formData = new FormData();
-    formData.append('galleryImage', file);
-    formData.append('caption', caption);
+    // Use the correct field name that server expects
+    formData.append('galleryImage', file); 
+    formData.append('caption', caption || `Gallery image`);
     
     // Use fetch API with simpler error handling
     const response = await fetch(`/api/projects/${projectId}/gallery`, {

@@ -766,8 +766,16 @@ export function registerProjectRoutes(app: Express) {
         return res.status(400).json({ message: 'No image file uploaded' });
       }
       
+      // Log what we received
+      console.log(`Processing gallery upload for project ${projectId}:`, {
+        file: req.file.filename,
+        caption: req.body.caption || 'No caption provided',
+        contentType: req.headers['content-type']
+      });
+      
       // Optimize image and get the URL
       const optimizedUrl = await optimizeImage(req.file.path);
+      console.log(`Image optimized: ${optimizedUrl}`);
       
       // Get current display order (highest + 1)
       const existingImages = await storage.getProjectGalleryImages(projectId);
@@ -776,13 +784,17 @@ export function registerProjectRoutes(app: Express) {
         : 0;
       
       // Create gallery image
-      const galleryImage = await storage.addProjectGalleryImage({
+      const galleryData = {
         projectId,
         imageUrl: optimizedUrl,
         displayOrder,
         caption: req.body.caption || `Image ${displayOrder + 1}`,
         createdAt: new Date()
-      });
+      };
+      console.log(`Adding gallery image to database:`, galleryData);
+      
+      const galleryImage = await storage.addProjectGalleryImage(galleryData);
+      console.log(`Gallery image added successfully:`, galleryImage);
       
       // Invalidate relevant caches
       cache.invalidateTag('projects:list');
@@ -790,10 +802,17 @@ export function registerProjectRoutes(app: Express) {
         cache.invalidateTag('projects:featured');
       }
       
+      // Send JSON response with content-type header explicitly set
+      res.setHeader('Content-Type', 'application/json');
       res.status(201).json({ galleryImage });
     } catch (error) {
       console.error('Error adding gallery image:', error);
-      res.status(500).json({ message: 'Failed to add gallery image' });
+      
+      // Send a more detailed error response
+      res.status(500).json({ 
+        message: 'Failed to add gallery image', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
   
