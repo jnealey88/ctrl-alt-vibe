@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
+import GalleryUploader from "@/components/GalleryUploader";
 import { Upload, Image, Loader2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -89,6 +90,9 @@ const EditProject = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryCaptions, setGalleryCaptions] = useState<string[]>([]);
+  const [existingGalleryImages, setExistingGalleryImages] = useState<any[]>([]); 
   
   // Fetch AI coding tools from database
   const { tools, isLoading: isLoadingAiTools } = useCodingTools();
@@ -119,6 +123,25 @@ const EditProject = () => {
   });
   
   // Set form values when project data is loaded
+  // Fetch gallery images
+  const { data: galleryData, isLoading: isLoadingGallery } = useQuery({
+    queryKey: [`/api/projects/${projectId}/gallery`],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/projects/${projectId}/gallery`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch gallery images');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
+        return { galleryImages: [] };
+      }
+    },
+    enabled: !!projectId && projectId > 0
+  });
+
+  // Set form values and gallery images when project data is loaded
   useEffect(() => {
     if (projectData?.project) {
       const project = projectData.project;
@@ -134,6 +157,13 @@ const EditProject = () => {
       });
     }
   }, [projectData, form]);
+  
+  // Set gallery images when gallery data is loaded
+  useEffect(() => {
+    if (galleryData?.galleryImages) {
+      setExistingGalleryImages(galleryData.galleryImages);
+    }
+  }, [galleryData]);
   
   // Check if the current user is the author of the project
   const isAuthor = user && projectData?.project && user.id === projectData.project.author.id;
@@ -190,7 +220,74 @@ const EditProject = () => {
     },
   });
   
-  const onSubmit = (data: FormValues) => {
+  const uploadGalleryImages = async () => {
+    if (galleryFiles.length === 0) {
+      return [];
+    }
+    
+    setIsUploading(true);
+    const uploadedImages = [];
+    
+    try {
+      // Upload each gallery image
+      for (let i = 0; i < galleryFiles.length; i++) {
+        const file = galleryFiles[i];
+        const caption = galleryCaptions[i] || `Gallery image ${i+1}`;
+        
+        // Create FormData and append the file
+        const formData = new FormData();
+        formData.append('galleryImage', file);
+        formData.append('caption', caption);
+        
+        const response = await fetch(`/api/projects/${projectId}/gallery`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to upload gallery image ${i+1}`);
+        }
+        
+        const data = await response.json();
+        uploadedImages.push(data.galleryImage);
+      }
+      
+      // Invalidate gallery cache
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      
+      toast({
+        title: "Gallery images uploaded",
+        description: `Successfully uploaded ${uploadedImages.length} gallery images`
+      });
+      
+      return uploadedImages;
+    } catch (error) {
+      console.error('Gallery upload error:', error);
+      toast({
+        title: "Gallery upload failed", 
+        description: "There was a problem uploading your gallery images.",
+        variant: "destructive"
+      });
+      return [];
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Handle gallery change from the GalleryUploader component
+  const handleGalleryChange = (files: File[], captions: string[]) => {
+    setGalleryFiles(files);
+    setGalleryCaptions(captions);
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    // First upload any new gallery images
+    if (galleryFiles.length > 0) {
+      await uploadGalleryImages();
+    }
+    
+    // Then update the project data
     updateMutation.mutate(data);
   };
   
@@ -590,6 +687,55 @@ const EditProject = () => {
                   </FormItem>
                 )}
               />
+              
+              {/* Project Gallery */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-md font-semibold">Project Gallery</h3>
+                  {isLoadingGallery && (
+                    <div className="flex items-center"> 
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm text-muted-foreground">Loading gallery...</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Display existing gallery images */}
+                {existingGalleryImages.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Current Gallery Images</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {existingGalleryImages.map((image) => (
+                        <div key={image.id} className="relative rounded-md overflow-hidden border border-border hover:border-primary transition-all">
+                          <div className="aspect-square w-full relative">
+                            <img 
+                              src={image.imageUrl} 
+                              alt={image.caption || "Gallery image"}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          {image.caption && (
+                            <div className="p-2 text-xs truncate text-gray-700">
+                              {image.caption}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Add new gallery images */}
+                <GalleryUploader 
+                  onGalleryChange={handleGalleryChange}
+                  maxImages={5 - (existingGalleryImages?.length || 0)}
+                  className="mt-4"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add up to 5 gallery images to showcase different aspects of your project.
+                  These will be displayed in a gallery on your project page.
+                </p>
+              </div>
               
               <FormField
                 control={form.control}
