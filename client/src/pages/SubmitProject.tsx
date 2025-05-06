@@ -92,6 +92,8 @@ const SubmitProject = () => {
   const [isExtractingUrl, setIsExtractingUrl] = useState(false);
   const [showUrlExtraction, setShowUrlExtraction] = useState(false);
   const [extractUrl, setExtractUrl] = useState("");
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryCaptions, setGalleryCaptions] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quillRef = useRef<ReactQuill>(null);
   
@@ -156,7 +158,16 @@ const SubmitProject = () => {
   // Mutation for submitting the project
   const submitMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await apiRequest("POST", "/api/projects", data);
+      // If there are gallery images, first upload them
+      const galleryImageData = galleryFiles.length > 0 ? await uploadGalleryImages() : null;
+      
+      // Add gallery data to the request if available
+      const requestData = {
+        ...data,
+        galleryImages: galleryImageData || []
+      };
+      
+      const response = await apiRequest("POST", "/api/projects", requestData);
       return response.json();
     },
     onSuccess: (data) => {
@@ -215,6 +226,63 @@ const SubmitProject = () => {
       data.projectUrl = `https://${data.projectUrl}`;
     }
     submitMutation.mutate(data);
+  };
+  
+  // Handle gallery image uploads
+  const uploadGalleryImages = async () => {
+    if (galleryFiles.length === 0) return [];
+    
+    setIsUploading(true);
+    toast({
+      title: "Uploading gallery images",
+      description: `Uploading ${galleryFiles.length} image${galleryFiles.length > 1 ? 's' : ''}...`
+    });
+    
+    try {
+      // Create FormData object for multi-file upload
+      const formData = new FormData();
+      
+      // Add each gallery file
+      galleryFiles.forEach((file, index) => {
+        formData.append('gallery', file);
+        // Add captions if they exist
+        if (galleryCaptions[index]) {
+          formData.append('captions', galleryCaptions[index]);
+        } else {
+          formData.append('captions', '');
+        }
+      });
+      
+      const response = await fetch('/api/upload/gallery', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload gallery images');
+      }
+      
+      const data = await response.json();
+      
+      return data.galleryImages;
+    } catch (error) {
+      console.error('Gallery upload error:', error);
+      toast({
+        title: "Gallery upload failed", 
+        description: "There was a problem uploading your gallery images. You can add them later by editing your project.",
+        variant: "destructive"
+      });
+      return [];
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  // Handle gallery change from the GalleryUploader component
+  const handleGalleryChange = (files: File[], captions: string[]) => {
+    setGalleryFiles(files);
+    setGalleryCaptions(captions);
   };
   
   const processFile = async (file: File) => {
@@ -309,7 +377,7 @@ const SubmitProject = () => {
       await processFile(file);
     }
   };
-  
+
   const triggerFileInput = (e: React.MouseEvent) => {
     // Prevent event propagation to avoid dialog reopening
     e.preventDefault();
@@ -574,6 +642,19 @@ const SubmitProject = () => {
                   </FormItem>
                 )}
               />
+              
+              {/* Gallery Images */}
+              <div className="mt-8 mb-4">
+                <h3 className="text-lg font-medium mb-2">Project Gallery</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Add multiple images to showcase different aspects of your project. This will create a gallery on your project page.
+                </p>
+                <GalleryUploader 
+                  onGalleryChange={handleGalleryChange}
+                  maxImages={5}
+                  className="mt-2"
+                />  
+              </div>
               
               <FormField
                 control={form.control}
