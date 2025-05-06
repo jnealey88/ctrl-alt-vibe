@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
 import GalleryUploader from "@/components/GalleryUploader";
-import { Upload, Image, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, Image, Loader2, AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
@@ -294,6 +294,37 @@ const EditProject = () => {
   const handleDelete = () => {
     deleteMutation.mutate();
     setDeleteDialogOpen(false);
+  };
+  
+  // Delete a gallery image
+  const deleteGalleryMutation = useMutation({
+    mutationFn: async (imageId: number) => {
+      const response = await apiRequest("DELETE", `/api/projects/${projectId}/gallery/${imageId}`);
+      if (!response.ok) {
+        throw new Error('Failed to delete gallery image');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate gallery cache to refresh data
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      toast({
+        title: "Gallery image deleted",
+        description: "The gallery image has been successfully removed."
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting gallery image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete gallery image. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  const handleDeleteGalleryImage = (imageId: number) => {
+    deleteGalleryMutation.mutate(imageId);
   };
   
   const processFile = async (file: File) => {
@@ -706,13 +737,23 @@ const EditProject = () => {
                     <h4 className="text-sm font-medium mb-2">Current Gallery Images</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                       {existingGalleryImages.map((image) => (
-                        <div key={image.id} className="relative rounded-md overflow-hidden border border-border hover:border-primary transition-all">
+                        <div key={image.id} className="relative rounded-md overflow-hidden border border-border hover:border-primary transition-all group">
                           <div className="aspect-square w-full relative">
                             <img 
                               src={image.imageUrl} 
                               alt={image.caption || "Gallery image"}
                               className="w-full h-full object-cover"
                             />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 rounded-full"
+                                onClick={() => handleDeleteGalleryImage(image.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           {image.caption && (
                             <div className="p-2 text-xs truncate text-gray-700">
