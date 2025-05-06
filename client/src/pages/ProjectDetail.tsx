@@ -25,8 +25,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CommentSection from "@/components/CommentSection";
+import ImageGallery from "@/components/ImageGallery";
 import SEO from "@/components/SEO";
-import type { Project } from "@shared/schema";
+import type { Project, ProjectGalleryImage } from "@shared/schema";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -36,11 +37,20 @@ const ProjectDetail = () => {
   const [activeTab, setActiveTab] = useState<string>("details");
   const [projectUrlCopied, setProjectUrlCopied] = useState<boolean>(false);
   
+  // Fetch project details
   const { data, isLoading, error } = useQuery<{project: Project}>({
     queryKey: [`/api/projects/${id}`],
   });
   
   const project: Project | undefined = data?.project;
+  
+  // Fetch gallery images for the project
+  const { data: galleryData } = useQuery<{galleryImages: ProjectGalleryImage[]}>({    
+    queryKey: [`/api/projects/${id}/gallery`],
+    enabled: !!project, // Only fetch gallery if project exists
+  });
+  
+  const galleryImages = galleryData?.galleryImages || [];
   
   // Check if the current user is the author of the project
   const isAuthor = user && project && user.id === project.author.id;
@@ -431,6 +441,14 @@ const ProjectDetail = () => {
             </TabsList>
             
             <TabsContent value="details" className="focus-visible:outline-none focus-visible:ring-0">
+              {/* Image Gallery */}
+              {galleryImages.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold text-foreground mb-4">Gallery</h2>
+                  <ImageGallery images={galleryImages} mainImageUrl={project.imageUrl} />
+                </div>
+              )}
+              
               <div className="prose prose-sm max-w-none text-gray-700">
                 <h2 className="text-xl font-bold text-foreground mb-4">About this project</h2>
                 <p className="mb-4">{project.description}</p>
