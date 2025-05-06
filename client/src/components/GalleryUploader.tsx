@@ -1,28 +1,60 @@
-import { useState, useRef, ChangeEvent } from 'react';
-import { X, Upload, ImagePlus, Pencil } from 'lucide-react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { X, Upload, ImagePlus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { ProjectGalleryImage } from '@shared/schema';
+import { apiRequest } from '@/lib/queryClient';
 
 interface GalleryFile {
   id: string;
   file: File;
   preview: string;
   caption?: string;
+  isNew: boolean;
+}
+
+interface ExistingGalleryImage extends ProjectGalleryImage {
+  preview: string;
+  toDelete?: boolean;
 }
 
 interface GalleryUploaderProps {
   onGalleryChange: (files: File[], captions: string[]) => void;
+  existingImages?: ProjectGalleryImage[];
+  projectId?: number;
+  onExistingImagesChange?: (images: ProjectGalleryImage[]) => void;
   maxImages?: number;
   className?: string;
 }
 
-const GalleryUploader = ({ onGalleryChange, maxImages = 5, className = '' }: GalleryUploaderProps) => {
+const GalleryUploader = ({ 
+  onGalleryChange, 
+  existingImages = [], 
+  projectId,
+  onExistingImagesChange,
+  maxImages = 5, 
+  className = '' 
+}: GalleryUploaderProps) => {
   const { toast } = useToast();
   const [galleryFiles, setGalleryFiles] = useState<GalleryFile[]>([]);
+  const [existingGalleryImages, setExistingGalleryImages] = useState<ExistingGalleryImage[]>([]);
   const [editingCaptionId, setEditingCaptionId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Load existing images when they change
+  useEffect(() => {
+    // Convert ProjectGalleryImage[] to ExistingGalleryImage[]
+    const images: ExistingGalleryImage[] = existingImages.map(img => ({
+      ...img,
+      // Add preview URL for display
+      preview: img.imageUrl
+    }));
+    
+    setExistingGalleryImages(images);
+    console.log(`Loaded ${images.length} existing gallery images`);
+  }, [existingImages]);
   
   // When files are selected
   const handleGalleryFiles = (e: ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +99,8 @@ const GalleryUploader = ({ onGalleryChange, maxImages = 5, className = '' }: Gal
       id: `gallery-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       file,
       preview: URL.createObjectURL(file),
-      caption: ''
+      caption: '',
+      isNew: true
     }));
     
     // Add to existing gallery files
@@ -126,16 +159,123 @@ const GalleryUploader = ({ onGalleryChange, maxImages = 5, className = '' }: Gal
     });
   };
   
+  // Handle marking existing image for deletion
+  const markExistingImageForDeletion = (imageId: number) => {
+    if (!onExistingImagesChange) return;
+    
+    const updatedExistingImages = existingGalleryImages.map(img => 
+      img.id === imageId ? { ...img, toDelete: true } : img
+    );
+    
+    setExistingGalleryImages(updatedExistingImages);
+    
+    // Notify parent component of the images that are not marked for deletion
+    const imagesToKeep = updatedExistingImages.filter(img => !img.toDelete);
+    if (onExistingImagesChange) {
+      onExistingImagesChange(imagesToKeep);
+    }
+  };
+  
+  // Update caption for existing gallery image
+  const updateExistingCaption = (imageId: number, caption: string) => {
+    if (!onExistingImagesChange) return;
+    
+    const updatedExistingImages = existingGalleryImages.map(img => 
+      img.id === imageId ? { ...img, caption } : img
+    );
+    
+    setExistingGalleryImages(updatedExistingImages);
+    
+    if (onExistingImagesChange) {
+      onExistingImagesChange(updatedExistingImages.filter(img => !img.toDelete));
+    }
+  };
+  
+  // Calculate total current images (new + existing that aren't marked for deletion)
+  const totalImages = galleryFiles.length + existingGalleryImages.filter(img => !img.toDelete).length;
+  
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex justify-between items-center">
         <Label htmlFor="gallery-upload" className="text-sm font-medium">Project Gallery Images</Label>
-        <span className="text-xs text-gray-500">{galleryFiles.length}/{maxImages} images</span>
+        <span className="text-xs text-gray-500">{totalImages}/{maxImages} images</span>
       </div>
       
-      {/* Gallery preview */}
-      {galleryFiles.length > 0 && (
+      {/* Gallery preview - show both existing and new images */}
+      {(galleryFiles.length > 0 || existingGalleryImages.length > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-4">
+          {/* Existing images */}
+          {existingGalleryImages.filter(img => !img.toDelete).map(image => (
+            <div key={`existing-${image.id}`} className="relative group rounded-md overflow-hidden border border-border hover:border-primary transition-all">
+              <div className="aspect-square w-full relative">
+                <img 
+                  src={image.imageUrl} 
+                  alt={image.caption || "Gallery image"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Set a fallback image if the image fails to load
+                    e.currentTarget.src = '/ctrlaltvibelogo.png';
+                    e.currentTarget.classList.add('object-contain', 'p-4');
+                    e.currentTarget.classList.remove('object-cover');
+                  }}
+                />
+                
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="flex space-x-2">
+                    <Button 
+                      type="button"
+                      variant="secondary" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full bg-white hover:bg-gray-100"
+                      onClick={() => setEditingCaptionId(`existing-${image.id}`)}
+                    >
+                      <Pencil className="h-4 w-4 text-gray-700" />
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="destructive" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => markExistingImageForDeletion(image.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {editingCaptionId === `existing-${image.id}` && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4">
+                    <div className="w-full space-y-2">
+                      <Input
+                        type="text"
+                        placeholder="Add a caption"
+                        className="bg-white/90"
+                        value={image.caption || ''}
+                        onChange={(e) => updateExistingCaption(image.id, e.target.value)}
+                        autoFocus
+                      />
+                      <Button 
+                        type="button"
+                        variant="secondary" 
+                        className="w-full text-xs"
+                        onClick={() => setEditingCaptionId(null)}
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {image.caption && editingCaptionId !== `existing-${image.id}` && (
+                <div className="p-2 text-xs truncate text-gray-700">
+                  {image.caption}
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {/* New images */}
           {galleryFiles.map(file => (
             <div key={file.id} className="relative group rounded-md overflow-hidden border border-border hover:border-primary transition-all">
               <div className="aspect-square w-full relative">
@@ -201,7 +341,7 @@ const GalleryUploader = ({ onGalleryChange, maxImages = 5, className = '' }: Gal
           ))}
           
           {/* Add more images button */}
-          {galleryFiles.length < maxImages && (
+          {totalImages < maxImages && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -215,7 +355,7 @@ const GalleryUploader = ({ onGalleryChange, maxImages = 5, className = '' }: Gal
       )}
       
       {/* Upload button and input */}
-      {galleryFiles.length === 0 && (
+      {totalImages === 0 && (
         <div 
           className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-primary transition-colors cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
