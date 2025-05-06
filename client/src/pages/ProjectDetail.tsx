@@ -48,11 +48,31 @@ const ProjectDetail = () => {
   const { data: galleryData } = useQuery<{galleryImages: ProjectGalleryImage[]}>({    
     queryKey: [`/api/projects/${id}/gallery`],
     enabled: !!project, // Only fetch gallery if project exists
-    onSuccess: (data) => {
-      console.log('Gallery data received:', data);
-    },
-    onError: (error) => {
-      console.error('Error fetching gallery images:', error);
+    // Use custom query function to handle content type issues
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/projects/${id}/gallery`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('Gallery API returned non-JSON response:', contentType);
+          return { galleryImages: [] };
+        }
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch gallery images');
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Error in gallery fetch:', error);
+        return { galleryImages: [] };
+      }
     }
   });
   
