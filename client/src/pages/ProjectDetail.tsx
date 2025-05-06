@@ -28,6 +28,7 @@ import CommentSection from "@/components/CommentSection";
 import ImageGallery from "@/components/ImageGallery";
 import SEO from "@/components/SEO";
 import type { Project, ProjectGalleryImage } from "@shared/schema";
+import type { GalleryImage } from "@/lib/galleryService";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -45,7 +46,7 @@ const ProjectDetail = () => {
   const project: Project | undefined = data?.project;
   
   // Fetch gallery images for the project using our custom service
-  const { data: galleryImages = [], isLoading: isLoadingGallery } = useQuery<ProjectGalleryImage[]>({
+  const { data: galleryImages = [], isLoading: isLoadingGallery } = useQuery<GalleryImage[]>({
     queryKey: [`/api/projects/${id}/gallery`],
     enabled: !!project, // Only fetch gallery if project exists
     queryFn: async () => {
@@ -62,10 +63,8 @@ const ProjectDetail = () => {
   
   // Debug log for gallery images
   useEffect(() => {
-    if (galleryData) {
-      console.log(`Loaded ${galleryImages.length} gallery images for project ${id}`);
-    }
-  }, [galleryData, galleryImages.length, id]);
+    console.log(`Loaded ${galleryImages?.length || 0} gallery images for project ${id}`);
+  }, [galleryImages, id]);
   
   // Check if the current user is the author of the project
   const isAuthor = user && project && user.id === project.author.id;
