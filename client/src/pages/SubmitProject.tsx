@@ -324,7 +324,7 @@ const SubmitProject = () => {
       <div className="bg-white rounded-xl shadow-card overflow-hidden mb-16">
         <div className="p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-foreground font-space">Submit Your Project</h2>
+            <h2 className="text-2xl font-bold text-foreground font-space">Add to Your Portfolio</h2>
           </div>
           
           <div className="mb-8">
@@ -334,7 +334,7 @@ const SubmitProject = () => {
                   <ExternalLink className="h-5 w-5 mr-2 text-primary" />
                   <h3 className="text-lg font-medium">Quick Project Import</h3>
                 </div>
-                <p className="text-sm text-gray-600">Enter your project URL and we'll automatically extract its title, description, and screenshot.</p>
+                <p className="text-sm text-gray-600">Enter your project URL and we'll automatically extract information to showcase in your professional portfolio.</p>
                 
                 <div className="flex gap-2">
                   <div className="flex-1">
@@ -603,7 +603,7 @@ const SubmitProject = () => {
                   className="w-full py-3"
                   disabled={submitMutation.isPending}
                 >
-                  {submitMutation.isPending ? "Submitting..." : "Submit Project"}
+                  {submitMutation.isPending ? "Submitting..." : "Add to Portfolio"}
                 </Button>
               </div>
             </form>
