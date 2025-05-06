@@ -373,7 +373,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Projects Section */}
-        <h2 className="text-2xl font-bold mb-6">My Projects</h2>
+        <h2 className="text-2xl font-bold mb-6">My Vibe Coded Portfolio</h2>
         <div className="mt-6">
           {profileData?.projects && profileData.projects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -386,9 +386,9 @@ export default function ProfilePage() {
               <div className="mb-4 mx-auto h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center">
                 <Image className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-medium mb-2">No projects yet</h3>
+              <h3 className="text-xl font-medium mb-2">Your Portfolio Is Empty</h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                You haven&apos;t submitted any projects yet. Start showcasing your work to the community!
+                Start building your professional vibe coded portfolio by submitting your first project. Showcase your AI skills to potential employers and clients!
               </p>
               <Button asChild>
                 <Link href="/submit">Submit Your First Project</Link>

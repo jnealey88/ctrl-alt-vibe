@@ -288,9 +288,9 @@ export default function AuthPage() {
             <TabsContent value="register">
               <Card>
                 <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
+                  <CardTitle>Create Your Portfolio</CardTitle>
                   <CardDescription>
-                    Join Ctrl Alt Vibe to showcase your AI-assisted coding projects
+                    Join Ctrl Alt Vibe to build a professional portfolio of your vibe coded projects that will impress potential employers and clients
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -430,23 +430,23 @@ export default function AuthPage() {
           animate={{ opacity: mounted ? 1 : 0, x: mounted ? 0 : 20 }}
           transition={{ duration: 0.5, delay: 0.2 }}>
           <div className="max-w-lg mx-auto text-center">
-            <h1 className="text-4xl font-bold tracking-tight mb-6">Ctrl Alt Vibe</h1>
+            <h1 className="text-4xl font-bold tracking-tight mb-6">Your AI Portfolio Hub</h1>
             <p className="text-xl mb-8">
-              A community-driven platform for showcasing amazing AI-assisted coding projects.  
-              Share your work, get feedback, and connect with other developers.
+              Build a professional portfolio of your vibe coded projects that stands out.
+              Get discovered by employers looking for developers with AI skills and share your innovations with the world.
             </p>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-4 bg-secondary/10 rounded-lg">
-                <h3 className="font-medium">Showcase</h3>
-                <p className="text-sm text-muted-foreground">Share your AI-powered projects</p>
+                <h3 className="font-medium">Portfolio</h3>
+                <p className="text-sm text-muted-foreground">Build your professional AI coding showcase</p>
               </div>
               <div className="p-4 bg-secondary/10 rounded-lg">
-                <h3 className="font-medium">Connect</h3>
-                <p className="text-sm text-muted-foreground">Engage with other creators</p>
+                <h3 className="font-medium">Visibility</h3>
+                <p className="text-sm text-muted-foreground">Get noticed by potential employers</p>
               </div>
               <div className="p-4 bg-secondary/10 rounded-lg">
-                <h3 className="font-medium">Discover</h3>
-                <p className="text-sm text-muted-foreground">Find inspiration for your next project</p>
+                <h3 className="font-medium">Recognition</h3>
+                <p className="text-sm text-muted-foreground">Demonstrate your AI skills and expertise</p>
               </div>
             </div>
           </div>

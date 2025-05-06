@@ -140,8 +140,8 @@ const Home = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <SEO 
-        title="AI-Assisted Coding Projects Community"
-        description="Discover, share, and engage with innovative AI-assisted coding projects from the developer community. Showcase your work and connect with fellow developers."
+        title="Your Professional AI Coding Portfolio | Vibe Coded Projects"
+        description="Build a standout portfolio of your vibe coded projects to showcase your AI development skills to potential employers. Create a professional profile that gets you noticed."
         keywords={seoKeywords}
       />
       {/* Hero Section */}
@@ -157,11 +157,11 @@ const Home = () => {
         </div>
         <div className="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-20 lg:px-8">
           <h1 className="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-            <span className="block text-white font-space">Showcase Your</span>
-            <span className="block text-white font-space">AI-Powered Projects</span>
+            <span className="block text-white font-space">Build Your Portfolio of</span>
+            <span className="block text-white font-space">Vibe Coded Projects</span>
           </h1>
           <p className="mt-6 max-w-lg mx-auto text-center text-xl text-white sm:max-w-3xl">
-            A community for people to share their vibe coding projects and get feedback from peers.
+            Create an impressive showcase of your AI-powered coding projects that demonstrates your skill and creativity to employers, clients, and peers.
           </p>
           <div className="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
             <div className="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
@@ -312,9 +312,9 @@ const Home = () => {
           
           {/* Right side - content */}
           <div className="p-8 md:p-10 md:col-span-3">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-space">Share Your Developer Profile</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-space">Your Vibe Coded Portfolio</h2>
             <p className="text-lg text-gray-200 mb-8">
-              Showcase your projects and skills with a professional profile page. Every user gets a personal URL you can share on your resume, social media, or portfolio.
+              Build a professional, AI-enhanced portfolio that stands out from traditional resumes. Get a personalized URL you can share with employers, clients, and on your social profiles to showcase your innovative skills.
             </p>
             
             <div className="space-y-6">
@@ -426,9 +426,9 @@ const Home = () => {
 
       {/* CTA */}
       <div className="bg-accent/10 rounded-xl p-8 pb-10 text-center mb-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground font-space mb-4">Ready to showcase your AI project?</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground font-space mb-4">Build Your Professional Vibe Coded Portfolio</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-          Join our community of people who are pushing the boundaries of what's possible with AI-assisted coding.
+          Showcase your AI coding skills and stand out to potential employers with a dynamic portfolio of your vibe coded projects. Get discovered by companies looking for developers who can leverage AI effectively.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link href="/submit">
