@@ -48,9 +48,22 @@ const ProjectDetail = () => {
   const { data: galleryData } = useQuery<{galleryImages: ProjectGalleryImage[]}>({    
     queryKey: [`/api/projects/${id}/gallery`],
     enabled: !!project, // Only fetch gallery if project exists
+    onSuccess: (data) => {
+      console.log('Gallery data received:', data);
+    },
+    onError: (error) => {
+      console.error('Error fetching gallery images:', error);
+    }
   });
   
   const galleryImages = galleryData?.galleryImages || [];
+  
+  // Debug log for gallery images
+  useEffect(() => {
+    if (galleryData) {
+      console.log(`Loaded ${galleryImages.length} gallery images for project ${id}`);
+    }
+  }, [galleryData, galleryImages.length, id]);
   
   // Check if the current user is the author of the project
   const isAuthor = user && project && user.id === project.author.id;

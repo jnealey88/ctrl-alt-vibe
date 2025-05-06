@@ -864,9 +864,15 @@ export function registerProjectRoutes(app: Express) {
         return res.status(400).json({ message: 'Invalid project ID' });
       }
       
+      console.log(`Fetching gallery images for project ${projectId}`);
+      
       // Get gallery images
       const galleryImages = await storage.getProjectGalleryImages(projectId);
       
+      console.log(`Found ${galleryImages.length} gallery images:`, galleryImages);
+      
+      // Explicitly set content type to JSON
+      res.setHeader('Content-Type', 'application/json');
       res.json({ galleryImages });
     } catch (error) {
       console.error('Error fetching gallery images:', error);
