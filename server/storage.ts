@@ -1079,7 +1079,7 @@ export const storage = {
     } as Project;
   },
   
-  async createProject(projectData: InsertProject, tagNames: string[]): Promise<Project> {
+  async createProject(projectData: InsertProject, tagNames: string[], galleryImages: InsertProjectGallery[] = []): Promise<Project> {
     // Start a transaction to ensure everything is saved consistently
     return await db.transaction(async (tx) => {
       // Insert the project
@@ -1111,6 +1111,19 @@ export const storage = {
         });
       }
       
+      // Process gallery images if any
+      const savedGalleryImages: ProjectGalleryImage[] = [];
+      if (galleryImages.length > 0) {
+        for (const image of galleryImages) {
+          // Set the projectId to the newly created project
+          const [savedImage] = await tx.insert(projectGallery).values({
+            ...image,
+            projectId: newProject.id
+          }).returning();
+          savedGalleryImages.push(savedImage);
+        }
+      }
+      
       // Get the author details
       const author = await tx.query.users.findFirst({
         where: eq(users.id, projectData.authorId),
@@ -1130,6 +1143,7 @@ export const storage = {
           avatarUrl: null
         },
         tags: uniqueTags.map(tag => getProperCasedTag(tag)),
+        galleryImages: savedGalleryImages.length > 0 ? savedGalleryImages : undefined,
         likesCount: 0,
         commentsCount: 0,
         viewsCount: 0,
@@ -1626,7 +1640,7 @@ export const storage = {
     };
   },
   
-  async updateProject(projectId: number, projectData: Partial<InsertProject>, tagNames: string[]): Promise<Project | null> {
+  async updateProject(projectId: number, projectData: Partial<InsertProject>, tagNames: string[], galleryImages?: InsertProjectGallery[]): Promise<Project | null> {
     // Start a transaction to ensure everything is updated consistently
     return await db.transaction(async (tx) => {
       // Check if project exists and belongs to the authenticated user
@@ -1682,6 +1696,29 @@ export const storage = {
         });
       }
       
+      // Process gallery images if provided
+      let savedGalleryImages: ProjectGalleryImage[] = [];
+      if (galleryImages && galleryImages.length > 0) {
+        // Get existing gallery images
+        await tx.delete(projectGallery)
+          .where(eq(projectGallery.projectId, projectId));
+          
+        // Add new gallery images
+        for (const image of galleryImages) {
+          const [savedImage] = await tx.insert(projectGallery).values({
+            ...image,
+            projectId: projectId
+          }).returning();
+          savedGalleryImages.push(savedImage);
+        }
+      } else {
+        // If no new gallery images provided, get existing ones
+        savedGalleryImages = await tx.query.projectGallery.findMany({
+          where: eq(projectGallery.projectId, projectId),
+          orderBy: asc(projectGallery.displayOrder)
+        });
+      }
+      
       // Get the author details
       const author = await tx.query.users.findFirst({
         where: eq(users.id, updatedProject.authorId),
@@ -1701,6 +1738,7 @@ export const storage = {
           avatarUrl: null
         },
         tags: uniqueTags.map(tag => getProperCasedTag(tag)),
+        galleryImages: savedGalleryImages.length > 0 ? savedGalleryImages : undefined,
         likesCount: 0,
         commentsCount: 0,
         viewsCount: updatedProject.viewsCount,
@@ -1732,6 +1770,10 @@ export const storage = {
         // Delete bookmarks related to the project
         await tx.delete(bookmarks)
           .where(eq(bookmarks.projectId, projectId));
+          
+        // Delete gallery images related to the project
+        await tx.delete(projectGallery)
+          .where(eq(projectGallery.projectId, projectId));
         
         // Delete comment replies related to comments on the project
         await tx.delete(commentReplies)
@@ -2133,5 +2175,36 @@ export const storage = {
       console.error('Error deleting notification:', error);
       return false;
     }
+  },
+
+  // Project Gallery Methods
+  async addProjectGalleryImage(galleryData: InsertProjectGallery): Promise<ProjectGalleryImage> {
+    const [newImage] = await db.insert(projectGallery).values(galleryData).returning();
+    return newImage;
+  },
+
+  async updateProjectGalleryImage(imageId: number, data: Partial<Omit<InsertProjectGallery, 'id' | 'projectId' | 'createdAt'>>): Promise<ProjectGalleryImage | null> {
+    const [updatedImage] = await db.update(projectGallery)
+      .set(data)
+      .where(eq(projectGallery.id, imageId))
+      .returning();
+    return updatedImage || null;
+  },
+
+  async deleteProjectGalleryImage(imageId: number): Promise<boolean> {
+    try {
+      await db.delete(projectGallery).where(eq(projectGallery.id, imageId));
+      return true;
+    } catch (error) {
+      console.error('Error deleting gallery image:', error);
+      return false;
+    }
+  },
+
+  async getProjectGalleryImages(projectId: number): Promise<ProjectGalleryImage[]> {
+    return await db.query.projectGallery.findMany({
+      where: eq(projectGallery.projectId, projectId),
+      orderBy: asc(projectGallery.displayOrder)
+    });
   }
 };
