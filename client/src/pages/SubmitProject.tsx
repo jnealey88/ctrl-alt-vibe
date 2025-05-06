@@ -33,6 +33,8 @@ import TagSelector from "@/components/TagSelector";
 import GalleryUploader from "@/components/GalleryUploader";
 import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
+// Import GalleryImage type - will be imported dynamically from galleryService
+import type { GalleryImage } from "@/lib/galleryService";
 
 // Import Quill editor components (using v2.0)
 import ReactQuill from 'react-quill';
@@ -155,30 +157,48 @@ const SubmitProject = () => {
     },
   });
 
+  // State for storing selected tags
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  
   // Mutation for submitting the project
   const submitMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      // If there are gallery images, first upload them
-      const galleryImageData = galleryFiles.length > 0 ? await uploadGalleryImages() : null;
-      
-      // Add gallery data to the request if available
+      // First create the project to get the project ID
       const requestData = {
         ...data,
-        galleryImages: galleryImageData || []
+        tags: selectedTags, // Add the selected tags
+        vibeCodingTool: data.vibeCodingTool === 'none' ? null : data.vibeCodingTool,
+        // No gallery images yet - we'll upload them after creating the project
       };
       
       const response = await apiRequest("POST", "/api/projects", requestData);
-      return response.json();
+      if (!response.ok) {
+        throw new Error("Failed to create project");
+      }
+      
+      const responseData = await response.json();
+      
+      // If there are gallery images and project creation was successful, upload the gallery images
+      if (galleryFiles.length > 0 && responseData?.project?.id) {
+        const projectId = responseData.project.id;
+        
+        // Upload gallery images to the newly created project
+        await uploadGalleryImages(projectId);
+      }
+      
+      return responseData;
     },
     onSuccess: (data) => {
       toast({
-        title: "Project submitted",
-        description: "Your project has been successfully submitted.",
+        title: "Project Added",
+        description: "Your project has been successfully added to your portfolio.",
       });
+      
+      // Redirect to the project detail page
       setLocation(`/projects/${data.project.id}`);
     },
     onError: (error) => {
-      console.error(error);
+      console.error("Error submitting project:", error);
       toast({
         title: "Error",
         description: "Failed to submit project. Please try again.",
@@ -612,8 +632,11 @@ const SubmitProject = () => {
                     <FormLabel>Tags</FormLabel>
                     <FormControl>
                       <TagSelector 
-                        value={field.value} 
-                        onChange={field.onChange}
+                        value={selectedTags} 
+                        onChange={(tags) => {
+                          setSelectedTags(tags);
+                          field.onChange(tags); // Also update the form field for validation
+                        }}
                         maxTags={5}
                       />
                     </FormControl>
