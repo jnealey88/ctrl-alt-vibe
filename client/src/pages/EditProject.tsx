@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
 import GalleryUploader from "@/components/GalleryUploader";
-import { ProjectGalleryImage } from "@shared/schema";
+import type { ProjectGalleryImage } from "@shared/schema";
 import { Upload, Image, Loader2, AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -305,16 +305,61 @@ const EditProject = () => {
     setGalleryCaptions(captions.slice(0, validFiles.length));
   };
 
+  // Process deleted gallery images
+  const processDeletedGalleryImages = async () => {
+    if (imagesToDelete.length === 0) return;
+    
+    try {
+      console.log("Deleting gallery images...", { count: imagesToDelete.length });
+      
+      // Import the gallery service
+      const { deleteGalleryImage } = await import('@/lib/galleryService');
+      
+      // Delete each image sequentially
+      const results = await Promise.all(
+        imagesToDelete.map(async (imageId) => {
+          const success = await deleteGalleryImage(projectId, imageId);
+          return { imageId, success };
+        })
+      );
+      
+      const failedDeletes = results.filter(r => !r.success);
+      if (failedDeletes.length > 0) {
+        console.warn("Some images failed to delete:", failedDeletes);
+      }
+      
+      // Clear the delete list
+      setImagesToDelete([]);
+      
+      // Refresh gallery data
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      
+      return results;
+    } catch (error) {
+      console.error('Error deleting gallery images:', error);
+      toast({
+        title: "Gallery deletion failed", 
+        description: "An error occurred while removing some gallery images.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const onSubmit = async (data: FormValues) => {
     try {
-      // First upload any new gallery images
+      // First process any images that need to be deleted
+      if (imagesToDelete.length > 0) {
+        await processDeletedGalleryImages();
+      }
+      
+      // Then upload any new gallery images
       if (galleryFiles.length > 0) {
         console.log("Uploading gallery images...", { count: galleryFiles.length });
         const uploadedImages = await uploadGalleryImages();
         console.log("Gallery upload complete", { uploaded: uploadedImages.length });
       }
       
-      // Then update the project data
+      // Finally update the project data
       console.log("Updating project data...");
       updateMutation.mutate(data);
     } catch (error) {
@@ -777,7 +822,20 @@ const EditProject = () => {
                   existingImages={galleryData?.galleryImages || []}
                   projectId={projectId}
                   onExistingImagesChange={(updatedImages) => {
-                    // Handle any changes to existing images
+                    // Find images that were marked for deletion by getting the image IDs
+                    // that are in the original list but not in the updated list
+                    const currentIds = existingGalleryImages.map(img => img.id);
+                    const updatedIds = updatedImages.map(img => img.id);
+                    
+                    // Find all IDs that are in the current set but not the updated set
+                    const deletedImageIds = currentIds.filter(id => !updatedIds.includes(id));
+                    
+                    if (deletedImageIds.length > 0) {
+                      console.log(`Marked ${deletedImageIds.length} images for deletion:`, deletedImageIds);
+                      setImagesToDelete(prev => [...prev, ...deletedImageIds]);
+                    }
+                    
+                    // Update the state with the remaining images
                     setExistingGalleryImages(updatedImages);
                   }}
                   maxImages={5}
