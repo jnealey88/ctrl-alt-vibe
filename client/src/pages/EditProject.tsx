@@ -239,14 +239,24 @@ const EditProject = () => {
         formData.append('galleryImage', file);
         formData.append('caption', caption);
         
+        // Log details about the file
+        console.log(`Uploading gallery image ${i+1}:`, {
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+        });
+        
         const response = await fetch(`/api/projects/${projectId}/gallery`, {
           method: 'POST',
           body: formData,
           credentials: 'include'
         });
         
+        // Get detailed error information if the request fails
         if (!response.ok) {
-          throw new Error(`Failed to upload gallery image ${i+1}`);
+          const errorText = await response.text();
+          console.error(`Upload failed with status ${response.status}:`, errorText);
+          throw new Error(`Failed to upload gallery image ${i+1}: ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -266,7 +276,7 @@ const EditProject = () => {
       console.error('Gallery upload error:', error);
       toast({
         title: "Gallery upload failed", 
-        description: "There was a problem uploading your gallery images.",
+        description: error instanceof Error ? error.message : "There was a problem uploading your gallery images.",
         variant: "destructive"
       });
       return [];
@@ -277,18 +287,58 @@ const EditProject = () => {
 
   // Handle gallery change from the GalleryUploader component
   const handleGalleryChange = (files: File[], captions: string[]) => {
-    setGalleryFiles(files);
-    setGalleryCaptions(captions);
+    // Validate files
+    const validFiles = files.filter((file, index) => {
+      const size = file.size / 1024 / 1024; // in MB
+      const isValidSize = size <= 5;
+      const isValidType = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type);
+      
+      if (!isValidSize || !isValidType) {
+        console.warn(`Invalid gallery file at index ${index}:`, { 
+          name: file.name, 
+          type: file.type, 
+          size: `${size.toFixed(2)} MB`,
+          isValidSize,
+          isValidType
+        });
+      }
+      
+      return isValidSize && isValidType;
+    });
+    
+    if (validFiles.length !== files.length) {
+      toast({
+        title: "Some files were skipped",
+        description: "Only image files (JPG, PNG, GIF, WebP) under 5MB are allowed.",
+        variant: "destructive"
+      });
+    }
+    
+    console.log(`Gallery change: ${validFiles.length} valid files out of ${files.length} total`);
+    setGalleryFiles(validFiles);
+    setGalleryCaptions(captions.slice(0, validFiles.length));
   };
 
   const onSubmit = async (data: FormValues) => {
-    // First upload any new gallery images
-    if (galleryFiles.length > 0) {
-      await uploadGalleryImages();
+    try {
+      // First upload any new gallery images
+      if (galleryFiles.length > 0) {
+        console.log("Uploading gallery images...", { count: galleryFiles.length });
+        const uploadedImages = await uploadGalleryImages();
+        console.log("Gallery upload complete", { uploaded: uploadedImages.length });
+      }
+      
+      // Then update the project data
+      console.log("Updating project data...");
+      updateMutation.mutate(data);
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      toast({
+        title: "Submission Error",
+        description: "There was a problem processing your form. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    // Then update the project data
-    updateMutation.mutate(data);
   };
   
   const handleDelete = () => {
