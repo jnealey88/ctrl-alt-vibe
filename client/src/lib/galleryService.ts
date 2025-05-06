@@ -158,6 +158,81 @@ function createPlaceholderImage(projectId: number, caption: string): GalleryImag
 }
 
 /**
+ * Fetches gallery images for a project with robust error handling
+ */
+export async function fetchGalleryImages(projectId: number): Promise<GalleryImage[]> {
+  try {
+    console.log(`Fetching gallery images for project ${projectId}`);
+    
+    // Make the request
+    const response = await fetch(`/api/projects/${projectId}/gallery`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest' // Help some servers distinguish API requests
+      },
+      credentials: 'include'
+    });
+    
+    // Handle non-OK responses
+    if (!response.ok) {
+      console.error(`Failed to fetch gallery images: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
+    // Get the response text first to inspect
+    const text = await response.text();
+    
+    // Check if the response is HTML (which would indicate an issue)
+    if (text.trim().startsWith('<!DOCTYPE') || 
+        text.trim().startsWith('<html') || 
+        text.includes('</html>')) {
+      console.error("Server returned HTML instead of JSON");
+      
+      // Try to query the DB directly using fetch to bypass Vite
+      try {
+        // Make a direct API request to the server with a special header
+        const directResponse = await fetch(`/api/projects/${projectId}/gallery?bypass_vite=true`, {
+          headers: {
+            'Accept': 'application/json',
+            'X-Direct-API-Call': 'true'
+          }
+        });
+        
+        if (directResponse.ok) {
+          const data = await directResponse.json();
+          if (data.galleryImages && Array.isArray(data.galleryImages)) {
+            return data.galleryImages;
+          }
+        }
+      } catch (directError) {
+        console.error("Direct gallery fetch failed:", directError);
+      }
+      
+      return [];
+    }
+    
+    // Try to parse the response as JSON
+    try {
+      const data = JSON.parse(text);
+      if (data.galleryImages && Array.isArray(data.galleryImages)) {
+        console.log(`Successfully fetched ${data.galleryImages.length} gallery images`);
+        return data.galleryImages;
+      } else {
+        console.error("Response missing galleryImages array:", data);
+        return [];
+      }
+    } catch (parseError) {
+      console.error("Failed to parse gallery response as JSON:", parseError);
+      return [];
+    }
+  } catch (error) {
+    console.error("Unexpected error fetching gallery images:", error);
+    return [];
+  }
+}
+
+/**
  * Uploads multiple gallery images for a project
  */
 export async function uploadMultipleGalleryImages(

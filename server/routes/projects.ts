@@ -871,10 +871,8 @@ export function registerProjectRoutes(app: Express) {
       
       console.log(`Found ${galleryImages.length} gallery images:`, galleryImages);
       
-      // Explicitly set content type to JSON and disable any potential HTML rendering
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.status(200).send(JSON.stringify({ galleryImages }));
+      // Use res.json instead of manually setting headers and stringifying
+      res.json({ galleryImages });
     } catch (error) {
       console.error('Error fetching gallery images:', error);
       res.status(500).json({ message: 'Failed to fetch gallery images' });

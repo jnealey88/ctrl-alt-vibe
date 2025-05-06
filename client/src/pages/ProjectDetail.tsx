@@ -44,39 +44,21 @@ const ProjectDetail = () => {
   
   const project: Project | undefined = data?.project;
   
-  // Fetch gallery images for the project
-  const { data: galleryData } = useQuery<{galleryImages: ProjectGalleryImage[]}>({    
+  // Fetch gallery images for the project using our custom service
+  const { data: galleryImages = [], isLoading: isLoadingGallery } = useQuery<ProjectGalleryImage[]>({
     queryKey: [`/api/projects/${id}/gallery`],
     enabled: !!project, // Only fetch gallery if project exists
-    // Use custom query function to handle content type issues
     queryFn: async () => {
       try {
-        const response = await fetch(`/api/projects/${id}/gallery`, {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        
-        // Check if response is actually JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          console.error('Gallery API returned non-JSON response:', contentType);
-          return { galleryImages: [] };
-        }
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch gallery images');
-        }
-        
-        return await response.json();
+        // Import the gallery service dynamically to avoid circular imports
+        const { fetchGalleryImages } = await import('@/lib/galleryService');
+        return await fetchGalleryImages(Number(id));
       } catch (error) {
         console.error('Error in gallery fetch:', error);
-        return { galleryImages: [] };
+        return [];
       }
     }
   });
-  
-  const galleryImages = galleryData?.galleryImages || [];
   
   // Debug log for gallery images
   useEffect(() => {
