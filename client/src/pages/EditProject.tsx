@@ -238,7 +238,7 @@ const EditProject = () => {
         const file = galleryFiles[i];
         const caption = galleryCaptions[i] || `Gallery image ${i+1}`;
         
-        // Log details about the file
+        // DEBUGGING: Log detailed info about the file
         console.log(`Uploading gallery image ${i+1}:`, {
           fileName: file.name,
           fileType: file.type,
@@ -246,48 +246,55 @@ const EditProject = () => {
         });
         
         try {
-          // Create FormData with the exact field name expected by the server
-          const formData = new FormData();
-          formData.append('galleryImage', file);
-          formData.append('caption', caption);
-          
-          // Use fetch directly to handle file uploads
-          const response = await fetch(`/api/projects/${projectId}/gallery`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
+          // EMERGENCY FIX: Try an alternate approach with XMLHttpRequest
+          // This gives us more control and better error information
+          await new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            
+            xhr.open('POST', `/api/projects/${projectId}/gallery`, true);
+            xhr.withCredentials = true;
+            
+            // Set up event handlers
+            xhr.onload = function() {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                console.log(`XHR successful with status ${xhr.status}`);
+                try {
+                  // Try to parse response
+                  const responseData = JSON.parse(xhr.responseText);
+                  console.log("Parsed response:", responseData);
+                  
+                  if (responseData.galleryImage) {
+                    uploadedImages.push(responseData.galleryImage);
+                    resolve();
+                  } else {
+                    console.error("Response missing galleryImage:", responseData);
+                    reject(new Error("Response format unexpected"));
+                  }
+                } catch (parseError) {
+                  console.error("Failed to parse response:", xhr.responseText.substring(0, 500));
+                  reject(new Error("Response was not valid JSON"));
+                }
+              } else {
+                console.error(`XHR failed with status ${xhr.status}:`, xhr.responseText);
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            };
+            
+            xhr.onerror = function() {
+              console.error("XHR network error");
+              reject(new Error("Network error during upload"));
+            };
+            
+            // Create form data and append the file + caption
+            const formData = new FormData();
+            formData.append('galleryImage', file);
+            formData.append('caption', caption);
+            
+            console.log(`Sending XHR with galleryImage field and caption: "${caption}"`);
+            xhr.send(formData);
           });
           
-          let responseText;
-          try {
-            responseText = await response.text();
-          } catch (err) {
-            console.error("Failed to get response text:", err);
-            throw new Error("Could not read server response");
-          }
-          
-          let data;
-          try {
-            data = JSON.parse(responseText);
-          } catch (err) {
-            console.error("Failed to parse JSON response:", responseText.substring(0, 500));
-            throw new Error("Server response was not valid JSON");
-          }
-          
-          if (!response.ok) {
-            const errorMessage = data?.message || response.statusText || "Unknown error";
-            throw new Error(`Failed to upload gallery image: ${errorMessage}`);
-          }
-          
-          // The server returns { galleryImage: {...} }
-          const galleryImage = data.galleryImage;
-          if (!galleryImage) {
-            console.error("Response missing galleryImage property:", data);
-            throw new Error("Server response format unexpected");
-          }
-          
-          console.log(`Successfully uploaded image ${i+1}:`, galleryImage);
-          uploadedImages.push(galleryImage);
+          console.log(`Successfully uploaded image ${i+1}`);
           
         } catch (innerError) {
           console.error(`Error uploading image ${i+1}:`, innerError);
