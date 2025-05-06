@@ -220,116 +220,34 @@ const EditProject = () => {
     },
   });
   
+  // Upload gallery images using the dedicated gallery service
   const uploadGalleryImages = async () => {
     if (galleryFiles.length === 0) return [];
     
     setIsUploading(true);
-    toast({
-      title: "Uploading gallery images",
-      description: `Uploading ${galleryFiles.length} image${galleryFiles.length > 1 ? 's' : ''}...`
-    });
     
     try {
-      // Create an array to store uploaded image data
-      const uploadedImages = [];
+      // Import the gallery service using dynamic import to avoid circular dependencies
+      const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
       
-      // Process each file individually in sequential order
-      for (let i = 0; i < galleryFiles.length; i++) {
-        const file = galleryFiles[i];
-        const caption = galleryCaptions[i] || `Gallery image ${i+1}`;
-        
-        // DEBUGGING: Log detailed info about the file
-        console.log(`Uploading gallery image ${i+1}:`, {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
-        });
-        
-        try {
-          // EMERGENCY FIX: Try an alternate approach with XMLHttpRequest
-          // This gives us more control and better error information
-          await new Promise<void>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            
-            xhr.open('POST', `/api/projects/${projectId}/gallery`, true);
-            xhr.withCredentials = true;
-            
-            // Set up event handlers
-            xhr.onload = function() {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                console.log(`XHR successful with status ${xhr.status}`);
-                try {
-                  // Try to parse response
-                  const responseData = JSON.parse(xhr.responseText);
-                  console.log("Parsed response:", responseData);
-                  
-                  if (responseData.galleryImage) {
-                    uploadedImages.push(responseData.galleryImage);
-                    resolve();
-                  } else {
-                    console.error("Response missing galleryImage:", responseData);
-                    reject(new Error("Response format unexpected"));
-                  }
-                } catch (parseError) {
-                  console.error("Failed to parse response:", xhr.responseText.substring(0, 500));
-                  reject(new Error("Response was not valid JSON"));
-                }
-              } else {
-                console.error(`XHR failed with status ${xhr.status}:`, xhr.responseText);
-                reject(new Error(`Upload failed with status ${xhr.status}`));
-              }
-            };
-            
-            xhr.onerror = function() {
-              console.error("XHR network error");
-              reject(new Error("Network error during upload"));
-            };
-            
-            // Create form data and append the file + caption
-            const formData = new FormData();
-            formData.append('galleryImage', file);
-            formData.append('caption', caption);
-            
-            console.log(`Sending XHR with galleryImage field and caption: "${caption}"`);
-            xhr.send(formData);
-          });
-          
-          console.log(`Successfully uploaded image ${i+1}`);
-          
-        } catch (innerError) {
-          console.error(`Error uploading image ${i+1}:`, innerError);
-          toast({
-            title: `Failed to upload image ${i+1}`,
-            description: innerError instanceof Error ? innerError.message : "Unknown error",
-            variant: "destructive"
-          });
-          // Continue with the next image instead of stopping the whole process
-          continue;
-        }
-      }
+      // Use the dedicated service to handle all upload logic
+      const result = await uploadMultipleGalleryImages(
+        projectId,
+        galleryFiles,
+        galleryCaptions
+      );
       
-      // Refresh gallery data
-      if (uploadedImages.length > 0) {
+      // Refresh gallery data if any uploads were successful
+      if (result.successCount > 0) {
         queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
-        
-        toast({
-          title: "Gallery images uploaded",
-          description: `Successfully uploaded ${uploadedImages.length} of ${galleryFiles.length} images`
-        });
-      } else {
-        toast({
-          title: "Gallery upload failed",
-          description: "None of the images could be uploaded",
-          variant: "destructive"
-        });
       }
       
-      return uploadedImages;
+      return result.uploadedImages;
     } catch (error) {
-      console.error('Gallery upload error:', error);
+      console.error('Gallery upload service error:', error);
       toast({
         title: "Gallery upload failed", 
-        description: error instanceof Error ? error.message : "There was a problem uploading your gallery images.",
+        description: "An unexpected error occurred in the upload service.",
         variant: "destructive"
       });
       return [];
@@ -402,11 +320,15 @@ const EditProject = () => {
   // Delete a gallery image
   const deleteGalleryMutation = useMutation({
     mutationFn: async (imageId: number) => {
-      const response = await apiRequest("DELETE", `/api/projects/${projectId}/gallery/${imageId}`);
-      if (!response.ok) {
+      // Use the gallery service for deletion
+      const { deleteGalleryImage } = await import('@/lib/galleryService');
+      const success = await deleteGalleryImage(projectId, imageId);
+      
+      if (!success) {
         throw new Error('Failed to delete gallery image');
       }
-      return response.json();
+      
+      return { success: true };
     },
     onSuccess: () => {
       // Invalidate gallery cache to refresh data

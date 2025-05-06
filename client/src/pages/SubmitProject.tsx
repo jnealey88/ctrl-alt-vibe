@@ -228,46 +228,26 @@ const SubmitProject = () => {
     submitMutation.mutate(data);
   };
   
-  // Handle gallery image uploads
-  const uploadGalleryImages = async () => {
+  // Handle gallery image uploads using the dedicated gallery service
+  const uploadGalleryImages = async (projectId: number): Promise<GalleryImage[]> => {
     if (galleryFiles.length === 0) return [];
     
     setIsUploading(true);
-    toast({
-      title: "Uploading gallery images",
-      description: `Uploading ${galleryFiles.length} image${galleryFiles.length > 1 ? 's' : ''}...`
-    });
     
     try {
-      // Create FormData object for multi-file upload
-      const formData = new FormData();
+      // Import the gallery service
+      const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
       
-      // Add each gallery file
-      galleryFiles.forEach((file, index) => {
-        formData.append('gallery', file);
-        // Add captions if they exist
-        if (galleryCaptions[index]) {
-          formData.append('captions', galleryCaptions[index]);
-        } else {
-          formData.append('captions', '');
-        }
-      });
+      // Use the dedicated service to handle uploads
+      const result = await uploadMultipleGalleryImages(
+        projectId,
+        galleryFiles,
+        galleryCaptions
+      );
       
-      const response = await fetch('/api/upload/gallery', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload gallery images');
-      }
-      
-      const data = await response.json();
-      
-      return data.galleryImages;
+      return result.uploadedImages;
     } catch (error) {
-      console.error('Gallery upload error:', error);
+      console.error('Gallery upload service error:', error);
       toast({
         title: "Gallery upload failed", 
         description: "There was a problem uploading your gallery images. You can add them later by editing your project.",
