@@ -3,7 +3,7 @@ import { storage } from '../storage';
 import { projectService } from '../services';
 import { z } from 'zod';
 import { ValidationError, fromZodError } from 'zod-validation-error';
-import { projectInsertSchema } from '@shared/schema';
+import { projectInsertSchema, commentInsertSchema } from '@shared/schema';
 import cache from '../utils/enhanced-cache';
 import { processUrlForProject } from '../utils/url-metadata';
 import { isAuthenticated } from '../middleware/auth';
@@ -638,9 +638,14 @@ export function registerProjectRoutes(app: Express) {
       // Get current user ID for isLiked flag
       const currentUserId = req.isAuthenticated() ? req.user!.id : 0;
       
-      const comments = await storage.getProjectComments(projectId, currentUserId);
+      // Get page, limit, and sort parameters from query
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const sortBy = req.query.sortBy as string || 'newest';
       
-      res.json({ comments });
+      const result = await storage.getProjectComments(projectId, page, limit, sortBy, currentUserId);
+      
+      res.json(result);
     } catch (error) {
       console.error('Error fetching project comments:', error);
       res.status(500).json({ message: 'Failed to fetch comments' });
@@ -731,6 +736,181 @@ export function registerProjectRoutes(app: Express) {
     } catch (error) {
       console.error('Error creating comment:', error);
       res.status(500).json({ message: 'Failed to create comment' });
+    }
+  });
+
+  // Gallery image endpoints
+  
+  // Upload a gallery image to an existing project
+  app.post(`${apiPrefix}/projects/:id/gallery`, isAuthenticated, upload.single('galleryImage'), async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+      
+      // Get the existing project
+      const existingProject = await storage.getProjectById(projectId);
+      
+      if (!existingProject) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user is the author or an admin
+      const userId = req.user!.id;
+      if (existingProject.author.id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to update this project' });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file uploaded' });
+      }
+      
+      // Optimize image and get the URL
+      const optimizedUrl = await optimizeImage(req.file.path);
+      
+      // Get current display order (highest + 1)
+      const existingImages = await storage.getProjectGalleryImages(projectId);
+      const displayOrder = existingImages.length > 0 
+        ? Math.max(...existingImages.map(img => img.displayOrder)) + 1 
+        : 0;
+      
+      // Create gallery image
+      const galleryImage = await storage.addProjectGalleryImage({
+        projectId,
+        imageUrl: optimizedUrl,
+        displayOrder,
+        caption: req.body.caption || `Image ${displayOrder + 1}`,
+        createdAt: new Date()
+      });
+      
+      // Invalidate relevant caches
+      cache.invalidateTag('projects:list');
+      if (existingProject.featured) {
+        cache.invalidateTag('projects:featured');
+      }
+      
+      res.status(201).json({ galleryImage });
+    } catch (error) {
+      console.error('Error adding gallery image:', error);
+      res.status(500).json({ message: 'Failed to add gallery image' });
+    }
+  });
+  
+  // Update a gallery image caption or display order
+  app.patch(`${apiPrefix}/projects/:projectId/gallery/:imageId`, isAuthenticated, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const imageId = parseInt(req.params.imageId);
+      
+      if (isNaN(projectId) || isNaN(imageId)) {
+        return res.status(400).json({ message: 'Invalid ID' });
+      }
+      
+      // Get the existing project
+      const existingProject = await storage.getProjectById(projectId);
+      
+      if (!existingProject) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user is the author or an admin
+      const userId = req.user!.id;
+      if (existingProject.author.id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to update this project' });
+      }
+      
+      // Update gallery image
+      const updatedImage = await storage.updateProjectGalleryImage(imageId, {
+        caption: req.body.caption,
+        displayOrder: req.body.displayOrder !== undefined ? parseInt(req.body.displayOrder) : undefined
+      });
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: 'Gallery image not found' });
+      }
+      
+      res.json({ galleryImage: updatedImage });
+    } catch (error) {
+      console.error('Error updating gallery image:', error);
+      res.status(500).json({ message: 'Failed to update gallery image' });
+    }
+  });
+  
+  // Get gallery images for a project
+  app.get(`${apiPrefix}/projects/:id/gallery`, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+      
+      // Get gallery images
+      const galleryImages = await storage.getProjectGalleryImages(projectId);
+      
+      res.json({ galleryImages });
+    } catch (error) {
+      console.error('Error fetching gallery images:', error);
+      res.status(500).json({ message: 'Failed to fetch gallery images' });
+    }
+  });
+  
+  // Delete a gallery image
+  app.delete(`${apiPrefix}/projects/:projectId/gallery/:imageId`, isAuthenticated, async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const imageId = parseInt(req.params.imageId);
+      
+      if (isNaN(projectId) || isNaN(imageId)) {
+        return res.status(400).json({ message: 'Invalid ID' });
+      }
+      
+      // Get the existing project
+      const existingProject = await storage.getProjectById(projectId);
+      
+      if (!existingProject) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Check if user is the author or an admin
+      const userId = req.user!.id;
+      if (existingProject.author.id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to update this project' });
+      }
+      
+      // Get the image first to get its URL for file deletion
+      const galleryImage = await storage.getProjectGalleryImages(projectId)
+        .then(images => images.find(img => img.id === imageId));
+      
+      if (!galleryImage) {
+        return res.status(404).json({ message: 'Gallery image not found' });
+      }
+      
+      // Delete the gallery image from the database
+      const success = await storage.deleteProjectGalleryImage(imageId);
+      
+      if (!success) {
+        return res.status(500).json({ message: 'Failed to delete gallery image' });
+      }
+      
+      // Try to remove the image file from the file system
+      if (galleryImage.imageUrl && galleryImage.imageUrl.startsWith('/uploads/')) {
+        const imagePath = path.join(process.cwd(), galleryImage.imageUrl.substr(1));
+        fs.unlink(imagePath, (err) => {
+          if (err) console.error('Failed to remove gallery image file:', err);
+        });
+      }
+      
+      // Invalidate relevant caches
+      cache.invalidateTag('projects:list');
+      if (existingProject.featured) {
+        cache.invalidateTag('projects:featured');
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting gallery image:', error);
+      res.status(500).json({ message: 'Failed to delete gallery image' });
     }
   });
   
