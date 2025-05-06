@@ -20,6 +20,7 @@ import {
   projectViews,
   notifications,
   notificationTypes,
+  projectGallery,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -40,7 +41,9 @@ import type {
   ProjectView,
   InsertProjectView,
   Notification,
-  InsertNotification
+  InsertNotification,
+  ProjectGalleryImage,
+  InsertProjectGallery
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -1056,9 +1059,16 @@ export const storage = {
       )
     });
     
+    // Get gallery images for this project
+    const galleryImages = await db.query.projectGallery.findMany({
+      where: eq(projectGallery.projectId, project.id),
+      orderBy: asc(projectGallery.displayOrder)
+    });
+    
     return {
       ...project,
       tags: tagNames,
+      galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
       likesCount,
       commentsCount,
       isLiked: !!userLike,
