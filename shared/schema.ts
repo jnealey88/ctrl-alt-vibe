@@ -168,6 +168,21 @@ export const bookmarks = pgTable("bookmarks", {
   };
 });
 
+// Project gallery images
+export const projectGallery = pgTable("project_gallery", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id).notNull(),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    projectIdIdx: index("project_gallery_project_id_idx").on(table.projectId),
+    displayOrderIdx: index("project_gallery_display_order_idx").on(table.displayOrder),
+  };
+});
+
 // Project shares
 export const shares = pgTable("shares", {
   id: serial("id").primaryKey(),
@@ -308,6 +323,11 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   bookmarks: many(bookmarks),
   shares: many(shares),
   views: many(projectViews),
+  galleryImages: many(projectGallery),
+}));
+
+export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
+  project: one(projects, { fields: [projectGallery.projectId], references: [projects.id] }),
 }));
 
 export const projectViewsRelations = relations(projectViews, ({ one }) => ({
@@ -391,6 +411,12 @@ export const shareInsertSchema = createInsertSchema(shares, {
   platform: (schema) => schema.min(2, "Platform name is required").max(50, "Platform name must be less than 50 characters"),
 });
 
+export const projectGalleryInsertSchema = createInsertSchema(projectGallery, {
+  imageUrl: (schema) => schema.url("Please enter a valid image URL"),
+  caption: (schema) => schema.optional(),
+  displayOrder: (schema) => schema.optional(),
+});
+
 // Custom type for client-side project with tags as array
 export type Project = {
   id: number;
@@ -406,6 +432,7 @@ export type Project = {
     avatarUrl?: string;
   };
   tags: string[];
+  galleryImages?: ProjectGalleryImage[];
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
@@ -471,6 +498,8 @@ export type InsertComment = z.infer<typeof commentInsertSchema>;
 export type InsertReply = z.infer<typeof replyInsertSchema>;
 export type InsertCodingTool = z.infer<typeof codingToolInsertSchema>;
 export type InsertShare = z.infer<typeof shareInsertSchema>;
+export type InsertProjectGallery = z.infer<typeof projectGalleryInsertSchema>;
+export type ProjectGalleryImage = typeof projectGallery.$inferSelect;
 export type CodingToolFromDB = typeof codingTools.$inferSelect;
 
 // Blog schemas
