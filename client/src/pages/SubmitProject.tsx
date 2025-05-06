@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
+import GalleryUploader from "@/components/GalleryUploader";
 import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
 
