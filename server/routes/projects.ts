@@ -52,6 +52,26 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
+// Helper function to optimize image using sharp
+async function optimizeImage(filePath: string): Promise<string> {
+  const optimizedPath = path.join(uploadDir, 'opt-' + path.basename(filePath));
+  try {
+    await sharp(filePath)
+      .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toFile(optimizedPath);
+      
+    // Remove the original if optimization succeeded
+    fs.unlinkSync(filePath);
+    
+    return `/uploads/opt-${path.basename(filePath)}`;
+  } catch (error) {
+    console.error('Error optimizing image:', error);
+    // Return path to original file if optimization fails
+    return `/uploads/${path.basename(filePath)}`;
+  }
+}
+
 export function registerProjectRoutes(app: Express) {
   const apiPrefix = '/api';
   
@@ -183,7 +203,7 @@ export function registerProjectRoutes(app: Express) {
   });
   
   // Create project
-  app.post(`${apiPrefix}/projects`, isAuthenticated, upload.single('image'), async (req, res) => {
+  app.post(`${apiPrefix}/projects`, isAuthenticated, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'galleryImages', maxCount: 5 }]), async (req, res) => {
     try {
       // Parse and validate the input
       const projectData = JSON.parse(req.body.project);
@@ -221,34 +241,39 @@ export function registerProjectRoutes(app: Express) {
         }
       }
       
-      // Handle the image
-      if (req.file) {
-        // Resize and optimize the image
-        const optimizedImagePath = path.join(uploadDir, 'opt-' + req.file.filename);
-        
-        try {
-          await sharp(req.file.path)
-            .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 80 })
-            .toFile(optimizedImagePath);
-          
-          // Now use the optimized image instead
-          projectData.imageUrl = `/uploads/opt-${req.file.filename}`;
-          
-          // Remove the original if optimization succeeded
-          fs.unlinkSync(req.file.path);
-        } catch (sharpError) {
-          console.error('Error optimizing image:', sharpError);
-          // Fallback to original image if optimization fails
-          projectData.imageUrl = `/uploads/${req.file.filename}`;
-        }
+      // Handle the main project image
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (files && files['image'] && files['image'].length > 0) {
+        const mainImageFile = files['image'][0];
+        const imageUrl = await optimizeImage(mainImageFile.path);
+        projectData.imageUrl = imageUrl;
       } else if (!projectData.imageUrl) {
         // Set a default image if none provided
         projectData.imageUrl = '/images/default-project.jpg';
       }
       
-      // Create the project
-      const project = await storage.createProject(projectData, tagNames);
+      // Process gallery images if any
+      const galleryImagesData: any[] = [];
+      if (files && files['galleryImages'] && files['galleryImages'].length > 0) {
+        const galleryFiles = files['galleryImages'];
+        
+        // Process each gallery image
+        for (let i = 0; i < galleryFiles.length; i++) {
+          const galleryFile = galleryFiles[i];
+          const optimizedGalleryUrl = await optimizeImage(galleryFile.path);
+          
+          galleryImagesData.push({
+            imageUrl: optimizedGalleryUrl,
+            displayOrder: i,
+            caption: `Gallery image ${i+1}`,
+            createdAt: new Date() 
+          });
+        }
+      }
+      
+      // Create the project with gallery images
+      const project = await storage.createProject(projectData, tagNames, galleryImagesData);
       
       // Invalidate relevant caches
       cache.invalidateTag('projects:list');
@@ -266,7 +291,7 @@ export function registerProjectRoutes(app: Express) {
   });
   
   // Update project
-  app.patch(`${apiPrefix}/projects/:id`, isAuthenticated, upload.single('image'), async (req, res) => {
+  app.patch(`${apiPrefix}/projects/:id`, isAuthenticated, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'galleryImages', maxCount: 5 }]), async (req, res) => {
     try {
       const projectId = parseInt(req.params.id);
       if (isNaN(projectId)) {
@@ -292,41 +317,46 @@ export function registerProjectRoutes(app: Express) {
       // Process tags
       const tagNames = req.body.tags ? JSON.parse(req.body.tags) : [];
       
-      // Handle the image if a new one was uploaded
-      if (req.file) {
-        // Resize and optimize the image
-        const optimizedImagePath = path.join(uploadDir, 'opt-' + req.file.filename);
+      // Handle the main project image
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (files && files['image'] && files['image'].length > 0) {
+        const mainImageFile = files['image'][0];
+        const imageUrl = await optimizeImage(mainImageFile.path);
+        projectData.imageUrl = imageUrl;
         
-        try {
-          await sharp(req.file.path)
-            .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 80 })
-            .toFile(optimizedImagePath);
-          
-          // Now use the optimized image instead
-          projectData.imageUrl = `/uploads/opt-${req.file.filename}`;
-          
-          // Remove the original if optimization succeeded
-          fs.unlinkSync(req.file.path);
-          
-          // If there was a previous image that wasn't the default, try to remove it
-          if (existingProject.imageUrl && 
-              !existingProject.imageUrl.includes('default-project.jpg') && 
-              existingProject.imageUrl.startsWith('/uploads/')) {
-            const oldImagePath = path.join(process.cwd(), existingProject.imageUrl.substr(1));
-            fs.unlink(oldImagePath, (err) => {
-              if (err) console.error('Failed to remove old image:', err);
-            });
-          }
-        } catch (sharpError) {
-          console.error('Error optimizing image:', sharpError);
-          // Fallback to original image if optimization fails
-          projectData.imageUrl = `/uploads/${req.file.filename}`;
+        // If there was a previous image that wasn't the default, try to remove it
+        if (existingProject.imageUrl && 
+            !existingProject.imageUrl.includes('default-project.jpg') && 
+            existingProject.imageUrl.startsWith('/uploads/')) {
+          const oldImagePath = path.join(process.cwd(), existingProject.imageUrl.substr(1));
+          fs.unlink(oldImagePath, (err) => {
+            if (err) console.error('Failed to remove old image:', err);
+          });
         }
       }
       
-      // Update the project
-      const updatedProject = await storage.updateProject(projectId, projectData, tagNames);
+      // Process gallery images if any
+      const galleryImagesData: any[] = [];
+      if (files && files['galleryImages'] && files['galleryImages'].length > 0) {
+        const galleryFiles = files['galleryImages'];
+        
+        // Process each gallery image
+        for (let i = 0; i < galleryFiles.length; i++) {
+          const galleryFile = galleryFiles[i];
+          const optimizedGalleryUrl = await optimizeImage(galleryFile.path);
+          
+          galleryImagesData.push({
+            imageUrl: optimizedGalleryUrl,
+            displayOrder: i,
+            caption: `Gallery image ${i+1}`,
+            createdAt: new Date() 
+          });
+        }
+      }
+      
+      // Update the project with gallery images
+      const updatedProject = await storage.updateProject(projectId, projectData, tagNames, galleryImagesData.length > 0 ? galleryImagesData : undefined);
       
       if (!updatedProject) {
         return res.status(500).json({ message: 'Failed to update project' });
