@@ -306,6 +306,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Profile routes are directly implemented below
 
+  // Direct raw evaluation data route (completely bypasses Vite)
+  app.get('/evaluation-data/:projectId', async (req, res) => {
+    try {
+      console.log(`Direct evaluation data route accessed for project: ${req.params.projectId}`);
+      // Set strict no-cache headers
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+      
+      // Always set Content-Type to prevent browser from guessing
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      
+      // Parse project ID
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).send(JSON.stringify({ error: 'Invalid project ID' }));
+      }
+      
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).send(JSON.stringify({ error: 'Not authorized' }));
+      }
+      
+      // Get the project and check permissions
+      const project = await storage.getProjectById(projectId);
+      if (!project) {
+        return res.status(404).send(JSON.stringify({ error: 'Project not found' }));
+      }
+      
+      // Verify ownership or admin access
+      const userId = req.user?.id || 0;
+      if (project.author.id !== userId) {
+        const user = await storage.getUserById(userId);
+        if (!user || user.role !== 'admin') {
+          return res.status(403).send(JSON.stringify({ error: 'Not authorized to access this evaluation' }));
+        }
+      }
+      
+      // Get the evaluation
+      const evaluation = await storage.getProjectEvaluation(projectId);
+      if (!evaluation) {
+        return res.status(404).send(JSON.stringify({ error: 'No evaluation found for this project' }));
+      }
+      
+      // Send the raw JSON data with explicitly set content type
+      console.log('Sending direct evaluation data for project:', projectId);
+      return res.status(200).send(JSON.stringify(evaluation));
+    } catch (error) {
+      console.error('Error in direct evaluation data route:', error);
+      return res.status(500).send(JSON.stringify({ error: 'Server error' }));
+    }
+  });
+  
   // Test route for debugging
   app.get('/api/test-profile-route', (req, res) => {
     console.log('Test profile route accessed');

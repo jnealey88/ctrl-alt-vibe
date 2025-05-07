@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Card, 
@@ -120,134 +120,61 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
 
   // Data workaround for bypassing the HTML issue 
   const [manualData, setManualData] = useState<ProjectEvaluationType | null>(null);
-  const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'error' | 'closed'>('connecting');
-  const wsRef = useRef<WebSocket | null>(null);
   
   // Use manual data if available
   const evaluationData = manualData || evaluation;
   
-  // WebSocket setup
-  useEffect(() => {
-    // Create WebSocket connection to fetch evaluation data
-    let ws: WebSocket | null = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`);
-    wsRef.current = ws;
-    
-    // Get user ID from sessionStorage
-    let userId: string | null = null;
+  // Direct fetch without going through API routes to avoid Vite middleware
+  const fetchDirectData = async () => {
     try {
-      const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-      userId = user?.id?.toString();
-    } catch (e) {
-      console.error('Error getting user ID from session:', e);
-    }
-    
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
-      setWsStatus('connected');
+      console.log(`Attempting direct fetch from /evaluation-data/${projectId}`);
+      const timestamp = new Date().getTime(); // Add cache-busting parameter
       
-      // Authenticate the websocket connection
-      if (userId) {
-        console.log('Authenticating WebSocket with user ID:', userId);
-        ws.send(JSON.stringify({ 
-          type: 'auth',
-          userId: parseInt(userId)
-        }));
-      } else {
-        console.error('No user ID available for WebSocket authentication');
-        setWsStatus('error');
-      }
-    };
-    
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('WebSocket message received:', data);
-        
-        // Handle authentication success
-        if (data.type === 'auth_success') {
-          console.log('WebSocket authentication successful');
+      const response = await fetch(`/evaluation-data/${projectId}?_t=${timestamp}`, {
+        method: 'GET',
+        credentials: 'include',  // Include cookies for authentication
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Direct fetch response status:', response.status);
+      
+      if (response.ok) {
+        try {
+          const text = await response.text();
+          console.log('Direct fetch raw response:', text.substring(0, 200) + '...');
           
-          // Request evaluation data after successful authentication
-          if (projectId && userId) {
-            console.log('Requesting evaluation data via WebSocket for project:', projectId);
-            ws.send(JSON.stringify({
-              type: 'fetch_evaluation',
-              projectId,
-              userId: parseInt(userId)
-            }));
-          }
+          const data = JSON.parse(text);
+          console.log('Successfully parsed direct data:', data);
+          setManualData(data);
+          return data;
+        } catch (err) {
+          console.error('Error parsing direct fetch response:', err);
+          return null;
         }
-        
-        // Handle evaluation data
-        if (data.type === 'evaluation_data') {
-          console.log('Received evaluation data via WebSocket:', data.evaluation);
-          setManualData(data.evaluation);
-        }
-        
-        // Handle evaluation error
-        if (data.type === 'evaluation_error') {
-          console.error('Evaluation error via WebSocket:', data.error);
-          // Don't set error state here, we'll let the component handle the null state
-        }
-      } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
+      } else {
+        console.error('Direct fetch failed with status:', response.status);
+        const text = await response.text();
+        console.error('Error response:', text);
+        return null;
       }
-    };
-    
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setWsStatus('error');
-    };
-    
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
-      setWsStatus('closed');
-    };
-    
-    // Clean up WebSocket on unmount
-    return () => {
-      console.log('Closing WebSocket connection');
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [projectId]);
-  
-  // Manually refetch evaluation via WebSocket
-  const fetchViaWebSocket = () => {
-    // Get user ID from sessionStorage
-    let userId: string | null = null;
-    try {
-      const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-      userId = user?.id?.toString();
-    } catch (e) {
-      console.error('Error getting user ID from session:', e);
-    }
-    
-    if (!userId) {
-      console.error('No user ID available for WebSocket evaluation request');
-      return;
-    }
-    
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      console.log('Sending evaluation request via WebSocket for project:', projectId);
-      wsRef.current.send(JSON.stringify({
-        type: 'fetch_evaluation',
-        projectId,
-        userId: parseInt(userId)
-      }));
-    } else {
-      console.error('WebSocket not connected, cannot fetch evaluation');
+    } catch (err) {
+      console.error('Error in direct fetch:', err);
+      return null;
     }
   };
   
   // Try to fetch data when component mounts
   useEffect(() => {
-    if (projectId && wsStatus === 'connected') {
-      console.log('Component mounted with active WebSocket, will fetch data via WS');
-      fetchViaWebSocket();
+    if (projectId) {
+      console.log('Component mounted, fetching direct data for project:', projectId);
+      fetchDirectData();
     }
-  }, [projectId, wsStatus]);
+  }, [projectId]);
 
   // Generate evaluation mutation
   const generateMutation = useMutation({
@@ -256,8 +183,8 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
       const response = await apiRequest("POST", "/api/ai/evaluate-project", { projectId });
       console.log('Evaluation generation API response:', response);
       
-      // Try to fetch via WebSocket after generation
-      setTimeout(fetchViaWebSocket, 1000);
+      // Try to fetch direct data after generation
+      setTimeout(fetchDirectData, 1000);
       
       return response;
     },
@@ -275,7 +202,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
       // Force a refetch after a short delay to ensure the evaluation is loaded
       setTimeout(() => {
         console.log('Refetching evaluation after successful generation');
-        fetchViaWebSocket(); // Use WebSocket fetch to get fresh data
+        fetchDirectData(); // Use direct data route to get fresh data
         refetch();
       }, 1500);
     },
