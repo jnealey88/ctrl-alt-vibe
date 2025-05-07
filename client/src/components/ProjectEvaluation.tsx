@@ -20,7 +20,8 @@ import {
   ChevronRightIcon,
   PieChartIcon,
   TargetIcon,
-  GlobeIcon
+  GlobeIcon,
+  InfoIcon
 } from 'lucide-react';
 
 interface ProjectEvaluationProps {
@@ -485,7 +486,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
             </div>
             
             {/* Content section with enhanced styling */}
-            <div className="px-6 pb-6 pt-20 relative z-10">
+            <div className="px-6 pb-6 pt-4 relative z-10">
               <TabsContent value="market-fit" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
                   <div className="flex items-center gap-3 mb-4">
@@ -720,7 +721,11 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
           </Tabs>
           
           {isAdmin && (
-            <div className="px-6 pb-6 pt-2 flex justify-end border-t mt-6">
+            <div className="px-6 pb-6 pt-2 flex justify-between items-center border-t mt-6">
+              <p className="text-sm text-muted-foreground italic">
+                <InfoIcon className="h-3 w-3 inline mr-1" />
+                Evaluations are never cached and always freshly generated
+              </p>
               <Button 
                 variant="outline" 
                 size="sm" 
