@@ -103,12 +103,13 @@ export class AIService {
            - Include contingency plans for high-impact risks
         
         7. Technical Feasibility:
-           - Provide a detailed evaluation of required tech stack with specific technologies
-           - Outline development complexity with estimated timelines and resource requirements
-           - Identify technical challenges with specific solutions and best practices
-           - Include scalability considerations and recommendations for future-proofing
-           - Specify items they'll need to vibe code to ensure their vibe coded app meets production level quality
-           - Recommend testing approaches and quality assurance strategies
+           - Focus on vibe coding considerations and prompting strategies for implementing this specific project
+           - Identify 5-7 critical aspects that must be properly prompted for when vibe coding this project
+           - Outline specific security measures that must be implemented to protect both users and project owners
+           - Recommend data protection strategies for handling sensitive information in a vibe-coded environment
+           - Provide detailed guidelines for securing API integrations, authentication, and user permissions
+           - Include specific prompting techniques to ensure secure code generation when vibe coding
+           - Suggest validation and testing approaches specific to verifying security in vibe-coded applications
         
         8. Regulatory Considerations:
            - Identify specific data privacy regulations applicable to the project (GDPR, CCPA, etc.)
