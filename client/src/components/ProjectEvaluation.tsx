@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Card, 
@@ -118,12 +118,66 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
     retry: false
   });
 
+  // Data workaround for bypassing the HTML issue 
+  const [manualData, setManualData] = useState<ProjectEvaluationType | null>(null);
+  
+  // Use manual data if available
+  const evaluationData = manualData || evaluation;
+  
+  // Try to manually fetch evaluation data when component mounts
+  useEffect(() => {
+    if (projectId) {
+      console.log('Component mounted, trying manual fetch for project:', projectId);
+      fetchManualData();
+    }
+  }, [projectId]);
+  
+  // Manual fetch function to work around API issues
+  const fetchManualData = async () => {
+    try {
+      // Use fetch directly with specific headers to try to get JSON
+      const response = await fetch(`/api/ai/project-evaluation/${projectId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest' // Some servers check for this
+        },
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const text = await response.text();
+        try {
+          // Try to parse the response as JSON
+          const data = JSON.parse(text);
+          console.log('Successfully manually fetched and parsed data:', data);
+          setManualData(data);
+          return data;
+        } catch (err) {
+          console.error('Failed to parse response as JSON:', text.substring(0, 200));
+          return null;
+        }
+      } else {
+        console.error('Manual fetch failed with status:', response.status);
+        return null;
+      }
+    } catch (err) {
+      console.error('Error in manual fetch:', err);
+      return null;
+    }
+  };
+
   // Generate evaluation mutation
   const generateMutation = useMutation({
     mutationFn: async () => {
       console.log('Starting evaluation generation for project:', projectId);
       const response = await apiRequest("POST", "/api/ai/evaluate-project", { projectId });
       console.log('Evaluation generation API response:', response);
+      
+      // Try manual fetch after generation
+      setTimeout(fetchManualData, 1000);
+      
       return response;
     },
     onSuccess: (data) => {
@@ -246,7 +300,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   }
 
   // Error or no evaluation yet
-  if (isError || !evaluation) {
+  if ((isError || !evaluation) && !manualData) {
     console.log('Error or no evaluation:', { isError, error, evaluation });
     
     return (
