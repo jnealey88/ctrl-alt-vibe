@@ -147,7 +147,7 @@ export function registerAIRoutes(app: Express) {
       }
 
       // Verify that the user owns the project or is an admin
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       if (project.author.id !== userId) {
         // Check if user is admin
         const user = await storage.getUserById(userId);
@@ -187,7 +187,7 @@ export function registerAIRoutes(app: Express) {
       }
 
       // Verify that the user owns the project or is an admin
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       if (project.author.id !== userId) {
         // Check if user is admin
         const user = await storage.getUserById(userId);
