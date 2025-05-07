@@ -133,7 +133,7 @@ export class AIService {
         
         11. Implementation Roadmap:
            - Provide a phased implementation plan with 90-day, 6-month, and 1-year horizons
-           - Include resource requirements (team composition, skills needed, estimated costs)
+           - Focus on tasks that a solo vibe coder can accomplish without additional team resources
            - Outline critical path dependencies and decision points
            - Detail success metrics and measurement approaches for each phase
         
@@ -200,19 +200,16 @@ export class AIService {
               {
                 "timeframe": "90-day horizon",
                 "tasks": ["Task 1", "Task 2", "Task 3"],
-                "resources": "Description of required resources",
                 "metrics": ["Metric 1", "Metric 2"]
               },
               {
                 "timeframe": "6-month horizon",
                 "tasks": ["Task 1", "Task 2", "Task 3"],
-                "resources": "Description of required resources",
                 "metrics": ["Metric 1", "Metric 2"]
               },
               {
                 "timeframe": "1-year horizon",
                 "tasks": ["Task 1", "Task 2", "Task 3"],
-                "resources": "Description of required resources",
                 "metrics": ["Metric 1", "Metric 2"]
               }
             ]
@@ -313,12 +310,10 @@ export class AIService {
             ? result.implementationRoadmap.phases.map((phase: { 
                 timeframe?: string; 
                 tasks?: string[]; 
-                resources?: string; 
                 metrics?: string[] 
               }) => ({
                 timeframe: phase.timeframe || '',
                 tasks: Array.isArray(phase.tasks) ? phase.tasks : [],
-                resources: phase.resources || '',
                 metrics: Array.isArray(phase.metrics) ? phase.metrics : []
               }))
             : []
@@ -386,7 +381,6 @@ export class AIService {
             {
               timeframe: "Error",
               tasks: ["Error generating implementation roadmap"],
-              resources: "Could not generate resource requirements due to API error.",
               metrics: ["Error generating success metrics"]
             }
           ]
