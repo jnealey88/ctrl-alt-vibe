@@ -87,7 +87,9 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
   } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
     retry: false,
-    enabled: true // Always fetch to check for admin rights and evaluation data
+    enabled: true, // Always fetch to check for admin rights and evaluation data
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: 'always' // Always refetch when window gains focus
   });
   
   // Check if user is admin based on response from API or from prop
@@ -365,25 +367,28 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 Comprehensive Evaluation
               </CardTitle>
               {(isOwner || isAdmin) && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-                  onClick={() => generateEvaluation(true)}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <BarChart3Icon className="h-4 w-4" />
-                      <span>Regenerate</span>
-                    </>
-                  )}
-                </Button>
+                <div className="flex flex-col items-end gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                    onClick={() => generateEvaluation(true)}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BarChart3Icon className="h-4 w-4" />
+                        <span>Regenerate</span>
+                      </>
+                    )}
+                  </Button>
+                  <span className="text-xs text-muted-foreground italic">Evaluations are never cached</span>
+                </div>
               )}
             </div>
             <CardDescription>

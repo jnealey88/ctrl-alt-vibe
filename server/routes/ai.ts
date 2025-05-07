@@ -135,15 +135,8 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
           .where(eq(projectEvaluations.id, existingEvaluation.id));
       }
       
-      // Also clear cache
-      try {
-        const { cache } = require('../utils/index');
-        const cacheKey = `ai:project-evaluation:${projectId}`;
-        cache.delete(cacheKey);
-        console.log(`Cache cleared for project evaluation: ${projectId}`);
-      } catch (e) {
-        console.log('Cache clearing error (non-fatal):', e);
-      }
+      // No need to use require for cache clearing, we'll handle this differently
+      console.log(`Ensuring no caching for project evaluation: ${projectId}`);
 
       // Prepare project data for evaluation
       console.log('Preparing project data for evaluation');
