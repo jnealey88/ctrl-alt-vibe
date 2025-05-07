@@ -31,7 +31,56 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import type { ProjectEvaluation as ProjectEvaluationType } from "@shared/schema";
+
+// Define a more comprehensive type for the project evaluation
+interface ProjectEvaluationType {
+  id: number;
+  projectId: number;
+  fitScore: number;
+  createdAt: string;
+  updatedAt: string;
+  evaluation: {
+    marketFitAnalysis: {
+      strengths: string[];
+      weaknesses: string[];
+      demandPotential: string;
+    };
+    targetAudience: {
+      demographic: string;
+      psychographic: string;
+    };
+    fitScore: number;
+    fitScoreExplanation: string;
+    businessPlan: {
+      revenueModel: string;
+      goToMarketStrategy: string;
+      keyMilestones: string[];
+      resourcesNeeded: string[];
+    };
+    valueProposition: string;
+    riskAssessment: {
+      risks: {
+        type: string;
+        description: string;
+        mitigation: string;
+      }[];
+    };
+    technicalFeasibility: {
+      stack: string;
+      dependencies: string[];
+      complexity: string;
+    };
+    regulatoryConsiderations: string[];
+    partnershipOpportunities: string[];
+    competitiveLandscape: {
+      competitors: {
+        name: string;
+        description: string;
+      }[];
+      differentiationPoints: string[];
+    };
+  };
+}
 
 interface ProjectEvaluationProps {
   projectId: number;
@@ -211,6 +260,8 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
 
   // Error or no evaluation yet
   if (isError || !evaluation) {
+    console.log('Error or no evaluation:', { isError, error, evaluation });
+    
     return (
       <div className="p-6">
         <div className="mb-6 text-center">
@@ -220,6 +271,13 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
             Generate a comprehensive business analysis for your project including market fit, 
             audience profile, risk assessment, and more.
           </p>
+          
+          {isError && (
+            <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
+              <p className="font-medium">Error loading evaluation:</p>
+              <p>{(error as any)?.message || 'Unknown error occurred'}</p>
+            </div>
+          )}
           
           <Button 
             onClick={handleGenerateEvaluation}
@@ -235,7 +293,9 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   }
 
   // Evaluation data exists, show the full evaluation
+  console.log('Received evaluation data:', evaluation);
   const data = evaluation.evaluation;
+  console.log('Evaluation object data:', data);
   
   return (
     <div className="space-y-6">

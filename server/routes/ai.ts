@@ -18,6 +18,38 @@ const aiService = new AIService();
  * @param app Express application
  */
 export function registerAIRoutes(app: Express) {
+  // Debug route for project evaluation (dev only)
+  app.get(`${apiPrefix}/ai/debug-evaluation/:projectId`, async (req: Request, res: Response) => {
+    try {
+      const { projectId } = req.params;
+      console.log(`[DEBUG] Getting project evaluation for projectId: ${projectId}`);
+      
+      if (!projectId || isNaN(parseInt(projectId))) {
+        return res.status(400).json({ error: 'Invalid project ID' });
+      }
+      
+      const parsedProjectId = parseInt(projectId);
+      
+      // Get raw evaluation from database
+      const evaluation = await storage.getProjectEvaluation(parsedProjectId);
+      
+      if (!evaluation) {
+        return res.status(404).json({ error: 'No evaluation found' });
+      }
+      
+      // Return raw DB data for debugging
+      return res.json({
+        rawData: evaluation,
+        objectKeys: Object.keys(evaluation),
+        evaluationType: typeof evaluation.evaluation,
+        evaluationKeys: typeof evaluation.evaluation === 'object' ? Object.keys(evaluation.evaluation) : 'not an object',
+        evaluationStringified: JSON.stringify(evaluation.evaluation, null, 2)
+      });
+    } catch (error) {
+      console.error('Error in debug route:', error);
+      return res.status(500).json({ error: 'Debug route error' });
+    }
+  });
   // Suggest tags based on project description
   app.post(`${apiPrefix}/ai/suggest-tags`, isAuthenticated, async (req: Request, res: Response) => {
     try {
