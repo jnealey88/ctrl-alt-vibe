@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, unique, json } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -200,6 +200,27 @@ export const shares = pgTable("shares", {
   };
 });
 
+// Project AI evaluations
+export const projectEvaluations = pgTable("project_evaluations", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id).notNull(),
+  // Store the complete evaluation as a JSON object
+  evaluation: json("evaluation").notNull(),
+  // Key fields for quick access
+  fitScore: integer("fit_score").default(0).notNull(), // 0-100 score
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Indexing for faster queries
+    projectIdIdx: index("project_evaluations_project_id_idx").on(table.projectId),
+    // Make sure we only have one evaluation per project (can be updated)
+    projectUniqueIdx: unique("project_evaluations_project_unique_idx").on(table.projectId),
+    // Index for querying by fit score
+    fitScoreIdx: index("project_evaluations_fit_score_idx").on(table.fitScore),
+  };
+});
+
 // Blog categories schema
 export const blogCategories = pgTable("blog_categories", {
   id: serial("id").primaryKey(),
@@ -324,6 +345,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   shares: many(shares),
   views: many(projectViews),
   galleryImages: many(projectGallery),
+  evaluation: many(projectEvaluations), // New relation to project evaluations
 }));
 
 export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
@@ -332,6 +354,10 @@ export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
 
 export const projectViewsRelations = relations(projectViews, ({ one }) => ({
   project: one(projects, { fields: [projectViews.projectId], references: [projects.id] }),
+}));
+
+export const projectEvaluationsRelations = relations(projectEvaluations, ({ one }) => ({
+  project: one(projects, { fields: [projectEvaluations.projectId], references: [projects.id] }),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -444,6 +470,13 @@ export type Project = {
   isPrivate: boolean;
   createdAt: string;
   updatedAt: string;
+  evaluation?: {
+    id: number;
+    fitScore: number;
+    evaluation: ProjectEvaluation['evaluation'];
+    createdAt: string;
+    updatedAt: string;
+  };
 };
 
 // Comment type for client
@@ -637,6 +670,53 @@ export type UserActivity = typeof userActivity.$inferSelect;
 export const projectViewInsertSchema = createInsertSchema(projectViews);
 export type ProjectView = typeof projectViews.$inferSelect;
 export type InsertProjectView = z.infer<typeof projectViewInsertSchema>;
+
+// Project evaluations schema and types
+export const projectEvaluationInsertSchema = createInsertSchema(projectEvaluations);
+export type ProjectEvaluation = typeof projectEvaluations.$inferSelect & {
+  evaluation: {
+    marketFitAnalysis: {
+      strengths: string[];
+      weaknesses: string[];
+      demandPotential: string;
+    };
+    targetAudience: {
+      demographic: string;
+      psychographic: string;
+    };
+    fitScore: number; // 0-100
+    fitScoreExplanation: string;
+    businessPlan: {
+      revenueModel: string;
+      goToMarketStrategy: string;
+      keyMilestones: string[];
+      resourcesNeeded: string[];
+    };
+    valueProposition: string;
+    riskAssessment: {
+      risks: {
+        type: string;
+        description: string;
+        mitigation: string;
+      }[];
+    };
+    technicalFeasibility: {
+      stack: string;
+      dependencies: string[];
+      complexity: string;
+    };
+    regulatoryConsiderations: string[];
+    partnershipOpportunities: string[];
+    competitiveLandscape: {
+      competitors: {
+        name: string;
+        description: string;
+      }[];
+      differentiationPoints: string[];
+    };
+  };
+};
+export type InsertProjectEvaluation = z.infer<typeof projectEvaluationInsertSchema>;
 
 // Notifications schema and types
 export const notificationInsertSchema = createInsertSchema(notifications);
