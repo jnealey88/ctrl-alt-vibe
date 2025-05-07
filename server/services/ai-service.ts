@@ -170,7 +170,7 @@ export class AIService {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.5,
-        max_tokens: 2500,
+        max_tokens: 10000,
       });
 
       // Parse and process the result
