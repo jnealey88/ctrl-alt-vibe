@@ -77,7 +77,7 @@ const ProjectDetail = () => {
     }
   }, [user, isAdmin]);
   
-  // Set default tab based on whether user is the project owner or admin
+  // Set default tab based on user access level
   useEffect(() => {
     if (project) {
       // For project owners or admins, default to evaluation tab
@@ -450,8 +450,8 @@ const ProjectDetail = () => {
           {/* About this project / Comments tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="mb-4">
-              {/* Conditionally render tabs based on ownership */}
-              {isAuthor ? (
+              {/* Conditionally render tabs based on ownership or admin status */}
+              {isAuthor || isAdmin ? (
                 <>
                   <TabsTrigger value="evaluation" className="flex items-center gap-1">
                     <BarChart className="h-4 w-4 mr-1" />
@@ -462,10 +462,6 @@ const ProjectDetail = () => {
               ) : (
                 <>
                   <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="evaluation" className="flex items-center gap-1">
-                    <BarChart className="h-4 w-4 mr-1" />
-                    Evaluation
-                  </TabsTrigger>
                 </>
               )}
               <TabsTrigger value="comments" className="flex items-center gap-1">

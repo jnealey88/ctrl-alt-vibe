@@ -68,10 +68,10 @@ export class AIService {
         4. Business Plan: Revenue model, go-to-market strategy, key milestones
         5. Value Proposition: Concise one-sentence summary of project value
         6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
-        7. Technical Feasibility: High-level evaluation of required tech stack and complexity
+        7. Technical Feasibility: High-level evaluation of required tech stack and complexity. Provide a summary of the technical challenges and how to overcome them. Include items they'll need to vibe code to ensure they're vibe coded app meets production level quality.
         8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
-        9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
-        10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
+        9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth. Include how to get started with each partner or how to start the relationship.
+        10. Competitive Landscape: Identify top 3-5 competitors and differentiation points. Include a SWOT analysis for each competitor.
         
         Format your response as a valid JSON object with the EXACT structure shown in the example below.
         Be specific, practical and actionable with your analysis.
@@ -323,7 +323,7 @@ export class AIService {
             content: text
           }
         ],
-        max_tokens: 100,
+        max_tokens: 1000,
         temperature: 0.7,
       });
       
