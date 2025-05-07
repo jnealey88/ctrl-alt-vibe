@@ -29,12 +29,57 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
   const [activeTab, setActiveTab] = useState('market-fit');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Define response types for better TypeScript support
+  interface ProjectEvaluationResponse {
+    evaluation: {
+      id?: number;
+      projectId?: number;
+      marketFitAnalysis?: {
+        strengths: string[];
+        weaknesses: string[];
+        demandPotential: string;
+      };
+      targetAudience?: {
+        demographic: string;
+        psychographic: string;
+      };
+      fitScore: number;
+      fitScoreExplanation: string;
+      businessPlan?: {
+        revenueModel: string;
+        goToMarket: string;
+        milestones: string[];
+      };
+      valueProposition: string;
+      riskAssessment?: {
+        risks: Array<{
+          type: string;
+          description: string;
+          mitigation: string;
+        }>;
+      };
+      technicalFeasibility?: string;
+      regulatoryConsiderations?: string;
+      partnershipOpportunities?: {
+        partners: string[];
+      };
+      competitiveLandscape?: {
+        competitors: Array<{
+          name: string;
+          differentiation: string;
+        }>;
+      };
+    } | null;
+    error?: string;
+    isAdmin?: boolean;
+  }
+
   // Query to get public evaluation data (minimal version for non-owners)
   const { 
     data: publicData, 
     isLoading: isPublicLoading,
     refetch: refetchPublic
-  } = useQuery({
+  } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/public-evaluation/${projectId}`],
     retry: false,
   });
@@ -44,7 +89,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     data: ownerData, 
     isLoading: isOwnerLoading,
     refetch: refetchOwner
-  } = useQuery({
+  } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
     retry: false,
     enabled: isOwner, // Only run this query if user is the owner

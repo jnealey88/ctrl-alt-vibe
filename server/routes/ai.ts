@@ -141,8 +141,20 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
       // If regenerating (by admin), delete existing evaluation
       if (existingEvaluation && req.body.regenerate && req.user?.role === 'admin') {
         console.log('Admin is regenerating evaluation, deleting existing one');
+        
+        // Delete the evaluation record
         await db.delete(projectEvaluations)
           .where(eq(projectEvaluations.id, existingEvaluation.id));
+        
+        // Also delete from cache if using cache
+        try {
+          const { cache } = require('../utils/index');
+          const cacheKey = `ai:project-evaluation:${projectId}`;
+          cache.delete(cacheKey);
+          console.log(`Cache cleared for project evaluation: ${projectId}`);
+        } catch (e) {
+          console.log('Cache clearing error (non-fatal):', e);
+        }
       } 
       // If evaluation exists and not regenerating, return success
       else if (existingEvaluation) {

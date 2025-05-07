@@ -54,93 +54,7 @@ export class AIService {
     `;
 
     try {
-      // For quicker testing to avoid waiting for API calls, return a default evaluation
-      // This will be replaced with actual OpenAI integration
-      const defaultEvaluation = {
-        marketFitAnalysis: {
-          strengths: [
-            "Innovative community-driven platform for developers",
-            "Combines AI with social aspects to create unique value",
-            "Growing market for AI-enhanced development tools"
-          ],
-          weaknesses: [
-            "Highly competitive market with established players",
-            "Requires critical mass of users for network effects",
-            "May face challenges with technical complexity"
-          ],
-          demandPotential: "High demand potential in the developer tools market, especially with the integration of AI capabilities that streamline the development process."
-        },
-        targetAudience: {
-          demographic: "Professional developers, coding enthusiasts, and tech entrepreneurs aged 20-45, primarily from tech hubs and urban areas with strong technical backgrounds.",
-          psychographic: "Early adopters, innovation-focused professionals who value efficiency, collaboration, and staying ahead of tech trends."
-        },
-        fitScore: 78,
-        fitScoreExplanation: "The project scores well due to its innovative approach and alignment with current market trends in AI and developer collaboration, but faces challenges in a competitive landscape.",
-        businessPlan: {
-          revenueModel: "Freemium model with premium subscription tiers for advanced features, enterprise licensing, and possible API access for integrations.",
-          goToMarket: "Developer-focused community building strategy with emphasis on content marketing, tech conferences, and strategic partnerships with coding bootcamps and educational institutions.",
-          milestones: [
-            "Launch MVP with core features and gather initial user feedback",
-            "Reach 10,000 active monthly users within 6 months",
-            "Implement premium features and monetization strategy by month 9",
-            "Secure strategic partnerships with at least 3 major tech companies or platforms"
-          ]
-        },
-        valueProposition: "A community-driven platform that leverages AI to help developers discover, collaborate on, and showcase innovative coding projects more efficiently than traditional methods.",
-        riskAssessment: {
-          risks: [
-            {
-              type: "Market Risk",
-              description: "Established competitors may replicate key features or leverage their existing user base to outcompete the platform.",
-              mitigation: "Focus on unique AI features and community aspects that are harder to replicate, and move quickly to establish market position."
-            },
-            {
-              type: "Technical Risk",
-              description: "AI integration may face challenges in accuracy and performance at scale.",
-              mitigation: "Implement robust testing, gradual feature rollout, and continuous improvement based on user feedback."
-            },
-            {
-              type: "Adoption Risk",
-              description: "Difficulty attracting initial user base to create network effects.",
-              mitigation: "Targeted outreach to influential developers, strategic content marketing, and initial incentives for early adopters."
-            }
-          ]
-        },
-        technicalFeasibility: "The project is technically feasible with current technologies, leveraging modern web frameworks, APIs, and AI services. Implementation complexity is moderate to high, particularly for the AI recommendation and collaboration features.",
-        regulatoryConsiderations: "Main considerations include data privacy (GDPR, CCPA compliance), proper handling of user-contributed content, and potential intellectual property concerns for shared code and projects.",
-        partnershipOpportunities: {
-          partners: [
-            "Code hosting platforms (GitHub, GitLab)",
-            "AI tool providers for enhanced features",
-            "Developer education platforms and bootcamps",
-            "Tech communities and conferences for exposure"
-          ]
-        },
-        competitiveLandscape: {
-          competitors: [
-            {
-              name: "GitHub",
-              differentiation: "Our platform offers deeper AI integration for project discovery and evaluation, with a stronger focus on community-driven collaboration."
-            },
-            {
-              name: "Stack Overflow",
-              differentiation: "While they focus on Q&A, we provide a complete project showcase and collaboration environment with AI-powered insights."
-            },
-            {
-              name: "DEV.to",
-              differentiation: "We offer more technical depth and practical collaboration tools compared to their content-focused approach."
-            }
-          ]
-        }
-      };
-
-      // Cache the result for future use (1 week cache)
-      cache.set(cacheKey, defaultEvaluation, { ttl: 7 * 24 * 60 * 60 * 1000 });
-
-      return defaultEvaluation;
-      
-      // Uncomment the following code to use the actual OpenAI API
-      /*
+      // Using OpenAI to generate unique project evaluations
       const response = await openai.chat.completions.create({
         model: OPENAI_MODEL,
         messages: [
@@ -161,7 +75,10 @@ export class AIService {
             10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
             
             Format your response as a valid JSON object with the structure shown in the example.
-            Be specific, practical and actionable with your analysis.`
+            Be specific, practical and actionable with your analysis.
+            
+            IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
+            to the project being evaluated. DO NOT return generic evaluations.`
           },
           {
             role: 'user',
@@ -169,9 +86,11 @@ export class AIService {
           }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.5,
+        temperature: 0.7,
         max_tokens: 10000,
       });
+
+      console.log('OpenAI response received for project evaluation');
 
       // Parse and process the result
       const result = JSON.parse(response.choices[0].message.content || '{}');
@@ -211,7 +130,6 @@ export class AIService {
       cache.set(cacheKey, evaluation, { ttl: 7 * 24 * 60 * 60 * 1000 });
 
       return evaluation;
-      */
     } catch (error) {
       console.error('Error generating project evaluation:', error);
       throw new Error('Failed to generate project evaluation. Please try again later.');
