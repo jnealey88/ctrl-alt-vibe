@@ -74,7 +74,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     isAdmin?: boolean;
   }
 
-  // We only need owner data now as evaluations are private
+  // We need evaluation data for owners and potentially admins
   const { 
     data: ownerData, 
     isLoading,
@@ -82,8 +82,11 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
   } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
     retry: false,
-    enabled: isOwner, // Only run this query if user is the owner
+    enabled: isOwner // For now, always run for owners; the API handles admin permissions
   });
+  
+  // Check if user is admin based on response from API
+  const isAdmin = ownerData?.isAdmin === true;
 
   // Get evaluation data
   const evaluation = ownerData?.evaluation;
@@ -188,8 +191,8 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     }
   };
 
-  // For owners without an evaluation yet, show generation button
-  if (isOwner && !evaluation && !isLoading) {
+  // For owners or admins without an evaluation yet, show generation button
+  if ((isOwner || isAdmin) && !evaluation && !isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -281,8 +284,8 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     );
   }
 
-  // Hide for non-owners if no evaluation exists yet
-  if (!isOwner && !evaluation && !isLoading) {
+  // Hide for non-owners/non-admins if no evaluation exists yet
+  if (!isOwner && !isAdmin && !evaluation && !isLoading) {
     return null;
   }
 
@@ -333,13 +336,13 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     );
   }
 
-  // For non-owners, don't show any evaluation (only project owners and admins can see it)
-  if (!isOwner) {
+  // For non-owners/non-admins, don't show any evaluation
+  if (!isOwner && !isAdmin) {
     return null;
   }
 
-  // Full evaluation view for owners
-  if (isOwner && evaluation) {
+  // Full evaluation view for owners or admins
+  if ((isOwner || isAdmin) && evaluation) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -367,51 +370,53 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           </CardHeader>
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-6 pt-1 pb-6">
-              {/* Added min-height to ensure content gets pushed down when tabs wrap */}
-              <div className="min-h-[64px] mb-4">
-                <TabsList className="flex flex-wrap gap-1.5 justify-start mb-2">
-                  <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <BarChart3Icon className="h-4 w-4 mr-1" />
-                    <span>Market Fit</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="audience" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <UsersIcon className="h-4 w-4 mr-1" />
-                    <span>Audience</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="business" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <TrendingUpIcon className="h-4 w-4 mr-1" />
-                    <span>Business</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="value" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <LightbulbIcon className="h-4 w-4 mr-1" />
-                    <span>Value</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="risks" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <ShieldIcon className="h-4 w-4 mr-1" />
-                    <span>Risks</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="technical" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <CodeIcon className="h-4 w-4 mr-1" />
-                    <span>Technical</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <ScrollTextIcon className="h-4 w-4 mr-1" />
-                    <span>Regulatory</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <HeartHandshakeIcon className="h-4 w-4 mr-1" />
-                    <span>Partners</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="competition" className="px-2 py-1.5 text-xs flex-shrink-0">
-                    <BarChart4Icon className="h-4 w-4 mr-1" />
-                    <span>Competitors</span>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+            {/* Menu section with absolute positioning to prevent it from overlapping */}
+            <div className="sticky top-0 z-10 px-6 pt-2 pb-4 bg-white dark:bg-gray-950 shadow-sm">
+              <TabsList className="flex flex-wrap gap-2 justify-start">
+                <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <BarChart3Icon className="h-4 w-4 mr-1" />
+                  <span>Market Fit</span>
+                </TabsTrigger>
+                <TabsTrigger value="audience" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <UsersIcon className="h-4 w-4 mr-1" />
+                  <span>Audience</span>
+                </TabsTrigger>
+                <TabsTrigger value="business" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <TrendingUpIcon className="h-4 w-4 mr-1" />
+                  <span>Business</span>
+                </TabsTrigger>
+                <TabsTrigger value="value" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <LightbulbIcon className="h-4 w-4 mr-1" />
+                  <span>Value</span>
+                </TabsTrigger>
+                <TabsTrigger value="risks" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <ShieldIcon className="h-4 w-4 mr-1" />
+                  <span>Risks</span>
+                </TabsTrigger>
+                <TabsTrigger value="technical" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <CodeIcon className="h-4 w-4 mr-1" />
+                  <span>Technical</span>
+                </TabsTrigger>
+                <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <ScrollTextIcon className="h-4 w-4 mr-1" />
+                  <span>Regulatory</span>
+                </TabsTrigger>
+                <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <HeartHandshakeIcon className="h-4 w-4 mr-1" />
+                  <span>Partners</span>
+                </TabsTrigger>
+                <TabsTrigger value="competition" className="px-2 py-1.5 text-xs flex-shrink-0">
+                  <BarChart4Icon className="h-4 w-4 mr-1" />
+                  <span>Competitors</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
             
-            <div className="px-6 pb-6 pt-2 border-t">
+            {/* Add extra height for spacing after tabs */}
+            <div className="h-4"></div>
+            
+            {/* Content section with border for clear separation */}
+            <div className="px-6 pb-6 pt-4 border-t mt-4">
               <TabsContent value="market-fit" className="mt-0 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
@@ -600,7 +605,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
             </div>
           </Tabs>
           
-          {isOwner && (ownerData?.isAdmin === true) && (
+          {isAdmin && (
             <div className="px-6 pb-6 pt-2 flex justify-end border-t mt-6">
               <Button 
                 variant="outline" 
