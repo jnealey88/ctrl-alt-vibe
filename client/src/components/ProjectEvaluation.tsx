@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -89,15 +87,6 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     }
   }, [projectId, evaluation, isLoading]);
 
-  // Event handler wrappers for React events
-  const handleGenerateClick = () => {
-    generateEvaluation(false);
-  };
-  
-  const handleRegenerateClick = () => {
-    generateEvaluation(true);
-  };
-  
   // Generate evaluation when requested by owner
   const generateEvaluation = async (regenerate = false) => {
     if (!isOwner) return;
@@ -244,7 +233,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               </div>
             ) : (
               <Button 
-                onClick={generateEvaluation} 
+                onClick={() => generateEvaluation(false)}
                 className="min-w-[220px] gap-2"
                 size="lg"
               >
@@ -280,9 +269,13 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           <CardHeader className="pb-4">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle><Skeleton className="h-8 w-48" /></CardTitle>
+                <CardTitle>
+                  <Skeleton className="h-8 w-48" />
+                </CardTitle>
                 <CardDescription className="mt-2">
-                  <Skeleton className="h-4 w-64" />
+                  <span className="inline-block">
+                    <Skeleton className="h-4 w-64" />
+                  </span>
                 </CardDescription>
               </div>
               <Skeleton className="h-16 w-16 rounded-full" />
@@ -349,7 +342,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                   Key Strengths
                 </h4>
                 <ul className="list-disc pl-5 space-y-2">
-                  {evaluation.marketFitAnalysis.strengths.map((strength, index) => (
+                  {evaluation.marketFitAnalysis.strengths.map((strength: string, index: number) => (
                     <li key={index} className="text-gray-700 dark:text-gray-300">{strength}</li>
                   ))}
                 </ul>
@@ -385,11 +378,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl font-semibold">
-                Project Evaluation
+                Comprehensive Evaluation
               </CardTitle>
             </div>
-            <Progress value={evaluation.fitScore} className="h-2 w-full mt-1" />
-            <CardDescription className="mt-2 text-sm italic">
+            <CardDescription>
               {evaluation.fitScoreExplanation}
             </CardDescription>
           </CardHeader>
@@ -446,7 +438,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     <div className="my-4">
                       <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">Strengths</h4>
                       <ul className="list-disc pl-5 space-y-2">
-                        {evaluation.marketFitAnalysis.strengths.map((strength, index) => (
+                        {evaluation.marketFitAnalysis.strengths.map((strength: string, index: number) => (
                           <li key={index}>{strength}</li>
                         ))}
                       </ul>
@@ -457,7 +449,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     <div className="my-4">
                       <h4 className="font-medium text-red-600 dark:text-red-400 mb-2">Weaknesses</h4>
                       <ul className="list-disc pl-5 space-y-2">
-                        {evaluation.marketFitAnalysis.weaknesses.map((weakness, index) => (
+                        {evaluation.marketFitAnalysis.weaknesses.map((weakness: string, index: number) => (
                           <li key={index}>{weakness}</li>
                         ))}
                       </ul>
@@ -517,7 +509,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     <div className="my-4">
                       <h4 className="font-medium mb-2">Key Milestones</h4>
                       <ol className="list-decimal pl-5 space-y-2">
-                        {evaluation.businessPlan.milestones.map((milestone, index) => (
+                        {evaluation.businessPlan.milestones.map((milestone: string, index: number) => (
                           <li key={index}>{milestone}</li>
                         ))}
                       </ol>
@@ -550,7 +542,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                   
                   {evaluation.riskAssessment?.risks && evaluation.riskAssessment.risks.length > 0 && (
                     <div className="space-y-4 my-4">
-                      {evaluation.riskAssessment.risks.map((risk, index) => (
+                      {evaluation.riskAssessment.risks.map((risk: any, index: number) => (
                         <div key={index} className="p-3 border rounded-md">
                           <h4 className="font-medium text-amber-600 dark:text-amber-400 mb-1">{risk.type}</h4>
                           <p className="mb-2">{risk.description}</p>
@@ -593,7 +585,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     evaluation.partnershipOpportunities.partners.length > 0 && (
                     <div className="my-4">
                       <ul className="list-disc pl-5 space-y-2">
-                        {evaluation.partnershipOpportunities.partners.map((partner, index) => (
+                        {evaluation.partnershipOpportunities.partners.map((partner: string, index: number) => (
                           <li key={index}>{partner}</li>
                         ))}
                       </ul>
@@ -610,7 +602,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                   {evaluation.competitiveLandscape?.competitors && 
                     evaluation.competitiveLandscape.competitors.length > 0 && (
                     <div className="space-y-4 my-4">
-                      {evaluation.competitiveLandscape.competitors.map((competitor, index) => (
+                      {evaluation.competitiveLandscape.competitors.map((competitor: any, index: number) => (
                         <div key={index} className="p-3 border rounded-md">
                           <h4 className="font-medium mb-1">{competitor.name}</h4>
                           <p className="text-sm">
@@ -625,7 +617,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
             </div>
           </Tabs>
           
-          {isOwner && (ownerData?.isAdmin || false) && (
+          {isOwner && (ownerData?.isAdmin === true) && (
             <div className="px-6 pb-6 pt-2 flex justify-end border-t mt-6">
               <Button 
                 variant="outline" 
