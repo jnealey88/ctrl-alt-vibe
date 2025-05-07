@@ -341,14 +341,8 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     );
   }
 
-  // For non-owners/non-admins, don't show any evaluation
-  // (This will only be reached if there is an evaluation, since we have a separate check for no-evaluation cases)
-  if (!isOwner && !isAdmin) {
-    return null;
-  }
-
-  // Full evaluation view for owners or admins
-  if ((isOwner || isAdmin) && evaluation) {
+  // Full evaluation view for all users
+  if (evaluation) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -369,25 +363,27 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               <CardTitle className="text-xl font-semibold">
                 Comprehensive Evaluation
               </CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-                onClick={() => generateEvaluation(true)}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <>
-                    <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <BarChart3Icon className="h-4 w-4" />
-                    <span>Regenerate</span>
-                  </>
-                )}
-              </Button>
+              {(isOwner || isAdmin) && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                  onClick={() => generateEvaluation(true)}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3Icon className="h-4 w-4" />
+                      <span>Regenerate</span>
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
             <CardDescription>
               {evaluation.fitScoreExplanation}
