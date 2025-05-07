@@ -371,9 +371,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           </CardHeader>
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Menu section with sticky positioning and improved spacing to prevent overlapping */}
-            <div className="sticky top-0 z-20 px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-sm">
-              <TabsList className="flex flex-wrap gap-3 justify-start">
+            {/* Menu section with sticky positioning and improved mobile support */}
+            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-sm overflow-x-auto">
+              <div className="pb-1"> {/* Extra container to handle scrolling */}
+                <TabsList className="flex flex-nowrap md:flex-wrap gap-3 justify-start w-max md:w-auto">
                 <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0">
                   <BarChart3Icon className="h-4 w-4 mr-1" />
                   <span>Market Fit</span>
@@ -411,6 +412,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                   <span>Competitors</span>
                 </TabsTrigger>
               </TabsList>
+              </div>
             </div>
             
             {/* Add extra height for spacing after tabs */}
