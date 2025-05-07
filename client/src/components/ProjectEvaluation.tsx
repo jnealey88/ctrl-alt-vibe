@@ -396,7 +396,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Menu section with enhanced UI and improved mobile navigation */}
-            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-md overflow-x-auto border-b">
+            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-md border-b">
               {/* Navigation categories */}
               <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium text-primary flex items-center">
@@ -423,9 +423,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               </div>
               
               <div className="pb-1">
-                  <TabsList className="grid grid-cols-3 md:flex md:flex-wrap gap-1 md:gap-2 justify-start w-full">
+                  <TabsList className="flex flex-wrap gap-1.5 md:gap-2 justify-start w-full">
                     {/* Market Category */}
-                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
                       <GlobeIcon className="h-4 w-4 text-primary" />
                       <span className="text-xs font-medium text-primary">Market Analysis</span>
                     </div>
@@ -446,7 +446,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     </TabsTrigger>
                     
                     {/* Business Category */}
-                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
                       <TrendingUpIcon className="h-4 w-4 text-primary" />
                       <span className="text-xs font-medium text-primary">Business Strategy</span>
                     </div>
@@ -467,7 +467,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                     </TabsTrigger>
                     
                     {/* Implementation Category */}
-                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
                       <TargetIcon className="h-4 w-4 text-primary" />
                       <span className="text-xs font-medium text-primary">Implementation & Risks</span>
                     </div>
