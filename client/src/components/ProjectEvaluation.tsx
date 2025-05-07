@@ -26,9 +26,10 @@ import {
 interface ProjectEvaluationProps {
   projectId: number;
   isOwner: boolean;
+  isAdminUser?: boolean;
 }
 
-export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluationProps) {
+export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = false }: ProjectEvaluationProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('market-fit');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -89,8 +90,8 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     enabled: true // Always fetch to check for admin rights and evaluation data
   });
   
-  // Check if user is admin based on response from API
-  const isAdmin = ownerData?.isAdmin === true;
+  // Check if user is admin based on response from API or from prop
+  const isAdmin = isAdminUser || ownerData?.isAdmin === true;
 
   // Get evaluation data
   const evaluation = ownerData?.evaluation;

@@ -69,6 +69,14 @@ const ProjectDetail = () => {
   // Check if the user is an admin
   const isAdmin = user?.role === 'admin';
   
+  // Log user info for debugging
+  useEffect(() => {
+    if (user) {
+      console.log('Current user:', user);
+      console.log('Is user admin:', isAdmin);
+    }
+  }, [user, isAdmin]);
+  
   // Set default tab based on whether user is the project owner or admin
   useEffect(() => {
     if (project) {
@@ -482,7 +490,11 @@ const ProjectDetail = () => {
             </TabsContent>
             
             <TabsContent value="evaluation" className="focus-visible:outline-none focus-visible:ring-0">
-              <ProjectEvaluation projectId={id ? parseInt(id) : 0} isOwner={!!isAuthor} />
+              <ProjectEvaluation 
+                projectId={id ? parseInt(id) : 0} 
+                isOwner={!!isAuthor} 
+                isAdminUser={isAdmin} 
+              />
             </TabsContent>
             
             <TabsContent value="comments" className="focus-visible:outline-none focus-visible:ring-0">
