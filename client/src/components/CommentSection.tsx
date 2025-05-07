@@ -59,7 +59,7 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
   };
 
   const { data, isLoading } = useQuery<CommentsResponse>({
-    queryKey: [`/api/projects/${id}/comments`, { sortBy, page }],
+    queryKey: [`/api/projects/${projectId}/comments`, { sortBy, page }],
   });
 
   const comments = data?.comments || [];
@@ -67,12 +67,12 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
   
   const commentMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", `/api/projects/${id}/comments`, { content: commentText });
+      await apiRequest("POST", `/api/projects/${projectId}/comments`, { content: commentText });
     },
     onSuccess: () => {
       setCommentText("");
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       toast({
         title: "Comment posted",
         description: "Your comment has been posted successfully.",
@@ -94,7 +94,7 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
     onSuccess: () => {
       setReplyText("");
       setReplyingTo(null);
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/comments`] });
       toast({
         title: "Reply posted",
         description: "Your reply has been posted successfully.",
@@ -117,7 +117,7 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
       await apiRequest("POST", endpoint, { liked });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/comments`] });
     },
     onError: () => {
       toast({
@@ -133,8 +133,8 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
       await apiRequest("DELETE", `/api/comments/${commentId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       toast({
         title: "Comment deleted",
         description: "Your comment has been deleted successfully.",
@@ -154,7 +154,7 @@ const CommentSection = ({ projectId }: CommentSectionProps) => {
       await apiRequest("DELETE", `/api/replies/${replyId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/comments`] });
       toast({
         title: "Reply deleted",
         description: "Your reply has been deleted successfully.",
