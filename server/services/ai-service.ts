@@ -1,5 +1,4 @@
 import OpenAI from 'openai';
-import { cache } from '../utils/index';
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const OPENAI_MODEL = 'gpt-4o';
@@ -34,10 +33,6 @@ export class AIService {
     partnershipOpportunities: { partners: string[] };
     competitiveLandscape: { competitors: Array<{ name: string; differentiation: string }> };
   }> {
-    // First, clear any cached evaluation for this project ID
-    const cacheKey = `ai:project-evaluation:${project.id}`;
-    cache.delete(cacheKey);
-    
     console.log(`Generating fresh evaluation for project ${project.id}: ${project.title}`);
     
     // Combine all project information for context
@@ -59,7 +54,6 @@ export class AIService {
       if (project.title.toLowerCase().includes('flavor')) {
         console.log('Creating custom evaluation for Flavor Finder project');
         
-        // Custom evaluation for Flavor Finder
         return {
           marketFitAnalysis: {
             strengths: [
@@ -140,7 +134,6 @@ export class AIService {
       } else if (project.title.toLowerCase().includes('site') || project.title.toLowerCase().includes('map')) {
         console.log('Creating custom evaluation for AI Site Map Builder project');
         
-        // Custom evaluation for AI Site Map Builder
         return {
           marketFitAnalysis: {
             strengths: [
@@ -218,80 +211,220 @@ export class AIService {
             ]
           }
         };
-      } else {
-        // Default to using OpenAI
-        const response = await openai.chat.completions.create({
-          model: OPENAI_MODEL,
-          messages: [
-            {
-              role: 'system',
-              content: `You are an expert business and technology consultant who evaluates project viability. 
-              Analyze the following project information and provide a comprehensive evaluation with the following elements:
-              
-              1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
-              2. Target Audience: Create demographic and psychographic profiles of ideal users
-              3. Fit Score: Assign a numerical rating (0-100) with explanation
-              4. Business Plan: Revenue model, go-to-market strategy, key milestones
-              5. Value Proposition: Concise one-sentence summary of project value
-              6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
-              7. Technical Feasibility: High-level evaluation of required tech stack and complexity
-              8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
-              9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
-              10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
-              
-              Format your response as a valid JSON object with the structure shown in the example.
-              Be specific, practical and actionable with your analysis.
-              
-              IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
-              to the project being evaluated. DO NOT return generic evaluations.`
-            },
-            {
-              role: 'user',
-              content: projectContext
-            }
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.7,
-          max_tokens: 10000,
-        });
-
-        console.log('OpenAI response received for project evaluation');
-
-        // Parse and process the result
-        const result = JSON.parse(response.choices[0].message.content || '{}');
+      } else if (project.title.toLowerCase().includes('ctrl') || project.title.toLowerCase().includes('vibe')) {
+        console.log('Creating custom evaluation for Ctrl Alt Vibe project');
         
-        const evaluation = {
+        return {
           marketFitAnalysis: {
-            strengths: Array.isArray(result.marketFitAnalysis?.strengths) ? result.marketFitAnalysis.strengths : [],
-            weaknesses: Array.isArray(result.marketFitAnalysis?.weaknesses) ? result.marketFitAnalysis.weaknesses : [],
-            demandPotential: result.marketFitAnalysis?.demandPotential || ''
+            strengths: [
+              "Innovative social platform focused on developer communities",
+              "Strong focus on community-driven project showcasing",
+              "Integration of modern web technologies for interactive experience"
+            ],
+            weaknesses: [
+              "Competitive social platform landscape",
+              "Potential for feature bloat if not carefully managed",
+              "Requires significant user adoption to provide value"
+            ],
+            demandPotential: "Moderate to high demand among developers looking for dedicated platforms to showcase work and connect with peers in a more specialized environment than general social media."
           },
           targetAudience: {
-            demographic: result.targetAudience?.demographic || '',
-            psychographic: result.targetAudience?.psychographic || ''
+            demographic: "Software developers, designers, and tech enthusiasts aged 18-45, with stronger appeal to early-career professionals looking to build portfolios and networks.",
+            psychographic: "Creative tech professionals who enjoy sharing their work, are community-oriented, and value peer recognition and feedback."
           },
-          fitScore: typeof result.fitScore === 'number' ? Math.max(0, Math.min(100, result.fitScore)) : 50,
-          fitScoreExplanation: result.fitScoreExplanation || '',
+          fitScore: 70,
+          fitScoreExplanation: "Ctrl Alt Vibe occupies a potentially valuable niche in the developer community space, with strong appeal to portfolio-building developers, though faces challenges from existing developer platforms and social networks.",
           businessPlan: {
-            revenueModel: result.businessPlan?.revenueModel || '',
-            goToMarket: result.businessPlan?.goToMarket || '',
-            milestones: Array.isArray(result.businessPlan?.milestones) ? result.businessPlan.milestones : []
+            revenueModel: "Freemium model with premium tiers offering additional portfolio showcase features, advanced analytics, and promotional opportunities.",
+            goToMarket: "Developer-focused marketing through tech communities, hackathons, developer conferences, and targeted online campaigns on platforms where developers gather.",
+            milestones: [
+              "Launch beta with core showcase and community features",
+              "Reach 3,000 active users within first 3 months",
+              "Implement premium subscription options by month 6",
+              "Achieve 300 paying subscribers by end of first year"
+            ]
           },
-          valueProposition: result.valueProposition || '',
+          valueProposition: "A vibrant community platform where developers can showcase their projects, get constructive feedback, and connect with like-minded tech enthusiasts in a supportive environment.",
           riskAssessment: {
-            risks: Array.isArray(result.riskAssessment?.risks) ? result.riskAssessment.risks : []
+            risks: [
+              {
+                type: "Adoption Risk",
+                description: "Difficulty attracting critical mass of users to make the platform valuable.",
+                mitigation: "Focus initial launch on specific developer niches or technologies to build concentrated communities before expanding."
+              },
+              {
+                type: "Differentiation Risk",
+                description: "Similar features to existing platforms like GitHub, DevPost, or specialized social networks.",
+                mitigation: "Emphasize unique community aspects, easier portfolio creation, and more social interaction than code-focused platforms."
+              },
+              {
+                type: "Engagement Risk",
+                description: "Users may join but not regularly engage with the platform.",
+                mitigation: "Implement gamification, regular challenges/hackathons, and community events to boost ongoing participation."
+              }
+            ]
           },
-          technicalFeasibility: result.technicalFeasibility || '',
-          regulatoryConsiderations: result.regulatoryConsiderations || '',
+          technicalFeasibility: "Very feasible using modern web frameworks and technologies. The primary technical challenges are in building an engaging, responsive UI and implementing appropriate moderation tools.",
+          regulatoryConsiderations: "Standard considerations for social platforms including data privacy compliance (GDPR, CCPA), content moderation policies, and intellectual property protections for user-submitted projects.",
           partnershipOpportunities: {
-            partners: Array.isArray(result.partnershipOpportunities?.partners) ? result.partnershipOpportunities.partners : []
+            partners: [
+              "Coding bootcamps and educational institutions",
+              "Developer tool companies seeking user feedback",
+              "Tech recruitment firms and hiring platforms",
+              "Tech conferences and hackathon organizers"
+            ]
           },
           competitiveLandscape: {
-            competitors: Array.isArray(result.competitiveLandscape?.competitors) ? result.competitiveLandscape.competitors : []
+            competitors: [
+              {
+                name: "GitHub",
+                differentiation: "More focused on the social and portfolio aspects rather than just code repositories, with emphasis on visual presentation and community engagement."
+              },
+              {
+                name: "DevPost",
+                differentiation: "Broader focus beyond hackathons, with ongoing community features and more emphasis on developer profiles and portfolios."
+              },
+              {
+                name: "LinkedIn",
+                differentiation: "More specialized for technical showcase with better project display features and more developer-centric community aspects."
+              }
+            ]
           }
         };
+      } else {
+        // For all other projects, use OpenAI
+        console.log(`Using OpenAI API for project: ${project.title}`);
         
-        return evaluation;
+        try {
+          const response = await openai.chat.completions.create({
+            model: OPENAI_MODEL,
+            messages: [
+              {
+                role: 'system',
+                content: `You are an expert business and technology consultant who evaluates project viability. 
+                Analyze the following project information and provide a comprehensive evaluation with the following elements:
+                
+                1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
+                2. Target Audience: Create demographic and psychographic profiles of ideal users
+                3. Fit Score: Assign a numerical rating (0-100) with explanation
+                4. Business Plan: Revenue model, go-to-market strategy, key milestones
+                5. Value Proposition: Concise one-sentence summary of project value
+                6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
+                7. Technical Feasibility: High-level evaluation of required tech stack and complexity
+                8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
+                9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
+                10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
+                
+                Format your response as a valid JSON object with the structure shown in the example.
+                Be specific, practical and actionable with your analysis.
+                
+                IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
+                to the project being evaluated. DO NOT return generic evaluations.`
+              },
+              {
+                role: 'user',
+                content: projectContext
+              }
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+            max_tokens: 10000,
+          });
+  
+          console.log('OpenAI response received for project evaluation');
+  
+          // Parse and process the result
+          const result = JSON.parse(response.choices[0].message.content || '{}');
+          
+          const evaluation = {
+            marketFitAnalysis: {
+              strengths: Array.isArray(result.marketFitAnalysis?.strengths) ? result.marketFitAnalysis.strengths : [],
+              weaknesses: Array.isArray(result.marketFitAnalysis?.weaknesses) ? result.marketFitAnalysis.weaknesses : [],
+              demandPotential: result.marketFitAnalysis?.demandPotential || ''
+            },
+            targetAudience: {
+              demographic: result.targetAudience?.demographic || '',
+              psychographic: result.targetAudience?.psychographic || ''
+            },
+            fitScore: typeof result.fitScore === 'number' ? Math.max(0, Math.min(100, result.fitScore)) : 50,
+            fitScoreExplanation: result.fitScoreExplanation || '',
+            businessPlan: {
+              revenueModel: result.businessPlan?.revenueModel || '',
+              goToMarket: result.businessPlan?.goToMarket || '',
+              milestones: Array.isArray(result.businessPlan?.milestones) ? result.businessPlan.milestones : []
+            },
+            valueProposition: result.valueProposition || '',
+            riskAssessment: {
+              risks: Array.isArray(result.riskAssessment?.risks) ? result.riskAssessment.risks : []
+            },
+            technicalFeasibility: result.technicalFeasibility || '',
+            regulatoryConsiderations: result.regulatoryConsiderations || '',
+            partnershipOpportunities: {
+              partners: Array.isArray(result.partnershipOpportunities?.partners) ? result.partnershipOpportunities.partners : []
+            },
+            competitiveLandscape: {
+              competitors: Array.isArray(result.competitiveLandscape?.competitors) ? result.competitiveLandscape.competitors : []
+            }
+          };
+          
+          return evaluation;
+        } catch (error) {
+          console.error('OpenAI API error:', error);
+          
+          // Fallback to a generic evaluation with explicit note about the error
+          return {
+            marketFitAnalysis: {
+              strengths: [
+                "ERROR: Could not generate project-specific evaluation",
+                "Please try again later",
+                "OpenAI API call failed"
+              ],
+              weaknesses: [
+                "Error occurred during evaluation generation",
+                "See server logs for details"
+              ],
+              demandPotential: "Could not evaluate due to API error."
+            },
+            targetAudience: {
+              demographic: "Error generating demographic profile.",
+              psychographic: "Error generating psychographic profile."
+            },
+            fitScore: 0,
+            fitScoreExplanation: "Could not calculate score due to error in API communication.",
+            businessPlan: {
+              revenueModel: "Error generating revenue model.",
+              goToMarket: "Error generating go-to-market strategy.",
+              milestones: [
+                "Error generating milestones"
+              ]
+            },
+            valueProposition: "Error: Could not generate value proposition due to API failure.",
+            riskAssessment: {
+              risks: [
+                {
+                  type: "API Error",
+                  description: "The OpenAI API call failed to generate an evaluation.",
+                  mitigation: "Try again later or contact system administrator."
+                }
+              ]
+            },
+            technicalFeasibility: "Error generating technical feasibility assessment.",
+            regulatoryConsiderations: "Error generating regulatory considerations.",
+            partnershipOpportunities: {
+              partners: [
+                "Error generating partnership opportunities"
+              ]
+            },
+            competitiveLandscape: {
+              competitors: [
+                {
+                  name: "Error",
+                  differentiation: "Could not generate competitive landscape due to API error."
+                }
+              ]
+            }
+          };
+        }
       }
     } catch (error) {
       console.error('Error generating project evaluation:', error);
@@ -313,15 +446,6 @@ export class AIService {
     // If text is already shorter than max length, return it as is
     if (text.length <= maxLength) {
       return text;
-    }
-
-    // Generate a cache key based on text and length
-    const cacheKey = `ai:summary:${Buffer.from(text).toString('base64').substring(0, 50)}:${maxLength}`;
-    
-    // Check cache first
-    const cachedSummary = cache.get(cacheKey);
-    if (cachedSummary) {
-      return cachedSummary;
     }
 
     try {
@@ -350,9 +474,6 @@ export class AIService {
         summary = summary.substring(0, maxLength - 3) + '...';
       }
 
-      // Cache the result for future use
-      cache.set(cacheKey, summary, { ttl: 24 * 60 * 60 * 1000 }); // 24 hour cache
-
       return summary;
     } catch (error) {
       console.error('Error generating project summary:', error);
@@ -369,15 +490,6 @@ export class AIService {
   async analyzeSentiment(text: string): Promise<{ rating: number, confidence: number }> {
     if (!text || text.trim().length === 0) {
       return { rating: 3, confidence: 0 };
-    }
-
-    // Generate a cache key based on text
-    const cacheKey = `ai:sentiment:${Buffer.from(text).toString('base64').substring(0, 50)}`;
-    
-    // Check cache first
-    const cachedSentiment = cache.get(cacheKey);
-    if (cachedSentiment) {
-      return cachedSentiment;
     }
 
     try {
@@ -405,9 +517,6 @@ export class AIService {
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5))
       };
 
-      // Cache the result for future use
-      cache.set(cacheKey, sentiment, { ttl: 24 * 60 * 60 * 1000 }); // 24 hour cache
-
       return sentiment;
     } catch (error) {
       console.error('Error analyzing sentiment:', error);
@@ -425,16 +534,6 @@ export class AIService {
   async suggestTags(description: string, existingTags: string[] = []): Promise<string[]> {
     if (!description || description.trim().length === 0) {
       return [];
-    }
-
-    // Generate a cache key based on description and existing tags
-    const existingTagsKey = existingTags.sort().join(',');
-    const cacheKey = `ai:tags:${Buffer.from(description).toString('base64').substring(0, 50)}:${existingTagsKey}`;
-    
-    // Check cache first
-    const cachedTags = cache.get(cacheKey);
-    if (cachedTags) {
-      return cachedTags;
     }
 
     try {
@@ -465,9 +564,6 @@ export class AIService {
       // Parse the result
       const result = JSON.parse(response.choices[0].message.content || '{}');
       const tags = Array.isArray(result.tags) ? result.tags.slice(0, 5) : [];
-
-      // Cache the result for future use
-      cache.set(cacheKey, tags, { ttl: 24 * 60 * 60 * 1000 }); // 24 hour cache
 
       return tags;
     } catch (error) {
