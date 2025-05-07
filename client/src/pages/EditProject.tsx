@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
 
-import type { ProjectGalleryImage } from "@shared/schema";
+
 import { Upload, Image, Loader2, AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -197,128 +197,7 @@ const EditProject = () => {
     },
   });
   
-  // Upload gallery images using the dedicated gallery service
-  const uploadGalleryImages = async () => {
-    if (galleryFiles.length === 0) return [];
-    
-    setIsUploading(true);
-    
-    try {
-      console.log("Uploading gallery images...", { count: galleryFiles.length });
-      
-      // Import the gallery service using dynamic import to avoid circular dependencies
-      const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
-      
-      // Use the dedicated service to handle all upload logic
-      const result = await uploadMultipleGalleryImages(
-        projectId,
-        galleryFiles,
-        galleryCaptions
-      );
-      
-      console.log("Gallery upload complete", { uploaded: result.successCount });
-      
-      // Refresh gallery data if any uploads were successful
-      if (result.successCount > 0) {
-        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
-        return result.uploadedImages;
-      } else if (result.failedCount > 0) {
-        // Show more detailed error
-        toast({
-          title: "Gallery upload issues", 
-          description: `${result.failedCount} of ${galleryFiles.length} images failed to upload. You can try again with fewer images.`,
-          variant: "destructive"
-        });
-      }
-      
-      return result.uploadedImages;
-    } catch (error) {
-      console.error('Gallery upload service error:', error);
-      toast({
-        title: "Gallery upload failed", 
-        description: "An unexpected error occurred in the upload service.",
-        variant: "destructive"
-      });
-      return [];
-    } finally {
-      console.log("Updating project data...");
-      setIsUploading(false);
-    }
-  };
 
-  // Handle gallery change from the GalleryUploader component
-  const handleGalleryChange = (files: File[], captions: string[]) => {
-    // Validate files
-    const validFiles = files.filter((file, index) => {
-      const size = file.size / 1024 / 1024; // in MB
-      const isValidSize = size <= 5;
-      const isValidType = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type);
-      
-      if (!isValidSize || !isValidType) {
-        console.warn(`Invalid gallery file at index ${index}:`, { 
-          name: file.name, 
-          type: file.type, 
-          size: `${size.toFixed(2)} MB`,
-          isValidSize,
-          isValidType
-        });
-      }
-      
-      return isValidSize && isValidType;
-    });
-    
-    if (validFiles.length !== files.length) {
-      toast({
-        title: "Some files were skipped",
-        description: "Only image files (JPG, PNG, GIF, WebP) under 5MB are allowed.",
-        variant: "destructive"
-      });
-    }
-    
-    console.log(`Gallery change: ${validFiles.length} valid files out of ${files.length} total`);
-    setGalleryFiles(validFiles);
-    setGalleryCaptions(captions.slice(0, validFiles.length));
-  };
-
-  // Process deleted gallery images
-  const processDeletedGalleryImages = async () => {
-    if (imagesToDelete.length === 0) return;
-    
-    try {
-      console.log("Deleting gallery images...", { count: imagesToDelete.length });
-      
-      // Import the gallery service
-      const { deleteGalleryImage } = await import('@/lib/galleryService');
-      
-      // Delete each image sequentially
-      const results = await Promise.all(
-        imagesToDelete.map(async (imageId) => {
-          const success = await deleteGalleryImage(projectId, imageId);
-          return { imageId, success };
-        })
-      );
-      
-      const failedDeletes = results.filter(r => !r.success);
-      if (failedDeletes.length > 0) {
-        console.warn("Some images failed to delete:", failedDeletes);
-      }
-      
-      // Clear the delete list
-      setImagesToDelete([]);
-      
-      // Refresh gallery data
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
-      
-      return results;
-    } catch (error) {
-      console.error('Error deleting gallery images:', error);
-      toast({
-        title: "Gallery deletion failed", 
-        description: "An error occurred while removing some gallery images.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -340,40 +219,7 @@ const EditProject = () => {
     setDeleteDialogOpen(false);
   };
   
-  // Delete a gallery image
-  const deleteGalleryMutation = useMutation({
-    mutationFn: async (imageId: number) => {
-      // Use the gallery service for deletion
-      const { deleteGalleryImage } = await import('@/lib/galleryService');
-      const success = await deleteGalleryImage(projectId, imageId);
-      
-      if (!success) {
-        throw new Error('Failed to delete gallery image');
-      }
-      
-      return { success: true };
-    },
-    onSuccess: () => {
-      // Invalidate gallery cache to refresh data
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
-      toast({
-        title: "Gallery image deleted",
-        description: "The gallery image has been successfully removed."
-      });
-    },
-    onError: (error) => {
-      console.error('Error deleting gallery image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete gallery image. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-  
-  const handleDeleteGalleryImage = (imageId: number) => {
-    deleteGalleryMutation.mutate(imageId);
-  };
+
   
   const processFile = async (file: File) => {
     const fileSize = file.size / 1024 / 1024; // in MB

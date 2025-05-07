@@ -25,10 +25,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CommentSection from "@/components/CommentSection";
-import ImageGallery from "@/components/ImageGallery";
 import SEO from "@/components/SEO";
-import type { Project, ProjectGalleryImage } from "@shared/schema";
-import type { GalleryImage } from "@/lib/galleryService";
+import type { Project } from "@shared/schema";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -45,26 +43,7 @@ const ProjectDetail = () => {
   
   const project: Project | undefined = data?.project;
   
-  // Fetch gallery images for the project using our custom service
-  const { data: galleryImages = [], isLoading: isLoadingGallery } = useQuery<GalleryImage[]>({
-    queryKey: [`/api/projects/${id}/gallery`],
-    enabled: !!project, // Only fetch gallery if project exists
-    queryFn: async () => {
-      try {
-        // Import the gallery service dynamically to avoid circular imports
-        const { fetchGalleryImages } = await import('@/lib/galleryService');
-        return await fetchGalleryImages(Number(id));
-      } catch (error) {
-        console.error('Error in gallery fetch:', error);
-        return [];
-      }
-    }
-  });
-  
-  // Debug log for gallery images
-  useEffect(() => {
-    console.log(`Loaded ${galleryImages?.length || 0} gallery images for project ${id}`);
-  }, [galleryImages, id]);
+
   
   // Check if the current user is the author of the project
   const isAuthor = user && project && user.id === project.author.id;
@@ -455,13 +434,7 @@ const ProjectDetail = () => {
             </TabsList>
             
             <TabsContent value="details" className="focus-visible:outline-none focus-visible:ring-0">
-              {/* Image Gallery */}
-              {galleryImages.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-bold text-foreground mb-4">Gallery</h2>
-                  <ImageGallery images={galleryImages} mainImageUrl={project.imageUrl} />
-                </div>
-              )}
+
               
               <div className="prose prose-sm max-w-none text-gray-700">
                 <h2 className="text-xl font-bold text-foreground mb-4">About this project</h2>
