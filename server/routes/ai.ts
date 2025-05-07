@@ -133,32 +133,28 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
         return res.status(403).json({ error: 'You do not have permission to evaluate this project' });
       }
 
-      // Check if an evaluation already exists
+      // Always delete any existing evaluation to ensure fresh data
+      // Delete old evaluation regardless of who's calling it
       const existingEvaluation = await db.query.projectEvaluations.findFirst({
         where: eq(projectEvaluations.projectId, projectId)
       });
 
-      // If regenerating (by admin), delete existing evaluation
-      if (existingEvaluation && req.body.regenerate && req.user?.role === 'admin') {
-        console.log('Admin is regenerating evaluation, deleting existing one');
+      if (existingEvaluation) {
+        console.log(`Deleting existing evaluation ${existingEvaluation.id} for project ${projectId}`);
         
         // Delete the evaluation record
         await db.delete(projectEvaluations)
           .where(eq(projectEvaluations.id, existingEvaluation.id));
-        
-        // Also delete from cache if using cache
-        try {
-          const { cache } = require('../utils/index');
-          const cacheKey = `ai:project-evaluation:${projectId}`;
-          cache.delete(cacheKey);
-          console.log(`Cache cleared for project evaluation: ${projectId}`);
-        } catch (e) {
-          console.log('Cache clearing error (non-fatal):', e);
-        }
-      } 
-      // If evaluation exists and not regenerating, return success
-      else if (existingEvaluation) {
-        return res.status(200).json({ success: true, message: 'Evaluation already exists' });
+      }
+      
+      // Also clear cache
+      try {
+        const { cache } = require('../utils/index');
+        const cacheKey = `ai:project-evaluation:${projectId}`;
+        cache.delete(cacheKey);
+        console.log(`Cache cleared for project evaluation: ${projectId}`);
+      } catch (e) {
+        console.log('Cache clearing error (non-fatal):', e);
       }
 
       // Prepare project data for evaluation
