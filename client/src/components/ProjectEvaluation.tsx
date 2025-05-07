@@ -74,20 +74,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     isAdmin?: boolean;
   }
 
-  // Query to get public evaluation data (minimal version for non-owners)
-  const { 
-    data: publicData, 
-    isLoading: isPublicLoading,
-    refetch: refetchPublic
-  } = useQuery<ProjectEvaluationResponse>({
-    queryKey: [`/api/ai/public-evaluation/${projectId}`],
-    retry: false,
-  });
-
-  // Query only for owners to get full evaluation data
+  // We only need owner data now as evaluations are private
   const { 
     data: ownerData, 
-    isLoading: isOwnerLoading,
+    isLoading,
     refetch: refetchOwner
   } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
@@ -95,11 +85,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     enabled: isOwner, // Only run this query if user is the owner
   });
 
-  // Choose which data set to use based on user role
-  const isOwnerView = isOwner && ownerData;
-  const evaluation = isOwnerView ? ownerData?.evaluation : publicData?.evaluation;
-  const isError = isOwnerView ? ownerData?.error : publicData?.error;
-  const isLoading = isOwnerView ? isOwnerLoading : isPublicLoading;
+  // Get evaluation data
+  const evaluation = ownerData?.evaluation;
+  const isError = ownerData?.error;
 
   // Direct fetch from file path (for potential static generation)
   useEffect(() => {
@@ -178,10 +166,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
         
         // Wait a moment to ensure data is available before refetching
         setTimeout(() => {
-          refetchPublic();
-          if (isOwner) {
-            refetchOwner();
-          }
+          refetchOwner();
         }, 500);
       } else {
         console.error('Error generating evaluation:', result);
@@ -348,57 +333,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     );
   }
 
-  // For non-owners with data, show limited view
-  if (!isOwner && evaluation) {
-    return (
-      <div className="space-y-4">
-        <Card className="w-full border-t-4 border-t-primary shadow-md">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-xl font-bold">Project Viability Score</CardTitle>
-                <CardDescription className="text-sm mt-1">AI-powered market analysis</CardDescription>
-              </div>
-              <div className="flex flex-col items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border shadow-sm">
-                <span className="text-3xl font-bold text-primary">{evaluation.fitScore}</span>
-                <span className="text-xs text-muted-foreground">out of 100</span>
-              </div>
-            </div>
-            <Progress value={evaluation.fitScore} className="h-2 w-full mt-3" />
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            {evaluation.valueProposition && (
-              <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
-                <div className="flex gap-2 items-center mb-2">
-                  <LightbulbIcon className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">Value Proposition</h3>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300">{evaluation.valueProposition}</p>
-              </div>
-            )}
-            
-            {evaluation.marketFitAnalysis?.strengths && evaluation.marketFitAnalysis.strengths.length > 0 && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-lg p-4">
-                <h4 className="font-medium flex items-center gap-2 mb-3 text-green-700 dark:text-green-400">
-                  <BarChart3Icon className="h-4 w-4" />
-                  Key Strengths
-                </h4>
-                <ul className="list-disc pl-5 space-y-2">
-                  {evaluation.marketFitAnalysis.strengths.map((strength: string, index: number) => (
-                    <li key={index} className="text-gray-700 dark:text-gray-300">{strength}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            <div className="text-center text-sm text-muted-foreground mt-4 italic">
-              Login as project owner to view the complete analysis
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // For non-owners, don't show any evaluation (only project owners and admins can see it)
+  if (!isOwner) {
+    return null;
   }
 
   // Full evaluation view for owners

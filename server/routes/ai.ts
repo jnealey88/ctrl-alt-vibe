@@ -16,47 +16,11 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
     next();
   };
 
-  // Get basic project evaluation for non-owners (limited info)
+  // Get basic project evaluation for non-owners (no data - for backward compatibility)
   app.get(`${apiPrefix}/ai/public-evaluation/:projectId`, async (req: Request, res: Response) => {
-    try {
-      const projectId = parseInt(req.params.projectId);
-      
-      if (isNaN(projectId)) {
-        return res.status(400).json({ error: 'Invalid project ID' });
-      }
-
-      // Check if the project exists
-      const projectExists = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId)
-      });
-
-      if (!projectExists) {
-        return res.status(404).json({ error: 'Project not found' });
-      }
-
-      // Find evaluation
-      const evaluation = await db.query.projectEvaluations.findFirst({
-        where: eq(projectEvaluations.projectId, projectId)
-      });
-
-      if (!evaluation) {
-        return res.status(200).json({ evaluation: null });
-      }
-
-      // Return limited information
-      return res.status(200).json({
-        evaluation: {
-          fitScore: evaluation.fitScore || 0,
-          valueProposition: evaluation.valueProposition || '',
-          marketFitAnalysis: {
-            strengths: evaluation.marketFitAnalysis?.strengths || []
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Error retrieving public project evaluation:', error);
-      return res.status(500).json({ error: 'Failed to retrieve evaluation' });
-    }
+    // This endpoint now returns no evaluation data as evaluations are only for owners/admins
+    // Keeping the endpoint for backward compatibility
+    return res.status(200).json({ evaluation: null });
   });
 
   // Get full project evaluation (for owners)
