@@ -28,6 +28,7 @@ import { setupAuth } from "./auth";
 import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerAIRoutes } from "./routes/ai";
 // Profile routes are now directly implemented in this file
 import path from "path";
 import { processUrlForProject } from "./utils/url-metadata";

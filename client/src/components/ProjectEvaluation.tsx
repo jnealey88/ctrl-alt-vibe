@@ -108,34 +108,50 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
         body: JSON.stringify({ projectId }),
       });
       
+      const responseText = await response.text();
+      console.log('Raw API response:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse JSON response:', e);
+        toast({
+          title: 'Error',
+          description: 'The server returned an invalid response',
+          variant: 'destructive',
+        });
+        setIsGenerating(false);
+        return;
+      }
+      
       if (response.ok) {
-        const result = await response.json();
-        console.log('Evaluation generation API response:', result);
+        console.log('Evaluation generation successful:', result);
         toast({
           title: 'Evaluation generated',
           description: 'Your project evaluation has been created.',
         });
-        console.log('Evaluation generated successfully:', result);
         
-        // Refetch data
-        refetchPublic();
-        if (isOwner) {
-          refetchOwner();
-        }
+        // Wait a moment to ensure data is available before refetching
+        setTimeout(() => {
+          refetchPublic();
+          if (isOwner) {
+            refetchOwner();
+          }
+        }, 500);
       } else {
-        const error = await response.json();
-        console.error('Error generating evaluation:', error);
+        console.error('Error generating evaluation:', result);
         toast({
           title: 'Error',
-          description: error.error || 'Failed to generate evaluation',
+          description: result.error || 'Failed to generate evaluation',
           variant: 'destructive',
         });
       }
     } catch (error) {
-      console.error('Error generating evaluation:', error);
+      console.error('Error during evaluation generation:', error);
       toast({
         title: 'Error',
-        description: 'Failed to generate evaluation',
+        description: 'Failed to connect to the server. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -186,7 +202,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
       <Card className="w-full">
         <CardHeader>
           <CardTitle><Skeleton className="h-8 w-2/3" /></CardTitle>
-          <CardDescription><Skeleton className="h-4 w-full" /></CardDescription>
+          <CardDescription>
+            <span><Skeleton className="h-4 w-full" /></span>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
