@@ -123,9 +123,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     }
   }, [projectId, evaluation, isLoading]);
 
-  // Generate evaluation when requested by owner
+  // Generate evaluation when requested by owner or admin
   const generateEvaluation = async (regenerate = false) => {
-    if (!isOwner) return;
+    // Allow both owners and admins to generate evaluations
+    if (!isOwner && !isAdmin) return;
     
     setIsGenerating(true);
     console.log(`${regenerate ? 'Regenerating' : 'Generating'} evaluation for project:`, projectId);
@@ -370,42 +371,42 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           </CardHeader>
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Menu section with absolute positioning to prevent it from overlapping */}
-            <div className="sticky top-0 z-10 px-6 pt-2 pb-4 bg-white dark:bg-gray-950 shadow-sm">
-              <TabsList className="flex flex-wrap gap-2 justify-start">
-                <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs flex-shrink-0">
+            {/* Menu section with sticky positioning and improved spacing to prevent overlapping */}
+            <div className="sticky top-0 z-20 px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-sm">
+              <TabsList className="flex flex-wrap gap-3 justify-start">
+                <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0">
                   <BarChart3Icon className="h-4 w-4 mr-1" />
                   <span>Market Fit</span>
                 </TabsTrigger>
-                <TabsTrigger value="audience" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0">
                   <UsersIcon className="h-4 w-4 mr-1" />
                   <span>Audience</span>
                 </TabsTrigger>
-                <TabsTrigger value="business" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0">
                   <TrendingUpIcon className="h-4 w-4 mr-1" />
                   <span>Business</span>
                 </TabsTrigger>
-                <TabsTrigger value="value" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0">
                   <LightbulbIcon className="h-4 w-4 mr-1" />
                   <span>Value</span>
                 </TabsTrigger>
-                <TabsTrigger value="risks" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0">
                   <ShieldIcon className="h-4 w-4 mr-1" />
                   <span>Risks</span>
                 </TabsTrigger>
-                <TabsTrigger value="technical" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0">
                   <CodeIcon className="h-4 w-4 mr-1" />
                   <span>Technical</span>
                 </TabsTrigger>
-                <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0">
                   <ScrollTextIcon className="h-4 w-4 mr-1" />
                   <span>Regulatory</span>
                 </TabsTrigger>
-                <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0">
                   <HeartHandshakeIcon className="h-4 w-4 mr-1" />
                   <span>Partners</span>
                 </TabsTrigger>
-                <TabsTrigger value="competition" className="px-2 py-1.5 text-xs flex-shrink-0">
+                <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0">
                   <BarChart4Icon className="h-4 w-4 mr-1" />
                   <span>Competitors</span>
                 </TabsTrigger>
@@ -413,10 +414,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
             </div>
             
             {/* Add extra height for spacing after tabs */}
-            <div className="h-4"></div>
+            <div className="h-8"></div>
             
             {/* Content section with border for clear separation */}
-            <div className="px-6 pb-6 pt-4 border-t mt-4">
+            <div className="px-6 pb-6 pt-6 border-t mt-6">
               <TabsContent value="market-fit" className="mt-0 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
