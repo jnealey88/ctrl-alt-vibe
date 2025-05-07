@@ -16,8 +16,13 @@ import {
   CodeIcon, 
   ScrollTextIcon, 
   HeartHandshakeIcon,
-  BarChart4Icon
+  BarChart4Icon,
+  ChevronRightIcon,
+  PieChartIcon,
+  TargetIcon,
+  GlobeIcon
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectEvaluationProps {
   projectId: number;
@@ -365,6 +370,32 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               <CardTitle className="text-xl font-semibold">
                 Comprehensive Evaluation
               </CardTitle>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                    onClick={() => generateEvaluation(true)}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BarChart3Icon className="h-4 w-4" />
+                        <span>Regenerate</span>
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p className="text-xs">Generate a fresh AI analysis of your project</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <CardDescription>
               {evaluation.fitScoreExplanation}
@@ -372,59 +403,180 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           </CardHeader>
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Menu section with sticky positioning and improved mobile support */}
-            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-sm overflow-x-auto">
-              <div className="pb-1"> {/* Extra container to handle scrolling */}
-                <TabsList className="flex flex-nowrap md:flex-wrap gap-3 justify-start w-max md:w-auto">
-                <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0">
-                  <BarChart3Icon className="h-4 w-4 mr-1" />
-                  <span>Market Fit</span>
-                </TabsTrigger>
-                <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0">
-                  <UsersIcon className="h-4 w-4 mr-1" />
-                  <span>Audience</span>
-                </TabsTrigger>
-                <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0">
-                  <TrendingUpIcon className="h-4 w-4 mr-1" />
-                  <span>Business</span>
-                </TabsTrigger>
-                <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0">
-                  <LightbulbIcon className="h-4 w-4 mr-1" />
-                  <span>Value</span>
-                </TabsTrigger>
-                <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0">
-                  <ShieldIcon className="h-4 w-4 mr-1" />
-                  <span>Risks</span>
-                </TabsTrigger>
-                <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0">
-                  <CodeIcon className="h-4 w-4 mr-1" />
-                  <span>Technical</span>
-                </TabsTrigger>
-                <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0">
-                  <ScrollTextIcon className="h-4 w-4 mr-1" />
-                  <span>Regulatory</span>
-                </TabsTrigger>
-                <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0">
-                  <HeartHandshakeIcon className="h-4 w-4 mr-1" />
-                  <span>Partners</span>
-                </TabsTrigger>
-                <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0">
-                  <BarChart4Icon className="h-4 w-4 mr-1" />
-                  <span>Competitors</span>
-                </TabsTrigger>
-              </TabsList>
+            {/* Menu section with enhanced UI and improved mobile navigation */}
+            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-md overflow-x-auto border-b">
+              {/* Navigation categories */}
+              <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-medium text-primary flex items-center">
+                  <PieChartIcon className="h-4 w-4 mr-1" />
+                  <span>AI Evaluation</span>
+                </span>
+                <ChevronRightIcon className="h-4 w-4" />
+                <span className="font-medium">{activeTab === 'market-fit' || activeTab === 'audience' || activeTab === 'competition' ? 'Market' : 
+                  activeTab === 'business' || activeTab === 'value' ? 'Business' : 
+                  activeTab === 'technical' || activeTab === 'regulatory' ? 'Implementation' : 
+                  'Strategy'}</span>
+                <ChevronRightIcon className="h-4 w-4" />
+                <span className="font-medium text-primary">
+                  {activeTab === 'market-fit' ? 'Market Fit' :
+                   activeTab === 'audience' ? 'Target Audience' :
+                   activeTab === 'business' ? 'Business Plan' :
+                   activeTab === 'value' ? 'Value Proposition' :
+                   activeTab === 'risks' ? 'Risk Assessment' :
+                   activeTab === 'technical' ? 'Technical Feasibility' :
+                   activeTab === 'regulatory' ? 'Regulatory Considerations' :
+                   activeTab === 'partnerships' ? 'Partnership Opportunities' :
+                   'Competitive Landscape'}
+                </span>
+              </div>
+              
+              <div className="pb-1">
+                <TooltipProvider>
+                  <TabsList className="grid grid-cols-3 md:flex md:flex-wrap gap-1 md:gap-2 justify-start w-full">
+                    {/* Market Category */}
+                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                      <GlobeIcon className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-medium text-primary">Market Analysis</span>
+                    </div>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <BarChart3Icon className="h-4 w-4 mr-1" />
+                          <span>Market Fit</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Product-market fit analysis and demand potential</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <UsersIcon className="h-4 w-4 mr-1" />
+                          <span>Audience</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Target demographic and psychographic profiles</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <BarChart4Icon className="h-4 w-4 mr-1" />
+                          <span>Competition</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Competitive landscape and differentiation analysis</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    {/* Business Category */}
+                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                      <TrendingUpIcon className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-medium text-primary">Business Strategy</span>
+                    </div>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <PieChartIcon className="h-4 w-4 mr-1" />
+                          <span>Business Plan</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Revenue model, go-to-market strategy and milestones</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <LightbulbIcon className="h-4 w-4 mr-1" />
+                          <span>Value Prop</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Unique value proposition and market positioning</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <HeartHandshakeIcon className="h-4 w-4 mr-1" />
+                          <span>Partners</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Strategic partnership opportunities to accelerate growth</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    {/* Implementation Category */}
+                    <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
+                      <TargetIcon className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-medium text-primary">Implementation & Risks</span>
+                    </div>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <ShieldIcon className="h-4 w-4 mr-1" />
+                          <span>Risks</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Key risks and mitigation strategies</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <CodeIcon className="h-4 w-4 mr-1" />
+                          <span>Technical</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Technical feasibility and implementation considerations</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                          <ScrollTextIcon className="h-4 w-4 mr-1" />
+                          <span>Regulatory</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">Regulatory and compliance considerations</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TabsList>
+                </TooltipProvider>
               </div>
             </div>
             
             {/* Add extra height for spacing after tabs */}
             <div className="h-8"></div>
             
-            {/* Content section with border for clear separation */}
+            {/* Content section with enhanced styling */}
             <div className="px-6 pb-6 pt-6 border-t mt-6">
-              <TabsContent value="market-fit" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="market-fit" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-full">
+                      <BarChart3Icon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Market Fit Analysis</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.marketFitAnalysis?.strengths && (
                     <div className="my-4">
