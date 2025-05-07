@@ -91,8 +91,11 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
         return res.status(200).json({ evaluation: null });
       }
 
-      // Return full evaluation
-      return res.status(200).json({ evaluation });
+      // Return full evaluation with admin flag
+      return res.status(200).json({ 
+        evaluation,
+        isAdmin: req.user?.role === 'admin'
+      });
     } catch (error) {
       console.error('Error retrieving project evaluation:', error);
       return res.status(500).json({ error: 'Failed to retrieve evaluation' });
@@ -135,8 +138,14 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
         where: eq(projectEvaluations.projectId, projectId)
       });
 
-      if (existingEvaluation) {
-        // Just return success since the evaluation exists
+      // If regenerating (by admin), delete existing evaluation
+      if (existingEvaluation && req.body.regenerate && req.user?.role === 'admin') {
+        console.log('Admin is regenerating evaluation, deleting existing one');
+        await db.delete(projectEvaluations)
+          .where(eq(projectEvaluations.id, existingEvaluation.id));
+      } 
+      // If evaluation exists and not regenerating, return success
+      else if (existingEvaluation) {
         return res.status(200).json({ success: true, message: 'Evaluation already exists' });
       }
 

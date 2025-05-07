@@ -89,12 +89,21 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     }
   }, [projectId, evaluation, isLoading]);
 
+  // Event handler wrappers for React events
+  const handleGenerateClick = () => {
+    generateEvaluation(false);
+  };
+  
+  const handleRegenerateClick = () => {
+    generateEvaluation(true);
+  };
+  
   // Generate evaluation when requested by owner
-  const generateEvaluation = async () => {
+  const generateEvaluation = async (regenerate = false) => {
     if (!isOwner) return;
     
     setIsGenerating(true);
-    console.log('Generating evaluation for project:', projectId);
+    console.log(`${regenerate ? 'Regenerating' : 'Generating'} evaluation for project:`, projectId);
     
     try {
       console.log('Starting evaluation generation for project:', projectId);
@@ -103,7 +112,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({ 
+          projectId,
+          regenerate
+        }),
       });
       
       const responseText = await response.text();
@@ -383,47 +395,48 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           </CardHeader>
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="px-6 grid grid-cols-3 md:grid-cols-5 lg:flex lg:flex-wrap gap-1 mb-4 mt-2">
-              <TabsTrigger value="market-fit" className="px-3 py-2 text-xs">
-                <BarChart3Icon className="h-4 w-4 mr-1.5" />
-                <span className="hidden sm:inline-block">Market Fit</span>
-                <span className="sm:hidden">Market</span>
-              </TabsTrigger>
-              <TabsTrigger value="audience" className="px-3 py-2 text-xs">
-                <UsersIcon className="h-4 w-4 mr-1.5" />
-                <span>Audience</span>
-              </TabsTrigger>
-              <TabsTrigger value="business" className="px-3 py-2 text-xs">
-                <TrendingUpIcon className="h-4 w-4 mr-1.5" />
-                <span>Business</span>
-              </TabsTrigger>
-              <TabsTrigger value="value" className="px-3 py-2 text-xs">
-                <LightbulbIcon className="h-4 w-4 mr-1.5" />
-                <span>Value</span>
-              </TabsTrigger>
-              <TabsTrigger value="risks" className="px-3 py-2 text-xs">
-                <ShieldIcon className="h-4 w-4 mr-1.5" />
-                <span>Risks</span>
-              </TabsTrigger>
-              <TabsTrigger value="technical" className="px-3 py-2 text-xs">
-                <CodeIcon className="h-4 w-4 mr-1.5" />
-                <span>Technical</span>
-              </TabsTrigger>
-              <TabsTrigger value="regulatory" className="px-3 py-2 text-xs">
-                <ScrollTextIcon className="h-4 w-4 mr-1.5" />
-                <span>Regulatory</span>
-              </TabsTrigger>
-              <TabsTrigger value="partnerships" className="px-3 py-2 text-xs">
-                <HeartHandshakeIcon className="h-4 w-4 mr-1.5" />
-                <span>Partners</span>
-              </TabsTrigger>
-              <TabsTrigger value="competition" className="px-3 py-2 text-xs">
-                <BarChart4Icon className="h-4 w-4 mr-1.5" />
-                <span>Competitors</span>
-              </TabsTrigger>
-            </TabsList>
-          
-            <ScrollArea className="h-[300px] md:h-[400px] px-6 pb-4">
+            <div className="px-6 pt-1 pb-4">
+              <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
+                <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs">
+                  <BarChart3Icon className="h-4 w-4 mr-1" />
+                  <span>Market Fit</span>
+                </TabsTrigger>
+                <TabsTrigger value="audience" className="px-2 py-1.5 text-xs">
+                  <UsersIcon className="h-4 w-4 mr-1" />
+                  <span>Audience</span>
+                </TabsTrigger>
+                <TabsTrigger value="business" className="px-2 py-1.5 text-xs">
+                  <TrendingUpIcon className="h-4 w-4 mr-1" />
+                  <span>Business</span>
+                </TabsTrigger>
+                <TabsTrigger value="value" className="px-2 py-1.5 text-xs">
+                  <LightbulbIcon className="h-4 w-4 mr-1" />
+                  <span>Value</span>
+                </TabsTrigger>
+                <TabsTrigger value="risks" className="px-2 py-1.5 text-xs">
+                  <ShieldIcon className="h-4 w-4 mr-1" />
+                  <span>Risks</span>
+                </TabsTrigger>
+                <TabsTrigger value="technical" className="px-2 py-1.5 text-xs">
+                  <CodeIcon className="h-4 w-4 mr-1" />
+                  <span>Technical</span>
+                </TabsTrigger>
+                <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs">
+                  <ScrollTextIcon className="h-4 w-4 mr-1" />
+                  <span>Regulatory</span>
+                </TabsTrigger>
+                <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs">
+                  <HeartHandshakeIcon className="h-4 w-4 mr-1" />
+                  <span>Partners</span>
+                </TabsTrigger>
+                <TabsTrigger value="competition" className="px-2 py-1.5 text-xs">
+                  <BarChart4Icon className="h-4 w-4 mr-1" />
+                  <span>Competitors</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <div className="px-6 pb-6">
               <TabsContent value="market-fit" className="mt-0 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
@@ -609,8 +622,23 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                   )}
                 </div>
               </TabsContent>
-            </ScrollArea>
+            </div>
           </Tabs>
+          
+          {isOwner && (ownerData?.isAdmin || false) && (
+            <div className="px-6 pb-6 pt-2 flex justify-end border-t mt-6">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2" 
+                onClick={() => generateEvaluation(true)}
+                disabled={isGenerating}
+              >
+                <BarChart3Icon className="h-4 w-4" />
+                {isGenerating ? 'Regenerating...' : 'Regenerate Evaluation'}
+              </Button>
+            </div>
+          )}
         </Card>
       </div>
     );
