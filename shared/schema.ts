@@ -666,6 +666,11 @@ export const projectViewInsertSchema = createInsertSchema(projectViews);
 export type ProjectView = typeof projectViews.$inferSelect;
 export type InsertProjectView = z.infer<typeof projectViewInsertSchema>;
 
+// Project evaluation schema and types
+export const projectEvaluationInsertSchema = createInsertSchema(projectEvaluations);
+export type ProjectEvaluation = typeof projectEvaluations.$inferSelect;
+export type InsertProjectEvaluation = z.infer<typeof projectEvaluationInsertSchema>;
+
 // Notifications schema and types
 export const notificationInsertSchema = createInsertSchema(notifications);
 export type Notification = typeof notifications.$inferSelect & {

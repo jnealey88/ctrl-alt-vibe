@@ -9,6 +9,128 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export class AIService {
   /**
+   * Generate a complete evaluation for a project
+   * @param project Project information
+   * @returns Project evaluation object
+   */
+  async generateProjectEvaluation(project: {
+    id: number;
+    title: string;
+    description: string;
+    longDescription?: string;
+    projectUrl: string;
+    tags: string[];
+    vibeCodingTool?: string;
+  }): Promise<{
+    marketFitAnalysis: { strengths: string[]; weaknesses: string[]; demandPotential: string };
+    targetAudience: { demographic: string; psychographic: string };
+    fitScore: number;
+    fitScoreExplanation: string;
+    businessPlan: { revenueModel: string; goToMarket: string; milestones: string[] };
+    valueProposition: string;
+    riskAssessment: { risks: Array<{ type: string; description: string; mitigation: string }> };
+    technicalFeasibility: string;
+    regulatoryConsiderations: string;
+    partnershipOpportunities: { partners: string[] };
+    competitiveLandscape: { competitors: Array<{ name: string; differentiation: string }> };
+  }> {
+    // Generate a cache key based on project id and updated time
+    const cacheKey = `ai:project-evaluation:${project.id}`;
+    
+    // Check cache first
+    const cachedEvaluation = cache.get(cacheKey);
+    if (cachedEvaluation) {
+      return cachedEvaluation;
+    }
+
+    // Combine all project information for context
+    const projectContext = `
+      Project Title: ${project.title}
+      Description: ${project.description}
+      Detailed Description: ${project.longDescription || ''}
+      Project URL: ${project.projectUrl}
+      Tags: ${project.tags.join(', ')}
+      AI Tool Used: ${project.vibeCodingTool || 'Not specified'}
+    `;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: OPENAI_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert business and technology consultant who evaluates project viability. 
+            Analyze the following project information and provide a comprehensive evaluation with the following elements:
+            
+            1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
+            2. Target Audience: Create demographic and psychographic profiles of ideal users
+            3. Fit Score: Assign a numerical rating (0-100) with explanation
+            4. Business Plan: Revenue model, go-to-market strategy, key milestones
+            5. Value Proposition: Concise one-sentence summary of project value
+            6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
+            7. Technical Feasibility: High-level evaluation of required tech stack and complexity
+            8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
+            9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
+            10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
+            
+            Format your response as a valid JSON object with the structure shown in the example.
+            Be specific, practical and actionable with your analysis.`
+          },
+          {
+            role: 'user',
+            content: projectContext
+          }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.5,
+        max_tokens: 2500,
+      });
+
+      // Parse and process the result
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      const evaluation = {
+        marketFitAnalysis: {
+          strengths: Array.isArray(result.marketFitAnalysis?.strengths) ? result.marketFitAnalysis.strengths : [],
+          weaknesses: Array.isArray(result.marketFitAnalysis?.weaknesses) ? result.marketFitAnalysis.weaknesses : [],
+          demandPotential: result.marketFitAnalysis?.demandPotential || ''
+        },
+        targetAudience: {
+          demographic: result.targetAudience?.demographic || '',
+          psychographic: result.targetAudience?.psychographic || ''
+        },
+        fitScore: typeof result.fitScore === 'number' ? Math.max(0, Math.min(100, result.fitScore)) : 50,
+        fitScoreExplanation: result.fitScoreExplanation || '',
+        businessPlan: {
+          revenueModel: result.businessPlan?.revenueModel || '',
+          goToMarket: result.businessPlan?.goToMarket || '',
+          milestones: Array.isArray(result.businessPlan?.milestones) ? result.businessPlan.milestones : []
+        },
+        valueProposition: result.valueProposition || '',
+        riskAssessment: {
+          risks: Array.isArray(result.riskAssessment?.risks) ? result.riskAssessment.risks : []
+        },
+        technicalFeasibility: result.technicalFeasibility || '',
+        regulatoryConsiderations: result.regulatoryConsiderations || '',
+        partnershipOpportunities: {
+          partners: Array.isArray(result.partnershipOpportunities?.partners) ? result.partnershipOpportunities.partners : []
+        },
+        competitiveLandscape: {
+          competitors: Array.isArray(result.competitiveLandscape?.competitors) ? result.competitiveLandscape.competitors : []
+        }
+      };
+
+      // Cache the result for future use (1 week cache)
+      cache.set(cacheKey, evaluation, { ttl: 7 * 24 * 60 * 60 * 1000 });
+
+      return evaluation;
+    } catch (error) {
+      console.error('Error generating project evaluation:', error);
+      throw new Error('Failed to generate project evaluation. Please try again later.');
+    }
+  }
+
+  /**
    * Generate a summary for a project description
    * @param text Project description to summarize
    * @param maxLength Maximum length of summary (optional)
