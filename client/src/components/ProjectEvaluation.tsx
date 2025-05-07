@@ -135,6 +135,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
 
   // Handle generate evaluation button click
   const handleGenerateEvaluation = () => {
+    console.log("Generating evaluation for project:", projectId);
     generateMutation.mutate();
   };
 
