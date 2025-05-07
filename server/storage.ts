@@ -1814,6 +1814,13 @@ export const storage = {
     return user || null;
   },
 
+  async getUserById(id: number): Promise<any | null> {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, id)
+    });
+    return user || null;
+  },
+
   async updateUser(userId: number, userData: any): Promise<any | null> {
     try {
       const [updatedUser] = await db.update(users)
@@ -2221,7 +2228,10 @@ export const storage = {
       where: eq(projectEvaluations.projectId, projectId)
     });
     
-    return evaluation || null;
+    if (!evaluation) return null;
+    
+    // Cast evaluation to correct type for TypeScript
+    return evaluation as unknown as ProjectEvaluation;
   },
 
   /**
@@ -2252,7 +2262,8 @@ export const storage = {
         .where(eq(projectEvaluations.id, existingEval.id))
         .returning();
       
-      return updated;
+      // Cast to correct type for TypeScript
+      return updated as unknown as ProjectEvaluation;
     } else {
       // Create new evaluation
       const [created] = await db.insert(projectEvaluations)
@@ -2265,7 +2276,8 @@ export const storage = {
         })
         .returning();
       
-      return created;
+      // Cast to correct type for TypeScript
+      return created as unknown as ProjectEvaluation;
     }
   },
 
