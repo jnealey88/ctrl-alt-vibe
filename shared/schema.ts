@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -200,6 +200,29 @@ export const shares = pgTable("shares", {
   };
 });
 
+// Project evaluations (AI-generated analysis for project owners)
+export const projectEvaluations = pgTable("project_evaluations", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id).notNull().unique(), // One evaluation per project
+  marketFitAnalysis: jsonb("market_fit_analysis"), // { strengths: string[], weaknesses: string[], demandPotential: string }
+  targetAudience: jsonb("target_audience"), // { demographic: string, psychographic: string }
+  fitScore: integer("fit_score"), // 0-100 score
+  fitScoreExplanation: text("fit_score_explanation"),
+  businessPlan: jsonb("business_plan"), // { revenueModel: string, goToMarket: string, milestones: string[] }
+  valueProposition: text("value_proposition"), // Concise statement of project value
+  riskAssessment: jsonb("risk_assessment"), // { risks: Array<{ type: string, description: string, mitigation: string }> }
+  technicalFeasibility: text("technical_feasibility"),
+  regulatoryConsiderations: text("regulatory_considerations"),
+  partnershipOpportunities: jsonb("partnership_opportunities"), // { partners: string[] }
+  competitiveLandscape: jsonb("competitive_landscape"), // { competitors: Array<{ name: string, differentiation: string }> }
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    projectIdIdx: index("project_evaluations_project_id_idx").on(table.projectId),
+  };
+});
+
 // Blog categories schema
 export const blogCategories = pgTable("blog_categories", {
   id: serial("id").primaryKey(),
@@ -324,6 +347,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   shares: many(shares),
   views: many(projectViews),
   galleryImages: many(projectGallery),
+  evaluation: one(projectEvaluations, { fields: [projects.id], references: [projectEvaluations.projectId] }),
 }));
 
 export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
@@ -332,6 +356,10 @@ export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
 
 export const projectViewsRelations = relations(projectViews, ({ one }) => ({
   project: one(projects, { fields: [projectViews.projectId], references: [projects.id] }),
+}));
+
+export const projectEvaluationsRelations = relations(projectEvaluations, ({ one }) => ({
+  project: one(projects, { fields: [projectEvaluations.projectId], references: [projects.id] }),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
