@@ -169,7 +169,8 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
         technicalFeasibility: evaluation.technicalFeasibility,
         regulatoryConsiderations: evaluation.regulatoryConsiderations,
         partnershipOpportunities: evaluation.partnershipOpportunities,
-        competitiveLandscape: evaluation.competitiveLandscape
+        competitiveLandscape: evaluation.competitiveLandscape,
+        implementationRoadmap: evaluation.implementationRoadmap
       });
       console.log('Evaluation saved successfully');
 

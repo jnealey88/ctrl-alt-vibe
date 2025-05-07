@@ -215,6 +215,7 @@ export const projectEvaluations = pgTable("project_evaluations", {
   regulatoryConsiderations: text("regulatory_considerations"),
   partnershipOpportunities: jsonb("partnership_opportunities"), // { partners: string[] }
   competitiveLandscape: jsonb("competitive_landscape"), // { competitors: Array<{ name: string, differentiation: string }> }
+  implementationRoadmap: jsonb("implementation_roadmap"), // { phases: Array<{ timeframe: string, tasks: string[], resources: string, metrics: string[] }> }
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {

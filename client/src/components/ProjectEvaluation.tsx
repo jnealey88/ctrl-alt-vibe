@@ -75,6 +75,14 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
           differentiation: string;
         }>;
       };
+      implementationRoadmap?: {
+        phases: Array<{
+          timeframe: string;
+          tasks: string[];
+          resources: string;
+          metrics: string[];
+        }>;
+      };
     } | null;
     error?: string;
     isAdmin?: boolean;
@@ -481,6 +489,14 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       <ScrollTextIcon className="h-4 w-4 mr-1.5" />
                       <span>Regulatory</span>
                     </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="roadmap" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <ChevronRightIcon className="h-4 w-4 mr-1.5" />
+                      <span>Roadmap</span>
+                    </TabsTrigger>
                   </TabsList>
               </div>
             </div>
@@ -666,6 +682,62 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                   <div className="my-4">
                     <p>{evaluation.regulatoryConsiderations}</p>
                   </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="roadmap" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-full">
+                      <ChevronRightIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Implementation Roadmap</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.implementationRoadmap?.phases && 
+                    evaluation.implementationRoadmap.phases.length > 0 && (
+                    <div className="space-y-8 my-4">
+                      {evaluation.implementationRoadmap.phases.map((phase: any, index: number) => (
+                        <div key={index} className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
+                          <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded mb-4 inline-block">
+                            <h4 className="font-semibold text-emerald-700 dark:text-emerald-300">{phase.timeframe}</h4>
+                          </div>
+                          
+                          {phase.tasks && phase.tasks.length > 0 && (
+                            <div className="mb-4">
+                              <h5 className="font-medium mb-2 text-sm uppercase tracking-wide">Key Tasks</h5>
+                              <ul className="list-disc pl-5 space-y-1">
+                                {phase.tasks.map((task: string, taskIndex: number) => (
+                                  <li key={taskIndex}>{task}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {phase.resources && (
+                            <div className="mb-4">
+                              <h5 className="font-medium mb-2 text-sm uppercase tracking-wide">Required Resources</h5>
+                              <p className="bg-gray-50 dark:bg-gray-900 p-3 rounded">{phase.resources}</p>
+                            </div>
+                          )}
+                          
+                          {phase.metrics && phase.metrics.length > 0 && (
+                            <div>
+                              <h5 className="font-medium mb-2 text-sm uppercase tracking-wide">Success Metrics</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {phase.metrics.map((metric: string, metricIndex: number) => (
+                                  <span key={metricIndex} className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 py-1 px-3 rounded-full text-sm">
+                                    {metric}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
