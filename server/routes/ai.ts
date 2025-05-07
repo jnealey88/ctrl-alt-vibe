@@ -157,36 +157,58 @@ export function registerAIRoutes(app: Express) {
   // Get project evaluation
   app.get(`${apiPrefix}/ai/project-evaluation/:projectId`, isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log(`GET request for project evaluation with projectId: ${req.params.projectId}`);
+      console.log(`User making request: ${req.user?.id}, username: ${req.user?.username}`);
+      
       const { projectId } = req.params;
       
       if (!projectId || isNaN(parseInt(projectId))) {
+        console.log('Invalid project ID format');
         return res.status(400).json({ error: 'Valid project ID is required' });
       }
+      
+      const parsedProjectId = parseInt(projectId);
+      console.log(`Looking up project with ID: ${parsedProjectId}`);
 
-      const project = await storage.getProjectById(parseInt(projectId));
+      const project = await storage.getProjectById(parsedProjectId);
       if (!project) {
+        console.log(`Project with ID ${parsedProjectId} not found`);
         return res.status(404).json({ error: 'Project not found' });
       }
+      console.log(`Found project: ${project.title} by author ID: ${project.author.id}`);
 
       // Verify that the user owns the project or is an admin
       const userId = req.user?.id || 0;
+      console.log(`Comparing request user ID: ${userId} with project author ID: ${project.author.id}`);
+      
       if (project.author.id !== userId) {
         // Check if user is admin
+        console.log('User is not the project owner, checking if admin');
         const user = await storage.getUserById(userId);
         if (!user || user.role !== 'admin') {
+          console.log(`User ${userId} is not authorized to view this evaluation`);
           return res.status(403).json({ 
             error: 'Only the project owner can view evaluations' 
           });
         }
+        console.log('User is an admin, proceeding with retrieval');
+      } else {
+        console.log('User is the project owner, proceeding with retrieval');
       }
 
-      const evaluation = await storage.getProjectEvaluation(parseInt(projectId));
+      console.log(`Retrieving evaluation for project ${parsedProjectId} from database`);
+      const evaluation = await storage.getProjectEvaluation(parsedProjectId);
+      
       if (!evaluation) {
+        console.log(`No evaluation found for project ${parsedProjectId}`);
         return res.status(404).json({ 
           error: 'No evaluation exists for this project. Generate one first.' 
         });
       }
-
+      
+      console.log(`Evaluation found, returning data with fitScore: ${evaluation.fitScore}`);
+      console.log(`Evaluation data structure: ${JSON.stringify(Object.keys(evaluation))}`);
+      
       return res.json(evaluation);
     } catch (error) {
       console.error('Error fetching project evaluation:', error);

@@ -213,20 +213,37 @@ export class AIService {
     evaluation: any;
     fitScore: number;
   }> {
+    console.log('[ai-service] Starting project evaluation generation');
+    console.log(`[ai-service] Project title: ${project.title}`);
+    console.log(`[ai-service] Project description length: ${project.description.length} characters`);
+    
     if (!project.title || !project.description) {
+      console.log('[ai-service] Error: Missing required fields');
       throw new Error('Project title and description are required for evaluation');
     }
 
     // Create a cache key from project details
     const cacheKey = `ai:project_evaluation:${Buffer.from(project.title + project.description).toString('base64').substring(0, 50)}`;
+    console.log(`[ai-service] Cache key: ${cacheKey}`);
     
     // Check cache first
+    console.log('[ai-service] Checking cache for existing evaluation');
     const cachedEvaluation = cache.get(cacheKey);
-    if (cachedEvaluation && 
-        typeof cachedEvaluation === 'object' && 
-        'evaluation' in cachedEvaluation && 
-        'fitScore' in cachedEvaluation) {
-      return cachedEvaluation as { evaluation: any; fitScore: number };
+    
+    if (cachedEvaluation) {
+      console.log('[ai-service] Found cached evaluation');
+      console.log(`[ai-service] Cached evaluation type: ${typeof cachedEvaluation}`);
+      
+      if (typeof cachedEvaluation === 'object' && 
+          'evaluation' in cachedEvaluation && 
+          'fitScore' in cachedEvaluation) {
+        console.log('[ai-service] Cached evaluation is valid, returning');
+        return cachedEvaluation as { evaluation: any; fitScore: number };
+      } else {
+        console.log('[ai-service] Cached evaluation is invalid, generating new one');
+      }
+    } else {
+      console.log('[ai-service] No cached evaluation found, generating new one');
     }
 
     try {
