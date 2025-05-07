@@ -91,10 +91,7 @@ const EditProject = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
-  const [galleryCaptions, setGalleryCaptions] = useState<string[]>([]);
-  const [existingGalleryImages, setExistingGalleryImages] = useState<ProjectGalleryImage[]>([]);
-  const [imagesToDelete, setImagesToDelete] = useState<number[]>([]); 
+
   
   // Fetch AI coding tools from database
   const { tools, isLoading: isLoadingAiTools } = useCodingTools();
@@ -125,23 +122,6 @@ const EditProject = () => {
   });
   
   // Set form values when project data is loaded
-  // Fetch gallery images
-  const { data: galleryData, isLoading: isLoadingGallery } = useQuery({
-    queryKey: [`/api/projects/${projectId}/gallery`],
-    queryFn: async () => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/gallery`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch gallery images');
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Error fetching gallery:', error);
-        return { galleryImages: [] };
-      }
-    },
-    enabled: !!projectId && projectId > 0
-  });
 
   // Set form values and gallery images when project data is loaded
   useEffect(() => {
@@ -160,12 +140,7 @@ const EditProject = () => {
     }
   }, [projectData, form]);
   
-  // Set gallery images when gallery data is loaded
-  useEffect(() => {
-    if (galleryData?.galleryImages) {
-      setExistingGalleryImages(galleryData.galleryImages);
-    }
-  }, [galleryData]);
+
   
   // Check if the current user is the author of the project
   const isAuthor = user && projectData?.project && user.id === projectData.project.author.id;
@@ -347,19 +322,7 @@ const EditProject = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // First process any images that need to be deleted
-      if (imagesToDelete.length > 0) {
-        await processDeletedGalleryImages();
-      }
-      
-      // Then upload any new gallery images
-      if (galleryFiles.length > 0) {
-        console.log("Uploading gallery images...", { count: galleryFiles.length });
-        const uploadedImages = await uploadGalleryImages();
-        console.log("Gallery upload complete", { uploaded: uploadedImages.length });
-      }
-      
-      // Finally update the project data
+      // Update the project data
       console.log("Updating project data...");
       updateMutation.mutate(data);
     } catch (error) {
@@ -804,48 +767,7 @@ const EditProject = () => {
                 )}
               />
               
-              {/* Project Gallery */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-md font-semibold">Project Gallery</h3>
-                  {isLoadingGallery && (
-                    <div className="flex items-center"> 
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span className="text-sm text-muted-foreground">Loading gallery...</span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Gallery uploader with existing and new images */}
-                <GalleryUploader 
-                  onGalleryChange={handleGalleryChange}
-                  existingImages={galleryData?.galleryImages || []}
-                  projectId={projectId}
-                  onExistingImagesChange={(updatedImages) => {
-                    // Find images that were marked for deletion by getting the image IDs
-                    // that are in the original list but not in the updated list
-                    const currentIds = existingGalleryImages.map(img => img.id);
-                    const updatedIds = updatedImages.map(img => img.id);
-                    
-                    // Find all IDs that are in the current set but not the updated set
-                    const deletedImageIds = currentIds.filter(id => !updatedIds.includes(id));
-                    
-                    if (deletedImageIds.length > 0) {
-                      console.log(`Marked ${deletedImageIds.length} images for deletion:`, deletedImageIds);
-                      setImagesToDelete(prev => [...prev, ...deletedImageIds]);
-                    }
-                    
-                    // Update the state with the remaining images
-                    setExistingGalleryImages(updatedImages);
-                  }}
-                  maxImages={5}
-                  className="mt-4"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Add up to 5 gallery images to showcase different aspects of your project.
-                  These will be displayed in a gallery on your project page.
-                </p>
-              </div>
+
               
               <FormField
                 control={form.control}
