@@ -79,7 +79,6 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
         phases: Array<{
           timeframe: string;
           tasks: string[];
-          resources: string;
           metrics: string[];
         }>;
       };
@@ -712,13 +711,6 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                                   <li key={taskIndex}>{task}</li>
                                 ))}
                               </ul>
-                            </div>
-                          )}
-                          
-                          {phase.resources && (
-                            <div className="mb-4">
-                              <h5 className="font-medium mb-2 text-sm uppercase tracking-wide">Required Resources</h5>
-                              <p className="bg-gray-50 dark:bg-gray-900 p-3 rounded">{phase.resources}</p>
                             </div>
                           )}
                           
