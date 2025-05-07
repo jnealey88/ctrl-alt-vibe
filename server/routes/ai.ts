@@ -195,7 +195,51 @@ export function registerAIRoutes(app: Express) {
     }
   });
 
-  // Get project evaluation
+  // Get project evaluation (public debug version)
+  app.get(`${apiPrefix}/ai/public-evaluation/:projectId`, async (req: Request, res: Response) => {
+    try {
+      console.log(`Public GET request for project evaluation with projectId: ${req.params.projectId}`);
+      
+      const { projectId } = req.params;
+      
+      if (!projectId || isNaN(parseInt(projectId))) {
+        console.log('Invalid project ID format');
+        return res.status(400).json({ error: 'Valid project ID is required' });
+      }
+      
+      const parsedProjectId = parseInt(projectId);
+      console.log(`Looking up project with ID: ${parsedProjectId}`);
+
+      const project = await storage.getProjectById(parsedProjectId);
+      if (!project) {
+        console.log(`Project with ID ${parsedProjectId} not found`);
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      
+      console.log(`Retrieving evaluation for project ${parsedProjectId} from database`);
+      const evaluation = await storage.getProjectEvaluation(parsedProjectId);
+      
+      if (!evaluation) {
+        console.log(`No evaluation found for project ${parsedProjectId}`);
+        return res.status(404).json({ 
+          error: 'No evaluation exists for this project. Generate one first.' 
+        });
+      }
+      
+      // Make sure we're sending JSON content
+      res.setHeader('Content-Type', 'application/json');
+      
+      console.log(`Evaluation found, returning data with fitScore: ${evaluation.fitScore}`);
+      console.log(`Evaluation data structure: ${JSON.stringify(Object.keys(evaluation))}`);
+      
+      return res.json(evaluation);
+    } catch (error) {
+      console.error('Error fetching project evaluation:', error);
+      return res.status(500).json({ error: 'Failed to fetch project evaluation' });
+    }
+  });
+
+  // Get project evaluation (authenticated version)
   app.get(`${apiPrefix}/ai/project-evaluation/:projectId`, isAuthenticated, async (req: Request, res: Response) => {
     try {
       console.log(`GET request for project evaluation with projectId: ${req.params.projectId}`);

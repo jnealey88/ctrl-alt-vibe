@@ -102,7 +102,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
     competitiveLandscape: false
   });
 
-  // Fetch project evaluation
+  // Fetch project evaluation using the public endpoint for debugging
   const { 
     data: evaluation, 
     isLoading, 
@@ -110,7 +110,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
     error, 
     refetch 
   } = useQuery<ProjectEvaluationType>({
-    queryKey: [`/api/ai/project-evaluation/${projectId}`],
+    queryKey: [`/api/ai/public-evaluation/${projectId}`],
     enabled: !!projectId,
     // Don't refetch on window focus since evaluations don't change often
     refetchOnWindowFocus: false,
@@ -133,7 +133,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
         description: "Your project evaluation has been successfully generated.",
       });
       // Invalidate the query to refetch with the new evaluation
-      queryClient.invalidateQueries({ queryKey: [`/api/ai/project-evaluation/${projectId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/ai/public-evaluation/${projectId}`] });
       // Also invalidate the project query to show the evaluation in the project data
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
       
@@ -164,7 +164,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
         description: "Your project evaluation has been deleted.",
       });
       // Invalidate the queries
-      queryClient.invalidateQueries({ queryKey: [`/api/ai/project-evaluation/${projectId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/ai/public-evaluation/${projectId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
     },
     onError: (error: any) => {
