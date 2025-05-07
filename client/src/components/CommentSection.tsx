@@ -28,8 +28,13 @@ import {
 } from "lucide-react";
 import type { Comment, CommentReply } from "@shared/schema";
 
-const CommentSection = () => {
-  const { id } = useParams();
+interface CommentSectionProps {
+  projectId: number;
+}
+
+const CommentSection = ({ projectId }: CommentSectionProps) => {
+  // Use the provided projectId instead of getting it from useParams
+  // const { id } = useParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();

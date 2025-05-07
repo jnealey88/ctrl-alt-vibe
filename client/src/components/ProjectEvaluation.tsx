@@ -248,8 +248,8 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
           
           <Progress 
             value={evaluation.fitScore} 
-            className="h-3 mb-2" 
-            indicatorClassName={getFitScoreColor(evaluation.fitScore)} 
+            // Use CSS to style the progress indicator
+            className={`h-3 mb-2`} 
           />
           
           <p className="text-sm text-gray-600 mt-2">{data.fitScoreExplanation}</p>
