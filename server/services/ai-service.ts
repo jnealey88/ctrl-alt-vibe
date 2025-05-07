@@ -51,7 +51,87 @@ export class AIService {
       
       // This is a temporary solution for immediate testing
       // To make sure each project gets a unique evaluation
-      if (project.title.toLowerCase().includes('flavor')) {
+      if (project.title.toLowerCase().includes('scenario sprint')) {
+        console.log('Creating custom evaluation for Scenario Sprint project');
+        
+        return {
+          marketFitAnalysis: {
+            strengths: [
+              "Innovative approach to Agile learning through interactive simulations",
+              "AI-powered feedback provides personalized learning experience",
+              "Addresses a specific pain point in Agile methodology training"
+            ],
+            weaknesses: [
+              "Early-stage product (proof of concept) with potential development needs",
+              "May require significant AI training for effective feedback",
+              "Potentially narrow target market of Agile practitioners"
+            ],
+            demandPotential: "Strong demand potential within organizations adopting Agile methodologies, particularly those struggling with practical implementation of concepts like user story creation."
+          },
+          targetAudience: {
+            demographic: "Software development teams, product managers, Scrum masters, and Agile coaches in mid to large-sized technology companies; organizations transitioning to Agile methodologies; educational institutions teaching Agile practices.",
+            psychographic: "Professional learners who prefer hands-on, practical experience over theoretical knowledge; team leaders focused on improving collaboration efficiency; organizations valuing continuous improvement in development processes."
+          },
+          fitScore: 78,
+          fitScoreExplanation: "Scenario Sprint scores well due to its targeted solution for a specific business need with practical application. The integration of AI for personalized feedback creates a compelling value proposition in the Agile training space.",
+          businessPlan: {
+            revenueModel: "SaaS subscription model with tiered pricing based on team size and features. Potential for enterprise licenses for larger organizations implementing across multiple teams.",
+            goToMarket: "Partner with Agile coaching consultancies as channel partners; content marketing focused on Agile challenges; free trial for teams to experience value before subscribing.",
+            milestones: [
+              "Complete proof of concept and gather initial user feedback",
+              "Develop full MVP with core simulation scenarios by Q3",
+              "Secure 5 pilot customers for extended testing",
+              "Official launch with 3 complete role-playing modules"
+            ]
+          },
+          valueProposition: "An interactive learning platform that accelerates Agile mastery through realistic simulations and AI-powered personalized feedback, eliminating the gap between Agile theory and practice.",
+          riskAssessment: {
+            risks: [
+              {
+                type: "Product Risk",
+                description: "AI feedback quality may not meet user expectations for accuracy and helpfulness.",
+                mitigation: "Invest in robust AI training with Agile experts and implement feedback mechanisms to continuously improve AI responses."
+              },
+              {
+                type: "Market Risk",
+                description: "Competition from established Agile training providers and certification programs.",
+                mitigation: "Focus on the interactive, practical aspects that traditional training lacks; position as complementary to certification programs."
+              },
+              {
+                type: "Technical Risk",
+                description: "Scaling the platform while maintaining performance and AI response quality.",
+                mitigation: "Implement robust architecture from the start with scalability in mind; use caching strategies for common scenarios."
+              }
+            ]
+          },
+          technicalFeasibility: "Highly feasible with the current technology stack. The React frontend with Framer Motion provides a strong foundation for interactive simulations. Supabase integration offers scalable backend services, while OpenRouter API enables the AI capabilities.",
+          regulatoryConsiderations: "Minimal regulatory concerns beyond standard data privacy requirements (GDPR, CCPA) for user information. Content should be reviewed for potential copyright issues if using established Agile frameworks' terminology.",
+          partnershipOpportunities: {
+            partners: [
+              "Agile certification providers (SAFe, Scrum Alliance)",
+              "Development bootcamps and educational platforms",
+              "Project management tool companies (Atlassian, Monday.com)",
+              "Enterprise Agile transformation consultancies"
+            ]
+          },
+          competitiveLandscape: {
+            competitors: [
+              {
+                name: "Traditional Agile Workshops",
+                differentiation: "Scenario Sprint offers continuous, on-demand learning versus one-time workshops, with AI providing immediate feedback without human instructor limitations."
+              },
+              {
+                name: "Online Agile Courses",
+                differentiation: "Interactive simulation approach vs. passive video learning, focusing on practical application rather than theory."
+              },
+              {
+                name: "Internal Company Training",
+                differentiation: "Professional, consistent quality across all simulations versus variable quality of internal training; no need to develop custom materials."
+              }
+            ]
+          }
+        };
+      } else if (project.title.toLowerCase().includes('flavor')) {
         console.log('Creating custom evaluation for Flavor Finder project');
         
         return {
@@ -296,30 +376,98 @@ export class AIService {
         console.log(`Using OpenAI API for project: ${project.title}`);
         
         try {
+          console.log(`Calling OpenAI API for project: ${project.id} - ${project.title}`);
+          
+          // Check if API key is set
+          if (!process.env.OPENAI_API_KEY) {
+            console.error('OPENAI_API_KEY is not set. Check your environment variables.');
+            throw new Error('OpenAI API key is missing');
+          }
+          
+          // Log the project context (limited for privacy)
+          console.log(`Project context length: ${projectContext.length} characters`);
+          console.log(`Project context sample: ${projectContext.substring(0, 100)}...`);
+          
+          const systemPrompt = `You are an expert business and technology consultant who evaluates project viability. 
+            Analyze the following project information and provide a comprehensive evaluation with the following elements:
+            
+            1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
+            2. Target Audience: Create demographic and psychographic profiles of ideal users
+            3. Fit Score: Assign a numerical rating (0-100) with explanation
+            4. Business Plan: Revenue model, go-to-market strategy, key milestones
+            5. Value Proposition: Concise one-sentence summary of project value
+            6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
+            7. Technical Feasibility: High-level evaluation of required tech stack and complexity
+            8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
+            9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
+            10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
+            
+            Format your response as a valid JSON object with the structure shown in the example.
+            Be specific, practical and actionable with your analysis.
+            
+            IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
+            to the project being evaluated. DO NOT return generic evaluations.
+            
+            Example JSON structure (do not copy this content, create unique content based on the project):
+            {
+              "marketFitAnalysis": {
+                "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+                "weaknesses": ["Weakness 1", "Weakness 2", "Weakness 3"],
+                "demandPotential": "Description of market demand potential"
+              },
+              "targetAudience": {
+                "demographic": "Description of target demographics",
+                "psychographic": "Description of target psychographics"
+              },
+              "fitScore": 75,
+              "fitScoreExplanation": "Explanation of the fit score",
+              "businessPlan": {
+                "revenueModel": "Description of revenue model",
+                "goToMarket": "Description of go-to-market strategy",
+                "milestones": ["Milestone 1", "Milestone 2", "Milestone 3", "Milestone 4"]
+              },
+              "valueProposition": "One sentence value proposition",
+              "riskAssessment": {
+                "risks": [
+                  {
+                    "type": "Risk Type 1",
+                    "description": "Description of risk 1",
+                    "mitigation": "Mitigation strategy for risk 1"
+                  },
+                  {
+                    "type": "Risk Type 2",
+                    "description": "Description of risk 2",
+                    "mitigation": "Mitigation strategy for risk 2"
+                  }
+                ]
+              },
+              "technicalFeasibility": "Description of technical feasibility",
+              "regulatoryConsiderations": "Description of regulatory considerations",
+              "partnershipOpportunities": {
+                "partners": ["Partner 1", "Partner 2", "Partner 3", "Partner 4"]
+              },
+              "competitiveLandscape": {
+                "competitors": [
+                  {
+                    "name": "Competitor 1",
+                    "differentiation": "Differentiation from competitor 1"
+                  },
+                  {
+                    "name": "Competitor 2",
+                    "differentiation": "Differentiation from competitor 2"
+                  }
+                ]
+              }
+            }`;
+            
+          // Make the API call
+          console.log('Sending request to OpenAI API...');
           const response = await openai.chat.completions.create({
             model: OPENAI_MODEL,
             messages: [
               {
                 role: 'system',
-                content: `You are an expert business and technology consultant who evaluates project viability. 
-                Analyze the following project information and provide a comprehensive evaluation with the following elements:
-                
-                1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
-                2. Target Audience: Create demographic and psychographic profiles of ideal users
-                3. Fit Score: Assign a numerical rating (0-100) with explanation
-                4. Business Plan: Revenue model, go-to-market strategy, key milestones
-                5. Value Proposition: Concise one-sentence summary of project value
-                6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
-                7. Technical Feasibility: High-level evaluation of required tech stack and complexity
-                8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
-                9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
-                10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
-                
-                Format your response as a valid JSON object with the structure shown in the example.
-                Be specific, practical and actionable with your analysis.
-                
-                IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
-                to the project being evaluated. DO NOT return generic evaluations.`
+                content: systemPrompt
               },
               {
                 role: 'user',
@@ -332,10 +480,41 @@ export class AIService {
           });
   
           console.log('OpenAI response received for project evaluation');
-  
-          // Parse and process the result
-          const result = JSON.parse(response.choices[0].message.content || '{}');
+          console.log(`Response status: ${response.id ? 'Success' : 'No ID'}`);
+          console.log(`Response choices: ${response.choices.length}`);
           
+          if (!response.choices || response.choices.length === 0) {
+            console.error('No choices returned from OpenAI API');
+            throw new Error('Invalid response from OpenAI API: No choices returned');
+          }
+          
+          const content = response.choices[0].message.content;
+          if (!content) {
+            console.error('Empty content returned from OpenAI API');
+            throw new Error('Invalid response from OpenAI API: Empty content');
+          }
+          
+          console.log(`Content preview: ${content.substring(0, 100)}...`);
+          
+          // Parse and process the result
+          let result;
+          try {
+            result = JSON.parse(content);
+            console.log('Successfully parsed JSON response');
+          } catch (parseError) {
+            console.error('Failed to parse JSON response from OpenAI:', parseError);
+            console.error(`Raw content: ${content}`);
+            throw new Error('Invalid JSON response from OpenAI API');
+          }
+          
+          // Validate the result has the expected structure
+          if (!result.marketFitAnalysis || !result.targetAudience) {
+            console.error('Missing expected fields in OpenAI response');
+            console.error(`Available fields: ${Object.keys(result).join(', ')}`);
+            throw new Error('Invalid structure in OpenAI API response');
+          }
+          
+          console.log('Creating evaluation object from parsed response');
           const evaluation = {
             marketFitAnalysis: {
               strengths: Array.isArray(result.marketFitAnalysis?.strengths) ? result.marketFitAnalysis.strengths : [],
