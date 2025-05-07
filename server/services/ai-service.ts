@@ -73,11 +73,64 @@ export class AIService {
         9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth
         10. Competitive Landscape: Identify top 3-5 competitors and differentiation points
         
-        Format your response as a valid JSON object with the structure shown in the example.
+        Format your response as a valid JSON object with the EXACT structure shown in the example below.
         Be specific, practical and actionable with your analysis.
         
-        IMPORTANT: Base your analysis ONLY on the specific project details provided. Every evaluation must be unique
-        to the project being evaluated. DO NOT return generic evaluations.`;
+        IMPORTANT: 
+        - Base your analysis ONLY on the specific project details provided. 
+        - Every evaluation must be unique to the project being evaluated. DO NOT return generic evaluations.
+        - YOU MUST FOLLOW THE EXACT JSON STRUCTURE PROVIDED IN THIS EXAMPLE:
+        
+        {
+          "marketFitAnalysis": {
+            "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+            "weaknesses": ["Weakness 1", "Weakness 2", "Weakness 3"],
+            "demandPotential": "Description of market demand potential"
+          },
+          "targetAudience": {
+            "demographic": "Description of target demographics",
+            "psychographic": "Description of target psychographics"
+          },
+          "fitScore": 75,
+          "fitScoreExplanation": "Explanation of the fit score",
+          "businessPlan": {
+            "revenueModel": "Description of revenue model",
+            "goToMarket": "Description of go-to-market strategy",
+            "milestones": ["Milestone 1", "Milestone 2", "Milestone 3", "Milestone 4"]
+          },
+          "valueProposition": "One sentence value proposition",
+          "riskAssessment": {
+            "risks": [
+              {
+                "type": "Risk Type 1",
+                "description": "Description of risk 1",
+                "mitigation": "Mitigation strategy for risk 1"
+              },
+              {
+                "type": "Risk Type 2",
+                "description": "Description of risk 2",
+                "mitigation": "Mitigation strategy for risk 2"
+              }
+            ]
+          },
+          "technicalFeasibility": "Description of technical feasibility",
+          "regulatoryConsiderations": "Description of regulatory considerations",
+          "partnershipOpportunities": {
+            "partners": ["Partner 1", "Partner 2", "Partner 3", "Partner 4"]
+          },
+          "competitiveLandscape": {
+            "competitors": [
+              {
+                "name": "Competitor 1",
+                "differentiation": "Differentiation from competitor 1"
+              },
+              {
+                "name": "Competitor 2",
+                "differentiation": "Differentiation from competitor 2"
+              }
+            ]
+          }
+        }`;
         
       // Make the API call
       console.log('Sending request to OpenAI API...');
@@ -122,9 +175,20 @@ export class AIService {
       }
       
       // Validate the result has the expected structure
-      if (!result.marketFitAnalysis || !result.targetAudience) {
-        console.error('Missing expected fields in OpenAI response');
-        throw new Error('Invalid structure in OpenAI API response');
+      console.log(`Available fields in response: ${Object.keys(result).join(', ')}`);
+      
+      const requiredFields = [
+        'marketFitAnalysis', 'targetAudience', 'fitScore', 'fitScoreExplanation',
+        'businessPlan', 'valueProposition', 'riskAssessment', 'technicalFeasibility',
+        'regulatoryConsiderations', 'partnershipOpportunities', 'competitiveLandscape'
+      ];
+      
+      const missingFields = requiredFields.filter(field => !result[field]);
+      if (missingFields.length > 0) {
+        console.error(`Missing ${missingFields.length} fields in OpenAI response: ${missingFields.join(', ')}`);
+        console.error(`Available fields: ${Object.keys(result).join(', ')}`);
+        console.error(`Response content preview: ${content.substring(0, 500)}...`);
+        throw new Error(`Invalid structure in OpenAI API response: Missing fields (${missingFields.join(', ')})`);
       }
       
       console.log('Creating evaluation object from parsed response');
