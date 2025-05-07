@@ -67,14 +67,26 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
     refetchOnWindowFocus: false,
     // If error, don't retry automatically (likely a 404 which is expected if no evaluation exists)
     retry: false,
+    // Add proper error handling to debug issues
+    onError: (err) => {
+      console.error('Error fetching evaluation:', err);
+    },
+    // Log when data is successfully fetched
+    onSuccess: (data) => {
+      console.log('Evaluation data received:', data);
+    }
   });
 
   // Generate evaluation mutation
   const generateMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/ai/evaluate-project", { projectId });
+      console.log('Starting evaluation generation for project:', projectId);
+      const response = await apiRequest("POST", "/api/ai/evaluate-project", { projectId });
+      console.log('Evaluation generation API response:', response);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Evaluation generated successfully:', data);
       toast({
         title: "Evaluation generated",
         description: "Your project evaluation has been successfully generated.",
@@ -83,9 +95,15 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
       queryClient.invalidateQueries({ queryKey: [`/api/ai/project-evaluation/${projectId}`] });
       // Also invalidate the project query to show the evaluation in the project data
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
-      refetch();
+      
+      // Force a refetch after a short delay to ensure the evaluation is loaded
+      setTimeout(() => {
+        console.log('Refetching evaluation after successful generation');
+        refetch();
+      }, 1000);
     },
     onError: (error: any) => {
+      console.error('Error generating evaluation:', error);
       toast({
         title: "Error generating evaluation",
         description: error?.message || "Failed to generate project evaluation. Please try again.",

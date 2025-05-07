@@ -29,7 +29,7 @@ export class AIService {
     
     // Check cache first
     const cachedSummary = cache.get(cacheKey);
-    if (cachedSummary) {
+    if (cachedSummary && typeof cachedSummary === 'string') {
       return cachedSummary;
     }
 
@@ -86,8 +86,11 @@ export class AIService {
     
     // Check cache first
     const cachedSentiment = cache.get(cacheKey);
-    if (cachedSentiment) {
-      return cachedSentiment;
+    if (cachedSentiment && 
+        typeof cachedSentiment === 'object' && 
+        'rating' in cachedSentiment && 
+        'confidence' in cachedSentiment) {
+      return cachedSentiment as { rating: number, confidence: number };
     }
 
     try {
@@ -152,8 +155,8 @@ export class AIService {
     
     // Check cache first
     const cachedTags = cache.get(cacheKey);
-    if (cachedTags) {
-      return cachedTags;
+    if (cachedTags && Array.isArray(cachedTags)) {
+      return cachedTags as string[];
     }
 
     try {
@@ -219,8 +222,11 @@ export class AIService {
     
     // Check cache first
     const cachedEvaluation = cache.get(cacheKey);
-    if (cachedEvaluation) {
-      return cachedEvaluation;
+    if (cachedEvaluation && 
+        typeof cachedEvaluation === 'object' && 
+        'evaluation' in cachedEvaluation && 
+        'fitScore' in cachedEvaluation) {
+      return cachedEvaluation as { evaluation: any; fitScore: number };
     }
 
     try {

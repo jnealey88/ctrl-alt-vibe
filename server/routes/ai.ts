@@ -72,53 +72,75 @@ export function registerAIRoutes(app: Express) {
   // Generate an AI evaluation for a project
   app.post(`${apiPrefix}/ai/evaluate-project`, isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log('Received evaluation request with body:', req.body);
       const { projectId } = req.body;
       
       if (!projectId) {
+        console.log('Project ID is missing from request');
         return res.status(400).json({ error: 'Project ID is required' });
       }
 
       // Get the project
+      console.log(`Fetching project with ID: ${projectId}`);
       const project = await storage.getProjectById(projectId);
       if (!project) {
+        console.log(`Project with ID ${projectId} not found`);
         return res.status(404).json({ error: 'Project not found' });
       }
+      console.log(`Found project: ${project.title}`);
 
       // Verify that the user owns the project or is an admin
       const userId = req.user?.id || 0;
+      console.log(`User ID: ${userId}, Project author ID: ${project.author.id}`);
+      
       if (project.author.id !== userId) {
         // Check if user is admin
         const user = await storage.getUserById(userId);
         if (!user || user.role !== 'admin') {
+          console.log('User is not the project owner or an admin');
           return res.status(403).json({ 
             error: 'Only the project owner can generate evaluations' 
           });
         }
+        console.log('User is an admin, allowing evaluation');
+      } else {
+        console.log('User is the project owner, allowing evaluation');
       }
 
       // Check if project already has an evaluation
+      console.log(`Checking for existing evaluation for project ${projectId}`);
       const existingEvaluation = await storage.getProjectEvaluation(projectId);
       if (existingEvaluation) {
+        console.log('Evaluation already exists, returning existing evaluation');
         return res.json({ 
           message: 'Evaluation already exists for this project',
           evaluation: existingEvaluation 
         });
       }
+      console.log('No existing evaluation found, generating new evaluation');
 
-      // Generate evaluation
-      const evaluationResult = await aiService.generateProjectEvaluation({
+      // Prepare project data for evaluation
+      const projectData = {
         title: project.title,
         description: project.description,
-        longDescription: project.longDescription,
-        tags: project.tags
-      });
+        longDescription: project.longDescription || '',
+        tags: project.tags || []
+      };
+      console.log('Project data prepared for evaluation:', projectData);
+
+      // Generate evaluation
+      console.log('Calling AI service to generate evaluation');
+      const evaluationResult = await aiService.generateProjectEvaluation(projectData);
+      console.log('Evaluation generated successfully, fit score:', evaluationResult.fitScore);
 
       // Save the evaluation
+      console.log('Saving evaluation to database');
       const savedEvaluation = await storage.saveProjectEvaluation(
         projectId,
         evaluationResult.evaluation,
         evaluationResult.fitScore
       );
+      console.log('Evaluation saved successfully with ID:', savedEvaluation.id);
 
       return res.json({ 
         message: 'Project evaluation generated successfully',
