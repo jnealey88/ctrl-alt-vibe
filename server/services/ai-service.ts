@@ -32,6 +32,14 @@ export class AIService {
     regulatoryConsiderations: string;
     partnershipOpportunities: { partners: string[] };
     competitiveLandscape: { competitors: Array<{ name: string; differentiation: string }> };
+    implementationRoadmap?: { 
+      phases: Array<{ 
+        timeframe: string; 
+        tasks: string[]; 
+        resources: string; 
+        metrics: string[] 
+      }> 
+    };
   }> {
     console.log(`Generating fresh evaluation for project ${project.id}: ${project.title}`);
     
@@ -62,19 +70,75 @@ export class AIService {
       const systemPrompt = `You are an expert business and technology consultant who evaluates project viability. 
         Analyze the following project information and provide a comprehensive evaluation with the following elements:
         
-        1. Market-Fit Analysis: Identify strengths, weaknesses, and demand potential
-        2. Target Audience: Create demographic and psychographic profiles of ideal users
-        3. Fit Score: Assign a numerical rating (0-100) with explanation
-        4. Business Plan: Revenue model, go-to-market strategy, key milestones
-        5. Value Proposition: Concise one-sentence summary of project value
-        6. Risk Assessment: 3-5 project risks (technical, market, legal) with mitigation strategies
-        7. Technical Feasibility: High-level evaluation of required tech stack and complexity. Provide a summary of the technical challenges and how to overcome them. Include items they'll need to vibe code to ensure they're vibe coded app meets production level quality.
-        8. Regulatory Considerations: Data-privacy, IP, or industry-specific rules
-        9. Partnership Opportunities: Potential allies, platforms or APIs that could accelerate growth. Include how to get started with each partner or how to start the relationship.
-        10. Competitive Landscape: Identify top 3-5 competitors and differentiation points. Include a SWOT analysis for each competitor.
+        1. Market-Fit Analysis:
+           - Identify 5 specific strengths with concrete examples of how they create value
+           - Identify 5 specific weaknesses with actionable recommendations for improvement
+           - Provide detailed demand potential analysis with market size estimates and growth projections
+        
+        2. Target Audience:
+           - Create detailed demographic profiles including age ranges, income levels, education, occupation, and geographic location
+           - Develop comprehensive psychographic profiles with values, interests, pain points, and buying behaviors
+           - Include 3 detailed user personas with names, backgrounds, goals, and scenarios for using the product
+        
+        3. Fit Score:
+           - Assign a numerical rating (0-100) based on concrete criteria
+           - Provide a detailed explanation for the score broken down by key success factors
+           - Include specific recommendations to improve the score by at least 10 points
+        
+        4. Business Plan:
+           - Detail 3-5 revenue model options with pros/cons and implementation requirements for each
+           - Create a phased go-to-market strategy with specific channels, messaging, and KPIs
+           - Outline 6-8 key milestones with timeframes, resource requirements, and success criteria
+           - Include monetization strategies with pricing models and revenue projections
+        
+        5. Value Proposition:
+           - Provide a concise one-sentence summary of project value
+           - Break down the value proposition into specific benefits for each user segment
+           - Include before/after scenarios showing the transformation users experience
+        
+        6. Risk Assessment:
+           - Identify 5-7 project risks across technical, market, and legal domains
+           - Rate each risk by impact (High/Medium/Low) and probability (High/Medium/Low)
+           - Provide detailed mitigation strategies with specific actions, owners, and timelines
+           - Include contingency plans for high-impact risks
+        
+        7. Technical Feasibility:
+           - Provide a detailed evaluation of required tech stack with specific technologies
+           - Outline development complexity with estimated timelines and resource requirements
+           - Identify technical challenges with specific solutions and best practices
+           - Include scalability considerations and recommendations for future-proofing
+           - Specify items they'll need to vibe code to ensure their vibe coded app meets production level quality
+           - Recommend testing approaches and quality assurance strategies
+        
+        8. Regulatory Considerations:
+           - Identify specific data privacy regulations applicable to the project (GDPR, CCPA, etc.)
+           - Outline IP protection strategies and potential patent/trademark opportunities
+           - Detail industry-specific rules and compliance requirements
+           - Provide actionable recommendations for addressing regulatory challenges
+        
+        9. Partnership Opportunities:
+           - Identify 5-7 specific potential partners with company names where possible
+           - For each partner, explain the exact value exchange and integration points
+           - Include detailed guidance on how to approach each partner (contact methods, pitch points)
+           - Provide templates for partnership proposals and outreach messages
+           - Outline partnership KPIs and success metrics
+        
+        10. Competitive Landscape:
+           - Identify 5-7 direct and indirect competitors with detailed profiles
+           - For each competitor, provide a complete SWOT analysis with specifics
+           - Include market positioning map showing where the project fits relative to competitors
+           - Detail differentiation strategies with specific features and messaging
+           - Recommend competitive response strategies for different market scenarios
+        
+        11. Implementation Roadmap:
+           - Provide a phased implementation plan with 90-day, 6-month, and 1-year horizons
+           - Include resource requirements (team composition, skills needed, estimated costs)
+           - Outline critical path dependencies and decision points
+           - Detail success metrics and measurement approaches for each phase
         
         Format your response as a valid JSON object with the EXACT structure shown in the example below.
-        Be specific, practical and actionable with your analysis.
+        Be extremely specific, practical and actionable with your analysis. Include concrete examples, numbers, 
+        and detailed recommendations throughout. Avoid generic advice and tailor everything to this specific project.
         
         IMPORTANT: 
         - Base your analysis ONLY on the specific project details provided. 
@@ -127,6 +191,28 @@ export class AIService {
               {
                 "name": "Competitor 2",
                 "differentiation": "Differentiation from competitor 2"
+              }
+            ]
+          },
+          "implementationRoadmap": {
+            "phases": [
+              {
+                "timeframe": "90-day horizon",
+                "tasks": ["Task 1", "Task 2", "Task 3"],
+                "resources": "Description of required resources",
+                "metrics": ["Metric 1", "Metric 2"]
+              },
+              {
+                "timeframe": "6-month horizon",
+                "tasks": ["Task 1", "Task 2", "Task 3"],
+                "resources": "Description of required resources",
+                "metrics": ["Metric 1", "Metric 2"]
+              },
+              {
+                "timeframe": "1-year horizon",
+                "tasks": ["Task 1", "Task 2", "Task 3"],
+                "resources": "Description of required resources",
+                "metrics": ["Metric 1", "Metric 2"]
               }
             ]
           }
@@ -220,6 +306,21 @@ export class AIService {
         },
         competitiveLandscape: {
           competitors: Array.isArray(result.competitiveLandscape?.competitors) ? result.competitiveLandscape.competitors : []
+        },
+        implementationRoadmap: result.implementationRoadmap && {
+          phases: Array.isArray(result.implementationRoadmap?.phases) 
+            ? result.implementationRoadmap.phases.map((phase: { 
+                timeframe?: string; 
+                tasks?: string[]; 
+                resources?: string; 
+                metrics?: string[] 
+              }) => ({
+                timeframe: phase.timeframe || '',
+                tasks: Array.isArray(phase.tasks) ? phase.tasks : [],
+                resources: phase.resources || '',
+                metrics: Array.isArray(phase.metrics) ? phase.metrics : []
+              }))
+            : []
         }
       };
       
@@ -276,6 +377,16 @@ export class AIService {
             {
               name: "Error",
               differentiation: "Could not generate competitive landscape due to API error."
+            }
+          ]
+        },
+        implementationRoadmap: {
+          phases: [
+            {
+              timeframe: "Error",
+              tasks: ["Error generating implementation roadmap"],
+              resources: "Could not generate resource requirements due to API error.",
+              metrics: ["Error generating success metrics"]
             }
           ]
         }
