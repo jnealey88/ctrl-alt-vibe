@@ -66,15 +66,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
     // Don't refetch on window focus since evaluations don't change often
     refetchOnWindowFocus: false,
     // If error, don't retry automatically (likely a 404 which is expected if no evaluation exists)
-    retry: false,
-    // Add proper error handling to debug issues
-    onError: (err) => {
-      console.error('Error fetching evaluation:', err);
-    },
-    // Log when data is successfully fetched
-    onSuccess: (data) => {
-      console.log('Evaluation data received:', data);
-    }
+    retry: false
   });
 
   // Generate evaluation mutation
@@ -154,7 +146,28 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   // Handle generate evaluation button click
   const handleGenerateEvaluation = () => {
     console.log("Generating evaluation for project:", projectId);
-    generateMutation.mutate();
+    console.log("Sending request to API...");
+    
+    // Manual request to debug
+    fetch(`/api/ai/evaluate-project`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ projectId }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('API response:', data);
+        // After successful manual request, refetch the evaluation
+        setTimeout(() => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+        }, 1000);
+      })
+      .catch(error => {
+        console.error('Error generating evaluation:', error);
+      });
   };
 
   // Handle delete evaluation button click
