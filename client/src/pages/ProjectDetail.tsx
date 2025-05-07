@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CommentSection from "@/components/CommentSection";
-import ProjectEvaluation from "@/components/ProjectEvaluation";
 import SEO from "@/components/SEO";
 import type { Project } from "@shared/schema";
 
@@ -432,12 +431,6 @@ const ProjectDetail = () => {
                   {project.commentsCount || 0}
                 </span>
               </TabsTrigger>
-              {/* Only show evaluation tab for project owner */}
-              {isAuthor && (
-                <TabsTrigger value="evaluation" className="flex items-center gap-1">
-                  AI Evaluation
-                </TabsTrigger>
-              )}
             </TabsList>
             
             <TabsContent value="details" className="focus-visible:outline-none focus-visible:ring-0">
@@ -454,12 +447,7 @@ const ProjectDetail = () => {
             </TabsContent>
             
             <TabsContent value="comments" className="focus-visible:outline-none focus-visible:ring-0">
-              <CommentSection projectId={Number(id)} />
-            </TabsContent>
-            
-            {/* AI Evaluation tab content */}
-            <TabsContent value="evaluation" className="focus-visible:outline-none focus-visible:ring-0">
-              <ProjectEvaluation projectId={Number(id)} isUserOwner={isAuthor || false} />
+              <CommentSection />
             </TabsContent>
           </Tabs>
         </div>

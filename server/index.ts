@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes, registerDirectRoutes } from "./routes";
+import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import rateLimit from "express-rate-limit";
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';

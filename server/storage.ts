@@ -21,7 +21,6 @@ import {
   notifications,
   notificationTypes,
   projectGallery,
-  projectEvaluations,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -44,9 +43,7 @@ import type {
   Notification,
   InsertNotification,
   ProjectGalleryImage,
-  InsertProjectGallery,
-  ProjectEvaluation,
-  InsertProjectEvaluation
+  InsertProjectGallery
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -1814,13 +1811,6 @@ export const storage = {
     return user || null;
   },
 
-  async getUserById(id: number): Promise<any | null> {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id)
-    });
-    return user || null;
-  },
-
   async updateUser(userId: number, userData: any): Promise<any | null> {
     try {
       const [updatedUser] = await db.update(users)
@@ -2216,136 +2206,5 @@ export const storage = {
       where: eq(projectGallery.projectId, projectId),
       orderBy: asc(projectGallery.displayOrder)
     });
-  },
-
-  /**
-   * Get project evaluation by project ID
-   * @param projectId Project ID
-   * @returns Project evaluation data or null if not found
-   */
-  async getProjectEvaluation(projectId: number): Promise<ProjectEvaluation | null> {
-    console.log(`[storage] Getting project evaluation for project ID: ${projectId}`);
-    
-    try {
-      const evaluation = await db.query.projectEvaluations.findFirst({
-        where: eq(projectEvaluations.projectId, projectId)
-      });
-      
-      if (!evaluation) {
-        console.log(`[storage] No evaluation found for project ID: ${projectId}`);
-        return null;
-      }
-      
-      console.log(`[storage] Found evaluation with ID ${evaluation.id}`);
-      console.log(`[storage] Created at: ${evaluation.createdAt}`);
-      console.log(`[storage] Fit score: ${evaluation.fitScore}`);
-      console.log(`[storage] Evaluation object keys: ${Object.keys(evaluation).join(', ')}`);
-      
-      // Check the evaluation field
-      const evalData = evaluation.evaluation;
-      console.log(`[storage] Evaluation field type: ${typeof evalData}`);
-      
-      if (evalData && typeof evalData === 'object') {
-        console.log(`[storage] Evaluation data keys: ${Object.keys(evalData).join(', ')}`);
-      } else {
-        console.log(`[storage] Warning: Evaluation data is not an object`);
-      }
-      
-      // Cast evaluation to correct type for TypeScript
-      return evaluation as unknown as ProjectEvaluation;
-    } catch (error) {
-      console.error('[storage] Error retrieving project evaluation:', error);
-      return null;
-    }
-  },
-
-  /**
-   * Create or update project evaluation
-   * @param projectId Project ID
-   * @param evaluation Evaluation data
-   * @param fitScore Score from 0-100
-   * @returns Created/updated evaluation
-   */
-  async saveProjectEvaluation(
-    projectId: number, 
-    evaluationData: any, 
-    fitScore: number
-  ): Promise<ProjectEvaluation> {
-    console.log(`[storage] Saving project evaluation for projectId: ${projectId}`);
-    console.log(`[storage] Fit score: ${fitScore}`);
-    console.log(`[storage] Evaluation data type: ${typeof evaluationData}`);
-    
-    if (evaluationData && typeof evaluationData === 'object') {
-      console.log(`[storage] Evaluation data keys: ${Object.keys(evaluationData).join(', ')}`);
-    } else {
-      console.log(`[storage] Warning: Evaluation data is not an object or is null`);
-    }
-    
-    try {
-      // Check if evaluation already exists
-      const existingEval = await db.query.projectEvaluations.findFirst({
-        where: eq(projectEvaluations.projectId, projectId)
-      });
-
-      let result;
-      
-      if (existingEval) {
-        console.log(`[storage] Updating existing evaluation with ID: ${existingEval.id}`);
-        
-        // Update existing evaluation
-        const [updated] = await db.update(projectEvaluations)
-          .set({
-            evaluation: evaluationData,
-            fitScore,
-            updatedAt: new Date()
-          })
-          .where(eq(projectEvaluations.id, existingEval.id))
-          .returning();
-        
-        console.log(`[storage] Evaluation updated successfully`);
-        result = updated;
-      } else {
-        console.log(`[storage] Creating new evaluation for project: ${projectId}`);
-        
-        // Create new evaluation
-        const [created] = await db.insert(projectEvaluations)
-          .values({
-            projectId,
-            evaluation: evaluationData,
-            fitScore,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          })
-          .returning();
-        
-        console.log(`[storage] Evaluation created successfully with ID: ${created.id}`);
-        result = created;
-      }
-      
-      // Check what we're returning
-      console.log(`[storage] Result object keys: ${Object.keys(result).join(', ')}`);
-      
-      // Cast to correct type for TypeScript
-      return result as unknown as ProjectEvaluation;
-    } catch (error) {
-      console.error('[storage] Error saving project evaluation:', error);
-      throw new Error('Failed to save project evaluation to database');
-    }
-  },
-
-  /**
-   * Delete project evaluation
-   * @param projectId Project ID
-   * @returns Success status
-   */
-  async deleteProjectEvaluation(projectId: number): Promise<boolean> {
-    try {
-      await db.delete(projectEvaluations)
-        .where(eq(projectEvaluations.projectId, projectId));
-      return true;
-    } catch (error) {
-      console.error('Error deleting project evaluation:', error);
-      return false;
-    }
   }
 };
