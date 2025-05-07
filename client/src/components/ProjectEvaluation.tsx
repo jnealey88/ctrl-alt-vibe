@@ -22,7 +22,6 @@ import {
   TargetIcon,
   GlobeIcon
 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectEvaluationProps {
   projectId: number;
@@ -370,32 +369,25 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               <CardTitle className="text-xl font-semibold">
                 Comprehensive Evaluation
               </CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-                    onClick={() => generateEvaluation(true)}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <BarChart3Icon className="h-4 w-4" />
-                        <span>Regenerate</span>
-                      </>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p className="text-xs">Generate a fresh AI analysis of your project</p>
-                </TooltipContent>
-              </Tooltip>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                onClick={() => generateEvaluation(true)}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="h-4 w-4 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <BarChart3Icon className="h-4 w-4" />
+                    <span>Regenerate</span>
+                  </>
+                )}
+              </Button>
             </div>
             <CardDescription>
               {evaluation.fitScoreExplanation}
@@ -431,7 +423,6 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               </div>
               
               <div className="pb-1">
-                <TooltipProvider>
                   <TabsList className="grid grid-cols-3 md:flex md:flex-wrap gap-1 md:gap-2 justify-start w-full">
                     {/* Market Category */}
                     <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
@@ -439,41 +430,20 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                       <span className="text-xs font-medium text-primary">Market Analysis</span>
                     </div>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <BarChart3Icon className="h-4 w-4 mr-1" />
-                          <span>Market Fit</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Product-market fit analysis and demand potential</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <BarChart3Icon className="h-4 w-4 mr-1" />
+                      <span>Market Fit</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <UsersIcon className="h-4 w-4 mr-1" />
-                          <span>Audience</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Target demographic and psychographic profiles</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <UsersIcon className="h-4 w-4 mr-1" />
+                      <span>Audience</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <BarChart4Icon className="h-4 w-4 mr-1" />
-                          <span>Competition</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Competitive landscape and differentiation analysis</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <BarChart4Icon className="h-4 w-4 mr-1" />
+                      <span>Competition</span>
+                    </TabsTrigger>
                     
                     {/* Business Category */}
                     <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
@@ -481,41 +451,20 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                       <span className="text-xs font-medium text-primary">Business Strategy</span>
                     </div>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <PieChartIcon className="h-4 w-4 mr-1" />
-                          <span>Business Plan</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Revenue model, go-to-market strategy and milestones</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <PieChartIcon className="h-4 w-4 mr-1" />
+                      <span>Business Plan</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <LightbulbIcon className="h-4 w-4 mr-1" />
-                          <span>Value Prop</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Unique value proposition and market positioning</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <LightbulbIcon className="h-4 w-4 mr-1" />
+                      <span>Value Prop</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <HeartHandshakeIcon className="h-4 w-4 mr-1" />
-                          <span>Partners</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Strategic partnership opportunities to accelerate growth</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <HeartHandshakeIcon className="h-4 w-4 mr-1" />
+                      <span>Partners</span>
+                    </TabsTrigger>
                     
                     {/* Implementation Category */}
                     <div className="col-span-3 flex items-center gap-2 px-2 py-1 mt-2 mb-1 border-b border-primary/10">
@@ -523,43 +472,21 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                       <span className="text-xs font-medium text-primary">Implementation & Risks</span>
                     </div>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <ShieldIcon className="h-4 w-4 mr-1" />
-                          <span>Risks</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Key risks and mitigation strategies</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <ShieldIcon className="h-4 w-4 mr-1" />
+                      <span>Risks</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <CodeIcon className="h-4 w-4 mr-1" />
-                          <span>Technical</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Technical feasibility and implementation considerations</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <CodeIcon className="h-4 w-4 mr-1" />
+                      <span>Technical</span>
+                    </TabsTrigger>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                          <ScrollTextIcon className="h-4 w-4 mr-1" />
-                          <span>Regulatory</span>
-                        </TabsTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">Regulatory and compliance considerations</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <ScrollTextIcon className="h-4 w-4 mr-1" />
+                      <span>Regulatory</span>
+                    </TabsTrigger>
                   </TabsList>
-                </TooltipProvider>
               </div>
             </div>
             
@@ -609,10 +536,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="audience" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Target Audience</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="audience" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+                      <UsersIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Target Audience</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.targetAudience?.demographic && (
                     <div className="my-4">
@@ -630,10 +562,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="business" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Business Plan</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="business" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-full">
+                      <PieChartIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Business Plan</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.businessPlan?.revenueModel && (
                     <div className="my-4">
@@ -662,10 +599,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="value" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Value Proposition</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="value" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full">
+                      <LightbulbIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Value Proposition</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   <div className="my-4 p-4 bg-muted rounded-md border">
                     <p className="italic text-center">{evaluation.valueProposition}</p>
@@ -679,10 +621,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="risks" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Risk Assessment</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="risks" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-full">
+                      <ShieldIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Risk Assessment</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.riskAssessment?.risks && evaluation.riskAssessment.risks.length > 0 && (
                     <div className="space-y-4 my-4">
@@ -698,10 +645,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="technical" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Technical Feasibility</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="technical" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-cyan-50 dark:bg-cyan-900/20 rounded-full">
+                      <CodeIcon className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Technical Feasibility</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   <div className="my-4">
                     <p>{evaluation.technicalFeasibility}</p>
@@ -709,10 +661,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="regulatory" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Regulatory Considerations</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="regulatory" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full">
+                      <ScrollTextIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Regulatory Considerations</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   <div className="my-4">
                     <p>{evaluation.regulatoryConsiderations}</p>
@@ -720,10 +677,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="partnerships" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Partnership Opportunities</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="partnerships" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-pink-50 dark:bg-pink-900/20 rounded-full">
+                      <HeartHandshakeIcon className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Partnership Opportunities</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.partnershipOpportunities?.partners && 
                     evaluation.partnershipOpportunities.partners.length > 0 && (
@@ -738,10 +700,15 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 </div>
               </TabsContent>
               
-              <TabsContent value="competition" className="mt-0 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Competitive Landscape</h3>
-                  <Separator className="my-2" />
+              <TabsContent value="competition" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-full">
+                      <BarChart4Icon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Competitive Landscape</h3>
+                  </div>
+                  <Separator className="mb-4" />
                   
                   {evaluation.competitiveLandscape?.competitors && 
                     evaluation.competitiveLandscape.competitors.length > 0 && (
