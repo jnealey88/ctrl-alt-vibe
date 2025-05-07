@@ -35,7 +35,7 @@ const ProjectDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<string>("details");
+  const [activeTab, setActiveTab] = useState<string>("");
   const [projectUrlCopied, setProjectUrlCopied] = useState<boolean>(false);
   
   // Fetch project details
@@ -65,6 +65,19 @@ const ProjectDetail = () => {
       recordView();
     }
   }, [id, queryClient]);
+  
+  // Set default tab based on whether user is the project owner
+  useEffect(() => {
+    if (project) {
+      // For project owners, default to evaluation tab
+      if (isAuthor) {
+        setActiveTab("evaluation");
+      } else {
+        // For non-owners, default to details tab
+        setActiveTab("details");
+      }
+    }
+  }, [project, isAuthor]);
   
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -426,11 +439,24 @@ const ProjectDetail = () => {
           {/* About this project / Comments tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="mb-4">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="evaluation" className="flex items-center gap-1">
-                <BarChart className="h-4 w-4 mr-1" />
-                Evaluation
-              </TabsTrigger>
+              {/* Conditionally render tabs based on ownership */}
+              {isAuthor ? (
+                <>
+                  <TabsTrigger value="evaluation" className="flex items-center gap-1">
+                    <BarChart className="h-4 w-4 mr-1" />
+                    Evaluation
+                  </TabsTrigger>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                </>
+              ) : (
+                <>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="evaluation" className="flex items-center gap-1">
+                    <BarChart className="h-4 w-4 mr-1" />
+                    Evaluation
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="comments" className="flex items-center gap-1">
                 Comments 
                 <span className="bg-gray-100 text-gray-800 rounded-full text-xs px-2 ml-1">
