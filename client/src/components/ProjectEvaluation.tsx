@@ -241,15 +241,22 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
               Market Fit Score
             </h4>
             <div className="flex items-center">
-              <span className="text-2xl font-bold">{evaluation.fitScore}</span>
+              <span className={`text-2xl font-bold ${
+                evaluation.fitScore < 40 ? "text-red-500" : 
+                evaluation.fitScore < 70 ? "text-yellow-500" : 
+                "text-green-500"
+              }`}>{evaluation.fitScore}</span>
               <span className="text-gray-500 text-lg">/100</span>
             </div>
           </div>
           
           <Progress 
             value={evaluation.fitScore} 
-            // Use CSS to style the progress indicator
-            className={`h-3 mb-2`} 
+            className={`h-3 mb-2 [&>div]:${
+              evaluation.fitScore < 40 ? "bg-red-500" : 
+              evaluation.fitScore < 70 ? "bg-yellow-500" : 
+              "bg-green-500"
+            }`}
           />
           
           <p className="text-sm text-gray-600 mt-2">{data.fitScoreExplanation}</p>
