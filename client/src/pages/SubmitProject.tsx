@@ -30,11 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
-import GalleryUploader from "@/components/GalleryUploader";
+
 import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
-// Import GalleryImage type - will be imported dynamically from galleryService
-import type { GalleryImage } from "@/lib/galleryService";
+
 
 // Import Quill editor components (using v2.0)
 import ReactQuill from 'react-quill';
@@ -94,8 +93,6 @@ const SubmitProject = () => {
   const [isExtractingUrl, setIsExtractingUrl] = useState(false);
   const [showUrlExtraction, setShowUrlExtraction] = useState(false);
   const [extractUrl, setExtractUrl] = useState("");
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
-  const [galleryCaptions, setGalleryCaptions] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quillRef = useRef<ReactQuill>(null);
   
@@ -163,12 +160,11 @@ const SubmitProject = () => {
   // Mutation for submitting the project
   const submitMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      // First create the project to get the project ID
+      // Create the project
       const requestData = {
         ...data,
         tags: selectedTags, // Add the selected tags
         vibeCodingTool: data.vibeCodingTool === 'none' ? null : data.vibeCodingTool,
-        // No gallery images yet - we'll upload them after creating the project
       };
       
       const response = await apiRequest("POST", "/api/projects", requestData);
@@ -177,15 +173,6 @@ const SubmitProject = () => {
       }
       
       const responseData = await response.json();
-      
-      // If there are gallery images and project creation was successful, upload the gallery images
-      if (galleryFiles.length > 0 && responseData?.project?.id) {
-        const projectId = responseData.project.id;
-        
-        // Upload gallery images to the newly created project
-        await uploadGalleryImages(projectId);
-      }
-      
       return responseData;
     },
     onSuccess: (data) => {
@@ -248,60 +235,7 @@ const SubmitProject = () => {
     submitMutation.mutate(data);
   };
   
-  // Handle gallery image uploads using the dedicated gallery service
-  const uploadGalleryImages = async (projectId: number): Promise<GalleryImage[]> => {
-    if (galleryFiles.length === 0) return [];
-    
-    setIsUploading(true);
-    
-    try {
-      console.log("Uploading gallery images...", { count: galleryFiles.length });
-      
-      // Import the gallery service
-      const { uploadMultipleGalleryImages } = await import('@/lib/galleryService');
-      
-      // Use the dedicated service to handle uploads
-      const result = await uploadMultipleGalleryImages(
-        projectId,
-        galleryFiles,
-        galleryCaptions
-      );
-      
-      console.log("Gallery upload complete", { uploaded: result.successCount });
-      
-      // If at least some uploads were successful
-      if (result.successCount > 0) {
-        return result.uploadedImages;
-      } else if (result.failedCount > 0) {
-        // Show more detailed error
-        toast({
-          title: "Gallery upload issues", 
-          description: `${result.failedCount} of ${galleryFiles.length} images failed to upload. You can try adding them later by editing your project.`,
-          variant: "destructive"
-        });
-        return [];
-      }
-      
-      return result.uploadedImages;
-    } catch (error) {
-      console.error('Gallery upload service error:', error);
-      toast({
-        title: "Gallery upload failed", 
-        description: "There was a problem uploading your gallery images. You can add them later by editing your project.",
-        variant: "destructive"
-      });
-      return [];
-    } finally {
-      console.log("Updating project data...");
-      setIsUploading(false);
-    }
-  };
-  
-  // Handle gallery change from the GalleryUploader component
-  const handleGalleryChange = (files: File[], captions: string[]) => {
-    setGalleryFiles(files);
-    setGalleryCaptions(captions);
-  };
+
   
   const processFile = async (file: File) => {
     const fileSize = file.size / 1024 / 1024; // in MB
@@ -664,18 +598,7 @@ const SubmitProject = () => {
                 )}
               />
               
-              {/* Gallery Images */}
-              <div className="mt-8 mb-4">
-                <h3 className="text-lg font-medium mb-2">Project Gallery</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Add multiple images to showcase different aspects of your project. This will create a gallery on your project page.
-                </p>
-                <GalleryUploader 
-                  onGalleryChange={handleGalleryChange}
-                  maxImages={5}
-                  className="mt-2"
-                />  
-              </div>
+
               
               <FormField
                 control={form.control}

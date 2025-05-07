@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TagSelector from "@/components/TagSelector";
-import GalleryUploader from "@/components/GalleryUploader";
+
 import type { ProjectGalleryImage } from "@shared/schema";
 import { Upload, Image, Loader2, AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
