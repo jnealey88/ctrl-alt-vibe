@@ -396,9 +396,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Menu section with enhanced UI and improved mobile navigation */}
-            <div className="sticky top-0 z-20 px-2 sm:px-6 pt-4 pb-6 bg-white dark:bg-gray-950 shadow-md border-b">
+            <div className="sticky top-0 z-30 px-2 sm:px-6 pt-4 pb-3 bg-white dark:bg-gray-950 shadow-md border-b">
               {/* Navigation categories */}
-              <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium text-primary flex items-center">
                   <PieChartIcon className="h-4 w-4 mr-1" />
                   <span>AI Evaluation</span>
@@ -472,11 +472,11 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               </div>
             </div>
             
-            {/* Add extra height for spacing after tabs */}
-            <div className="h-8"></div>
+            {/* Required spacing to prevent content from being covered by the sticky header */}
+            <div className="h-16"></div>
             
             {/* Content section with enhanced styling */}
-            <div className="px-6 pb-6 pt-6 border-t mt-6">
+            <div className="px-6 pb-6 pt-4 relative z-10">
               <TabsContent value="market-fit" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
                   <div className="flex items-center gap-3 mb-4">
