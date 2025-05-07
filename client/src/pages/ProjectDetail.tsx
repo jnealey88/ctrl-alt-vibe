@@ -13,7 +13,8 @@ import {
   BadgeCheck,
   ArrowLeft,
   Cpu,
-  Copy
+  Copy,
+  BarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CommentSection from "@/components/CommentSection";
+import ProjectEvaluation from "@/components/ProjectEvaluation";
 import SEO from "@/components/SEO";
 import type { Project } from "@shared/schema";
 
@@ -425,6 +427,10 @@ const ProjectDetail = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="mb-4">
               <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="evaluation" className="flex items-center gap-1">
+                <BarChart className="h-4 w-4 mr-1" />
+                Evaluation
+              </TabsTrigger>
               <TabsTrigger value="comments" className="flex items-center gap-1">
                 Comments 
                 <span className="bg-gray-100 text-gray-800 rounded-full text-xs px-2 ml-1">
@@ -444,6 +450,10 @@ const ProjectDetail = () => {
                   <div className="mt-6" dangerouslySetInnerHTML={{ __html: project.longDescription }} />
                 )}
               </div>
+            </TabsContent>
+            
+            <TabsContent value="evaluation" className="focus-visible:outline-none focus-visible:ring-0">
+              <ProjectEvaluation projectId={parseInt(id)} isOwner={isAuthor} />
             </TabsContent>
             
             <TabsContent value="comments" className="focus-visible:outline-none focus-visible:ring-0">
