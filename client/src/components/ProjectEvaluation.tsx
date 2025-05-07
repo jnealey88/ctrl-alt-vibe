@@ -334,8 +334,24 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   }
 
   // Evaluation data exists, show the full evaluation
-  console.log('Received evaluation data:', evaluation);
-  const data = evaluation.evaluation;
+  console.log('Received evaluation data:', evaluationData);
+  
+  // Safety check in case evaluationData is null or undefined
+  if (!evaluationData) {
+    return (
+      <div className="p-6 text-center">
+        <Alert className="bg-red-50 border-red-200">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Data Error</AlertTitle>
+          <AlertDescription>
+            Unable to display evaluation data. Please try again later.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+  
+  const data = evaluationData.evaluation;
   console.log('Evaluation object data:', data);
   
   return (
@@ -344,7 +360,7 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
         <div>
           <h3 className="text-xl font-bold mb-1">AI Project Evaluation</h3>
           <p className="text-gray-500 text-sm">
-            Generated on {new Date(evaluation.createdAt).toLocaleDateString()}
+            Generated on {new Date(evaluationData.createdAt).toLocaleDateString()}
           </p>
         </div>
         
@@ -375,19 +391,19 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
             </h4>
             <div className="flex items-center">
               <span className={`text-2xl font-bold ${
-                evaluation.fitScore < 40 ? "text-red-500" : 
-                evaluation.fitScore < 70 ? "text-yellow-500" : 
+                evaluationData.fitScore < 40 ? "text-red-500" : 
+                evaluationData.fitScore < 70 ? "text-yellow-500" : 
                 "text-green-500"
-              }`}>{evaluation.fitScore}</span>
+              }`}>{evaluationData.fitScore}</span>
               <span className="text-gray-500 text-lg">/100</span>
             </div>
           </div>
           
           <Progress 
-            value={evaluation.fitScore} 
+            value={evaluationData.fitScore} 
             className={`h-3 mb-2 [&>div]:${
-              evaluation.fitScore < 40 ? "bg-red-500" : 
-              evaluation.fitScore < 70 ? "bg-yellow-500" : 
+              evaluationData.fitScore < 40 ? "bg-red-500" : 
+              evaluationData.fitScore < 70 ? "bg-yellow-500" : 
               "bg-green-500"
             }`}
           />
