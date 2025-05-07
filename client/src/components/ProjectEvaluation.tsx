@@ -195,28 +195,15 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   // Handle generate evaluation button click
   const handleGenerateEvaluation = () => {
     console.log("Generating evaluation for project:", projectId);
-    console.log("Sending request to API...");
     
-    // Manual request to debug
-    fetch(`/api/ai/evaluate-project`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ projectId }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('API response:', data);
-        // After successful manual request, refetch the evaluation
-        setTimeout(() => {
-          refetch();
-          queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
-        }, 1000);
-      })
-      .catch(error => {
-        console.error('Error generating evaluation:', error);
-      });
+    // Use the ApiRequest utility which properly handles authentication
+    generateMutation.mutate();
+    
+    // Add a toast notification to let the user know the process has started
+    toast({
+      title: "Generating evaluation",
+      description: "Your project evaluation is being generated. This may take a moment...",
+    });
   };
 
   // Handle delete evaluation button click

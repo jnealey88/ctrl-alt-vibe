@@ -18,6 +18,15 @@ const aiService = new AIService();
  * @param app Express application
  */
 export function registerAIRoutes(app: Express) {
+  // Test route that always responds with JSON (no auth required)
+  app.get(`${apiPrefix}/ai/test-json`, (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      message: 'This is a test JSON response',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
   // Debug route for project evaluation (dev only)
   app.get(`${apiPrefix}/ai/debug-evaluation/:projectId`, async (req: Request, res: Response) => {
     try {
