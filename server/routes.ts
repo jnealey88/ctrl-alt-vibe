@@ -109,6 +109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin routes
   registerAdminRoutes(app);
   
+  // Register AI routes
+  registerAIRoutes(app, '/api');
+  
   // Create HTTP server once for the entire application
   const httpServer = createServer(app);
   

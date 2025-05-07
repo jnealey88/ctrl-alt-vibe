@@ -46,10 +46,10 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
       // Return limited information
       return res.status(200).json({
         evaluation: {
-          fitScore: evaluation.fitScore,
-          valueProposition: evaluation.valueProposition,
+          fitScore: evaluation.fitScore || 0,
+          valueProposition: evaluation.valueProposition || '',
           marketFitAnalysis: {
-            strengths: evaluation.marketFitAnalysis.strengths
+            strengths: evaluation.marketFitAnalysis?.strengths || []
           }
         }
       });
