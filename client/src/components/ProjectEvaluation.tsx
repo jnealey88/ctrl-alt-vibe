@@ -48,14 +48,12 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     refetch: refetchOwner
   } = useQuery({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
-    enabled: isOwner,
     retry: false,
+    enabled: isOwner, // Only run this query if user is the owner
   });
 
-  // Whether we're in owner view with full data
-  const isOwnerView = isOwner && ownerData?.evaluation;
-  
-  // Choose the correct data source
+  // Choose which data set to use based on user role
+  const isOwnerView = isOwner && ownerData;
   const evaluation = isOwnerView ? ownerData?.evaluation : publicData?.evaluation;
   const isError = isOwnerView ? ownerData?.error : publicData?.error;
   const isLoading = isOwnerView ? isOwnerLoading : isPublicLoading;
@@ -148,10 +146,10 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
         });
       }
     } catch (error) {
-      console.error('Error during evaluation generation:', error);
+      console.error('Error generating evaluation:', error);
       toast({
         title: 'Error',
-        description: 'Failed to connect to the server. Please try again.',
+        description: 'Could not connect to the evaluation service',
         variant: 'destructive',
       });
     } finally {
@@ -159,39 +157,100 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
     }
   };
 
-  // If we have an error and are the owner, show generate button
+  // For owners without an evaluation yet, show generation button
   if (isOwner && !evaluation && !isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Project Evaluation</CardTitle>
-          <CardDescription>
-            Generate an AI-powered business and market analysis for your project
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p>No evaluation has been generated for this project yet. Would you like to create one?</p>
-            <p className="text-sm text-muted-foreground">
-              The evaluation will include market fit analysis, target audience information, 
-              business plan recommendations, and more.
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold mb-0">Project Analysis</h2>
+        </div>
+        
+        <Card className="w-full border border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <BarChart3Icon className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>AI-Powered Evaluation</CardTitle>
+                <CardDescription>Get valuable insights into your project's business potential</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="flex flex-col items-center justify-center py-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUpIcon className="h-5 w-5 text-green-500" />
+                  <h3 className="font-medium">Market Analysis</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Understand how your project fits into the current market landscape
+                </p>
+              </div>
+              
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <UsersIcon className="h-5 w-5 text-blue-500" />
+                  <h3 className="font-medium">Audience Profiling</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Identify your ideal target audience and their characteristics
+                </p>
+              </div>
+              
+              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldIcon className="h-5 w-5 text-amber-500" />
+                  <h3 className="font-medium">Risk Assessment</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Discover potential challenges and mitigation strategies
+                </p>
+              </div>
+            </div>
+            
+            {isGenerating ? (
+              <div className="w-full max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-lg border p-6 text-center mt-4">
+                <div className="flex flex-col items-center">
+                  <div className="relative h-16 w-16 mb-4">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <BarChart3Icon className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Generating Your Evaluation</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mb-4">
+                    Our AI is analyzing your project and creating a comprehensive business evaluation. 
+                    This typically takes 30-60 seconds.
+                  </p>
+                  <Progress className="h-1 w-full max-w-xs mx-auto" value={60} />
+                </div>
+              </div>
+            ) : (
+              <Button 
+                onClick={generateEvaluation} 
+                className="min-w-[220px] gap-2"
+                size="lg"
+              >
+                <BarChart3Icon className="h-4 w-4" />
+                Generate Evaluation
+              </Button>
+            )}
+            
+            <p className="text-xs text-center text-muted-foreground italic max-w-md">
+              Powered by OpenAI's GPT-4o model for accurate and insightful business analysis
             </p>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button 
-            onClick={generateEvaluation} 
-            disabled={isGenerating}
-            className="w-full md:w-auto"
-          >
-            {isGenerating ? 'Generating...' : 'Generate Evaluation'}
-          </Button>
-        </CardFooter>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
-  // If not owner and no evaluation exists, show nothing or minimal message
+  // Hide for non-owners if no evaluation exists yet
   if (!isOwner && !evaluation && !isLoading) {
     return null;
   }
@@ -199,311 +258,361 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
   // Loading state
   if (isLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle><Skeleton className="h-8 w-2/3" /></CardTitle>
-          <CardDescription>
-            <span><Skeleton className="h-4 w-full" /></span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div><Skeleton className="h-4 w-full" /></div>
-            <div><Skeleton className="h-4 w-full" /></div>
-            <div><Skeleton className="h-4 w-full" /></div>
-            <div><Skeleton className="h-4 w-5/6" /></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-9 w-32 rounded-md" />
+        </div>
+        
+        <Card className="w-full overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle><Skeleton className="h-8 w-48" /></CardTitle>
+                <CardDescription className="mt-2">
+                  <Skeleton className="h-4 w-64" />
+                </CardDescription>
+              </div>
+              <Skeleton className="h-16 w-16 rounded-full" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-1/4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Skeleton className="h-28 rounded-lg" />
+                  <Skeleton className="h-28 rounded-lg" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-1/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   // For non-owners with data, show limited view
   if (!isOwner && evaluation) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>Project Viability Score</span>
-            <span className="text-xl font-bold">{evaluation.fitScore}/100</span>
-          </CardTitle>
-          <CardDescription>AI-powered analysis</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Progress value={evaluation.fitScore} className="h-2 w-full" />
-            
+      <div className="space-y-4">
+        <Card className="w-full border-t-4 border-t-primary shadow-md">
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-xl font-bold">Project Viability Score</CardTitle>
+                <CardDescription className="text-sm mt-1">AI-powered market analysis</CardDescription>
+              </div>
+              <div className="flex flex-col items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border shadow-sm">
+                <span className="text-3xl font-bold text-primary">{evaluation.fitScore}</span>
+                <span className="text-xs text-muted-foreground">out of 100</span>
+              </div>
+            </div>
+            <Progress value={evaluation.fitScore} className="h-2 w-full mt-3" />
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
             {evaluation.valueProposition && (
-              <Alert>
-                <LightbulbIcon className="h-4 w-4" />
-                <AlertTitle>Value Proposition</AlertTitle>
-                <AlertDescription>
-                  {evaluation.valueProposition}
-                </AlertDescription>
-              </Alert>
+              <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
+                <div className="flex gap-2 items-center mb-2">
+                  <LightbulbIcon className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Value Proposition</h3>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300">{evaluation.valueProposition}</p>
+              </div>
             )}
             
             {evaluation.marketFitAnalysis?.strengths && evaluation.marketFitAnalysis.strengths.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium">Key Strengths</h4>
-                <ul className="list-disc pl-5 space-y-1">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-lg p-4">
+                <h4 className="font-medium flex items-center gap-2 mb-3 text-green-700 dark:text-green-400">
+                  <BarChart3Icon className="h-4 w-4" />
+                  Key Strengths
+                </h4>
+                <ul className="list-disc pl-5 space-y-2">
                   {evaluation.marketFitAnalysis.strengths.map((strength, index) => (
-                    <li key={index} className="text-sm">{strength}</li>
+                    <li key={index} className="text-gray-700 dark:text-gray-300">{strength}</li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+            
+            <div className="text-center text-sm text-muted-foreground mt-4 italic">
+              Login as project owner to view the complete analysis
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   // Full evaluation view for owners
   if (isOwner && evaluation) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>Project Evaluation</span>
-            <span className="text-xl font-bold">{evaluation.fitScore}/100</span>
-          </CardTitle>
-          <CardDescription>
-            AI-powered business and market analysis
-          </CardDescription>
-          <Progress value={evaluation.fitScore} className="h-2 w-full mt-2" />
-        </CardHeader>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Project Analysis</h2>
+            <p className="text-muted-foreground text-sm">AI-powered comprehensive business evaluation</p>
+          </div>
+          <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
+            <span className="text-xs text-muted-foreground mb-1">Viability Score</span>
+            <span className="text-3xl font-bold text-primary">{evaluation.fitScore}</span>
+            <span className="text-xs text-muted-foreground">out of 100</span>
+          </div>
+        </div>
         
-        <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-9 mb-4 mx-6 mt-2">
-            <TabsTrigger value="market-fit" className="text-xs">
-              <BarChart3Icon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span className="hidden sm:inline-block">Market Fit</span>
-              <span className="sm:hidden">Market</span>
-            </TabsTrigger>
-            <TabsTrigger value="audience" className="text-xs">
-              <UsersIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Audience</span>
-            </TabsTrigger>
-            <TabsTrigger value="business" className="text-xs">
-              <TrendingUpIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Business</span>
-            </TabsTrigger>
-            <TabsTrigger value="value" className="text-xs">
-              <LightbulbIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Value</span>
-            </TabsTrigger>
-            <TabsTrigger value="risks" className="text-xs">
-              <ShieldIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Risks</span>
-            </TabsTrigger>
-            <TabsTrigger value="technical" className="text-xs">
-              <CodeIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Technical</span>
-            </TabsTrigger>
-            <TabsTrigger value="regulatory" className="text-xs">
-              <ScrollTextIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Regulatory</span>
-            </TabsTrigger>
-            <TabsTrigger value="partnerships" className="text-xs">
-              <HeartHandshakeIcon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Partners</span>
-            </TabsTrigger>
-            <TabsTrigger value="competition" className="text-xs">
-              <BarChart4Icon className="h-4 w-4 mr-1 hidden sm:inline-block" />
-              <span>Competition</span>
-            </TabsTrigger>
-          </TabsList>
+        <Card className="w-full border-t-4 border-t-primary shadow-md">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl font-semibold">
+                Project Evaluation
+              </CardTitle>
+            </div>
+            <Progress value={evaluation.fitScore} className="h-2 w-full mt-1" />
+            <CardDescription className="mt-2 text-sm italic">
+              {evaluation.fitScoreExplanation}
+            </CardDescription>
+          </CardHeader>
           
-          <ScrollArea className="h-[300px] md:h-[400px] px-6 pb-4">
-            <TabsContent value="market-fit" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.marketFitAnalysis?.strengths && (
-                  <div className="my-4">
-                    <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">Strengths</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      {evaluation.marketFitAnalysis.strengths.map((strength, index) => (
-                        <li key={index}>{strength}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {evaluation.marketFitAnalysis?.weaknesses && (
-                  <div className="my-4">
-                    <h4 className="font-medium text-red-600 dark:text-red-400 mb-2">Weaknesses</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      {evaluation.marketFitAnalysis.weaknesses.map((weakness, index) => (
-                        <li key={index}>{weakness}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {evaluation.marketFitAnalysis?.demandPotential && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Demand Potential</h4>
-                    <p>{evaluation.marketFitAnalysis.demandPotential}</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="audience" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Target Audience</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.targetAudience?.demographic && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Demographic Profile</h4>
-                    <p>{evaluation.targetAudience.demographic}</p>
-                  </div>
-                )}
-                
-                {evaluation.targetAudience?.psychographic && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Psychographic Profile</h4>
-                    <p>{evaluation.targetAudience.psychographic}</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="business" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Business Plan</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.businessPlan?.revenueModel && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Revenue Model</h4>
-                    <p>{evaluation.businessPlan.revenueModel}</p>
-                  </div>
-                )}
-                
-                {evaluation.businessPlan?.goToMarket && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Go-to-Market Strategy</h4>
-                    <p>{evaluation.businessPlan.goToMarket}</p>
-                  </div>
-                )}
-                
-                {evaluation.businessPlan?.milestones && evaluation.businessPlan.milestones.length > 0 && (
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Key Milestones</h4>
-                    <ol className="list-decimal pl-5 space-y-2">
-                      {evaluation.businessPlan.milestones.map((milestone, index) => (
-                        <li key={index}>{milestone}</li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="value" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Value Proposition</h3>
-                <Separator className="my-2" />
-                
-                <div className="my-4 p-4 bg-muted rounded-md border">
-                  <p className="italic text-center">{evaluation.valueProposition}</p>
+          <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="px-6 grid grid-cols-3 md:grid-cols-5 lg:flex lg:flex-wrap gap-1 mb-4 mt-2">
+              <TabsTrigger value="market-fit" className="px-3 py-2 text-xs">
+                <BarChart3Icon className="h-4 w-4 mr-1.5" />
+                <span className="hidden sm:inline-block">Market Fit</span>
+                <span className="sm:hidden">Market</span>
+              </TabsTrigger>
+              <TabsTrigger value="audience" className="px-3 py-2 text-xs">
+                <UsersIcon className="h-4 w-4 mr-1.5" />
+                <span>Audience</span>
+              </TabsTrigger>
+              <TabsTrigger value="business" className="px-3 py-2 text-xs">
+                <TrendingUpIcon className="h-4 w-4 mr-1.5" />
+                <span>Business</span>
+              </TabsTrigger>
+              <TabsTrigger value="value" className="px-3 py-2 text-xs">
+                <LightbulbIcon className="h-4 w-4 mr-1.5" />
+                <span>Value</span>
+              </TabsTrigger>
+              <TabsTrigger value="risks" className="px-3 py-2 text-xs">
+                <ShieldIcon className="h-4 w-4 mr-1.5" />
+                <span>Risks</span>
+              </TabsTrigger>
+              <TabsTrigger value="technical" className="px-3 py-2 text-xs">
+                <CodeIcon className="h-4 w-4 mr-1.5" />
+                <span>Technical</span>
+              </TabsTrigger>
+              <TabsTrigger value="regulatory" className="px-3 py-2 text-xs">
+                <ScrollTextIcon className="h-4 w-4 mr-1.5" />
+                <span>Regulatory</span>
+              </TabsTrigger>
+              <TabsTrigger value="partnerships" className="px-3 py-2 text-xs">
+                <HeartHandshakeIcon className="h-4 w-4 mr-1.5" />
+                <span>Partners</span>
+              </TabsTrigger>
+              <TabsTrigger value="competition" className="px-3 py-2 text-xs">
+                <BarChart4Icon className="h-4 w-4 mr-1.5" />
+                <span>Competitors</span>
+              </TabsTrigger>
+            </TabsList>
+          
+            <ScrollArea className="h-[300px] md:h-[400px] px-6 pb-4">
+              <TabsContent value="market-fit" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Market Fit Analysis</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.marketFitAnalysis?.strengths && (
+                    <div className="my-4">
+                      <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">Strengths</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.marketFitAnalysis.strengths.map((strength, index) => (
+                          <li key={index}>{strength}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.marketFitAnalysis?.weaknesses && (
+                    <div className="my-4">
+                      <h4 className="font-medium text-red-600 dark:text-red-400 mb-2">Weaknesses</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.marketFitAnalysis.weaknesses.map((weakness, index) => (
+                          <li key={index}>{weakness}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.marketFitAnalysis?.demandPotential && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Demand Potential</h4>
+                      <p>{evaluation.marketFitAnalysis.demandPotential}</p>
+                    </div>
+                  )}
                 </div>
-                
-                <div className="my-4">
-                  <h4 className="font-medium mb-2">Fit Score: {evaluation.fitScore}/100</h4>
-                  <Progress value={evaluation.fitScore} className="h-2 w-full" />
-                  <p className="mt-4">{evaluation.fitScoreExplanation}</p>
+              </TabsContent>
+              
+              <TabsContent value="audience" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Target Audience</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.targetAudience?.demographic && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Demographic Profile</h4>
+                      <p>{evaluation.targetAudience.demographic}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.targetAudience?.psychographic && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Psychographic Profile</h4>
+                      <p>{evaluation.targetAudience.psychographic}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="risks" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Risk Assessment</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.riskAssessment?.risks && evaluation.riskAssessment.risks.length > 0 && (
-                  <div className="space-y-4 my-4">
-                    {evaluation.riskAssessment.risks.map((risk, index) => (
-                      <div key={index} className="p-3 border rounded-md">
-                        <h4 className="font-medium text-amber-600 dark:text-amber-400 mb-1">{risk.type}</h4>
-                        <p className="mb-2">{risk.description}</p>
-                        <p className="text-sm"><span className="font-medium">Mitigation:</span> {risk.mitigation}</p>
-                      </div>
-                    ))}
+              </TabsContent>
+              
+              <TabsContent value="business" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Business Plan</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.businessPlan?.revenueModel && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Revenue Model</h4>
+                      <p>{evaluation.businessPlan.revenueModel}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.businessPlan?.goToMarket && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Go-to-Market Strategy</h4>
+                      <p>{evaluation.businessPlan.goToMarket}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.businessPlan?.milestones && evaluation.businessPlan.milestones.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Key Milestones</h4>
+                      <ol className="list-decimal pl-5 space-y-2">
+                        {evaluation.businessPlan.milestones.map((milestone, index) => (
+                          <li key={index}>{milestone}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="value" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Value Proposition</h3>
+                  <Separator className="my-2" />
+                  
+                  <div className="my-4 p-4 bg-muted rounded-md border">
+                    <p className="italic text-center">{evaluation.valueProposition}</p>
                   </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="technical" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Technical Feasibility</h3>
-                <Separator className="my-2" />
-                
-                <div className="my-4">
-                  <p>{evaluation.technicalFeasibility}</p>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="regulatory" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Regulatory Considerations</h3>
-                <Separator className="my-2" />
-                
-                <div className="my-4">
-                  <p>{evaluation.regulatoryConsiderations}</p>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="partnerships" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Partnership Opportunities</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.partnershipOpportunities?.partners && 
-                  evaluation.partnershipOpportunities.partners.length > 0 && (
+                  
                   <div className="my-4">
-                    <ul className="list-disc pl-5 space-y-2">
-                      {evaluation.partnershipOpportunities.partners.map((partner, index) => (
-                        <li key={index}>{partner}</li>
+                    <h4 className="font-medium mb-2">Fit Score: {evaluation.fitScore}/100</h4>
+                    <Progress value={evaluation.fitScore} className="h-2 w-full" />
+                    <p className="mt-4">{evaluation.fitScoreExplanation}</p>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="risks" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Risk Assessment</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.riskAssessment?.risks && evaluation.riskAssessment.risks.length > 0 && (
+                    <div className="space-y-4 my-4">
+                      {evaluation.riskAssessment.risks.map((risk, index) => (
+                        <div key={index} className="p-3 border rounded-md">
+                          <h4 className="font-medium text-amber-600 dark:text-amber-400 mb-1">{risk.type}</h4>
+                          <p className="mb-2">{risk.description}</p>
+                          <p className="text-sm"><span className="font-medium">Mitigation:</span> {risk.mitigation}</p>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="technical" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Technical Feasibility</h3>
+                  <Separator className="my-2" />
+                  
+                  <div className="my-4">
+                    <p>{evaluation.technicalFeasibility}</p>
                   </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="competition" className="mt-0 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Competitive Landscape</h3>
-                <Separator className="my-2" />
-                
-                {evaluation.competitiveLandscape?.competitors && 
-                  evaluation.competitiveLandscape.competitors.length > 0 && (
-                  <div className="space-y-4 my-4">
-                    {evaluation.competitiveLandscape.competitors.map((competitor, index) => (
-                      <div key={index} className="p-3 border rounded-md">
-                        <h4 className="font-medium mb-1">{competitor.name}</h4>
-                        <p className="text-sm">
-                          <span className="font-medium">Differentiation:</span> {competitor.differentiation}
-                        </p>
-                      </div>
-                    ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="regulatory" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Regulatory Considerations</h3>
+                  <Separator className="my-2" />
+                  
+                  <div className="my-4">
+                    <p>{evaluation.regulatoryConsiderations}</p>
                   </div>
-                )}
-              </div>
-            </TabsContent>
-          </ScrollArea>
-        </Tabs>
-      </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="partnerships" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Partnership Opportunities</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.partnershipOpportunities?.partners && 
+                    evaluation.partnershipOpportunities.partners.length > 0 && (
+                    <div className="my-4">
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.partnershipOpportunities.partners.map((partner, index) => (
+                          <li key={index}>{partner}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="competition" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Competitive Landscape</h3>
+                  <Separator className="my-2" />
+                  
+                  {evaluation.competitiveLandscape?.competitors && 
+                    evaluation.competitiveLandscape.competitors.length > 0 && (
+                    <div className="space-y-4 my-4">
+                      {evaluation.competitiveLandscape.competitors.map((competitor, index) => (
+                        <div key={index} className="p-3 border rounded-md">
+                          <h4 className="font-medium mb-1">{competitor.name}</h4>
+                          <p className="text-sm">
+                            <span className="font-medium">Differentiation:</span> {competitor.differentiation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+        </Card>
+      </div>
     );
   }
 
