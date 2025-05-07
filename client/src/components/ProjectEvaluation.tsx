@@ -317,11 +317,9 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
                 <CardTitle>
                   <Skeleton className="h-8 w-48" />
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  <span className="inline-block">
-                    <Skeleton className="h-4 w-64" />
-                  </span>
-                </CardDescription>
+                <div className="mt-2">
+                  <Skeleton className="h-4 w-64" />
+                </div>
               </div>
               <Skeleton className="h-16 w-16 rounded-full" />
             </div>
@@ -433,40 +431,40 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="px-6 pt-1 pb-4">
-              <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
-                <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs">
+              <TabsList className="flex flex-wrap gap-1.5 justify-start">
+                <TabsTrigger value="market-fit" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <BarChart3Icon className="h-4 w-4 mr-1" />
                   <span>Market Fit</span>
                 </TabsTrigger>
-                <TabsTrigger value="audience" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="audience" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <UsersIcon className="h-4 w-4 mr-1" />
                   <span>Audience</span>
                 </TabsTrigger>
-                <TabsTrigger value="business" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="business" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <TrendingUpIcon className="h-4 w-4 mr-1" />
                   <span>Business</span>
                 </TabsTrigger>
-                <TabsTrigger value="value" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="value" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <LightbulbIcon className="h-4 w-4 mr-1" />
                   <span>Value</span>
                 </TabsTrigger>
-                <TabsTrigger value="risks" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="risks" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <ShieldIcon className="h-4 w-4 mr-1" />
                   <span>Risks</span>
                 </TabsTrigger>
-                <TabsTrigger value="technical" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="technical" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <CodeIcon className="h-4 w-4 mr-1" />
                   <span>Technical</span>
                 </TabsTrigger>
-                <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="regulatory" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <ScrollTextIcon className="h-4 w-4 mr-1" />
                   <span>Regulatory</span>
                 </TabsTrigger>
-                <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="partnerships" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <HeartHandshakeIcon className="h-4 w-4 mr-1" />
                   <span>Partners</span>
                 </TabsTrigger>
-                <TabsTrigger value="competition" className="px-2 py-1.5 text-xs">
+                <TabsTrigger value="competition" className="px-2 py-1.5 text-xs flex-shrink-0">
                   <BarChart4Icon className="h-4 w-4 mr-1" />
                   <span>Competitors</span>
                 </TabsTrigger>
