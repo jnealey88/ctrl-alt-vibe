@@ -453,7 +453,7 @@ const ProjectDetail = () => {
             </TabsContent>
             
             <TabsContent value="evaluation" className="focus-visible:outline-none focus-visible:ring-0">
-              <ProjectEvaluation projectId={parseInt(id)} isOwner={isAuthor} />
+              <ProjectEvaluation projectId={id ? parseInt(id) : 0} isOwner={!!isAuthor} />
             </TabsContent>
             
             <TabsContent value="comments" className="focus-visible:outline-none focus-visible:ring-0">
