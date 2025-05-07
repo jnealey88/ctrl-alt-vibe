@@ -407,7 +407,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
           
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Menu section with enhanced UI and improved mobile navigation */}
-            <div className="sticky top-0 z-50 px-2 sm:px-6 pt-3 pb-2 bg-white dark:bg-gray-950 shadow-md border-b">
+            <div className="sticky top-0 z-30 px-2 sm:px-6 pt-3 pb-2 bg-white dark:bg-gray-950 shadow-md border-b">
               {/* Title */}
               <div className="mb-3 flex justify-center">
                 <h3 className="font-medium text-primary flex items-center">
