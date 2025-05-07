@@ -28,6 +28,10 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
     try {
       const projectId = parseInt(req.params.projectId);
       
+      console.log(`Accessing evaluation for project ${projectId}`);
+      console.log(`User authenticated:`, req.isAuthenticated());
+      console.log(`User data:`, req.user);
+      
       if (isNaN(projectId)) {
         return res.status(400).json({ error: 'Invalid project ID' });
       }
@@ -38,11 +42,18 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
       });
 
       if (!project) {
+        console.log('Project not found:', projectId);
         return res.status(404).json({ error: 'Project not found' });
       }
 
+      console.log(`Project author ID: ${project.authorId}, Current user ID: ${req.user?.id}`);
+      console.log(`User role: ${req.user?.role}`);
+      console.log(`Is owner: ${project.authorId === req.user?.id}`);
+      console.log(`Is admin: ${req.user?.role === 'admin'}`);
+
       // Check if user is the project owner or an admin
       if (project.authorId !== req.user?.id && req.user?.role !== 'admin') {
+        console.log('Permission denied. Not owner or admin.');
         return res.status(403).json({ error: 'You do not have permission to access this evaluation' });
       }
 
@@ -52,10 +63,12 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
       });
 
       if (!evaluation) {
+        console.log('No evaluation found for project', projectId);
         return res.status(200).json({ evaluation: null });
       }
 
       // Return full evaluation with admin flag
+      console.log('Returning evaluation with admin flag:', req.user?.role === 'admin');
       return res.status(200).json({ 
         evaluation,
         isAdmin: req.user?.role === 'admin'
@@ -70,6 +83,10 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
   app.post(`${apiPrefix}/ai/evaluate-project`, isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { projectId } = req.body;
+      
+      console.log(`Generating evaluation for project ${projectId}`);
+      console.log(`User authenticated:`, req.isAuthenticated());
+      console.log(`User data:`, req.user);
       
       if (!projectId) {
         return res.status(400).json({ error: 'Project ID is required' });
@@ -89,11 +106,18 @@ export function registerAIRoutes(app: Express, apiPrefix: string) {
       });
 
       if (!projectResult) {
+        console.log('Project not found:', projectId);
         return res.status(404).json({ error: 'Project not found' });
       }
 
+      console.log(`Project author ID: ${projectResult.authorId}, Current user ID: ${req.user?.id}`);
+      console.log(`User role: ${req.user?.role}`);
+      console.log(`Is owner: ${projectResult.authorId === req.user?.id}`);
+      console.log(`Is admin: ${req.user?.role === 'admin'}`);
+
       // Check if user is the project owner
       if (projectResult.authorId !== req.user?.id && req.user?.role !== 'admin') {
+        console.log('Permission denied. Not owner or admin.');
         return res.status(403).json({ error: 'You do not have permission to evaluate this project' });
       }
 

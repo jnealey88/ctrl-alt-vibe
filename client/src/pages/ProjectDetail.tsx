@@ -66,18 +66,21 @@ const ProjectDetail = () => {
     }
   }, [id, queryClient]);
   
-  // Set default tab based on whether user is the project owner
+  // Check if the user is an admin
+  const isAdmin = user?.role === 'admin';
+  
+  // Set default tab based on whether user is the project owner or admin
   useEffect(() => {
     if (project) {
-      // For project owners, default to evaluation tab
-      if (isAuthor) {
+      // For project owners or admins, default to evaluation tab
+      if (isAuthor || isAdmin) {
         setActiveTab("evaluation");
       } else {
-        // For non-owners, default to details tab
+        // For regular users, default to details tab
         setActiveTab("details");
       }
     }
-  }, [project, isAuthor]);
+  }, [project, isAuthor, isAdmin]);
   
   const likeMutation = useMutation({
     mutationFn: async () => {
