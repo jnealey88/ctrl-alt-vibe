@@ -397,29 +397,12 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
           <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Menu section with enhanced UI and improved mobile navigation */}
             <div className="sticky top-0 z-50 px-2 sm:px-6 pt-3 pb-2 bg-white dark:bg-gray-950 shadow-md border-b">
-              {/* Navigation categories */}
-              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium text-primary flex items-center">
-                  <PieChartIcon className="h-4 w-4 mr-1" />
-                  <span>AI Evaluation</span>
-                </span>
-                <ChevronRightIcon className="h-4 w-4" />
-                <span className="font-medium">{activeTab === 'market-fit' || activeTab === 'audience' || activeTab === 'competition' ? 'Market' : 
-                  activeTab === 'business' || activeTab === 'value' ? 'Business' : 
-                  activeTab === 'technical' || activeTab === 'regulatory' ? 'Implementation' : 
-                  'Strategy'}</span>
-                <ChevronRightIcon className="h-4 w-4" />
-                <span className="font-medium text-primary">
-                  {activeTab === 'market-fit' ? 'Market Fit' :
-                   activeTab === 'audience' ? 'Target Audience' :
-                   activeTab === 'business' ? 'Business Plan' :
-                   activeTab === 'value' ? 'Value Proposition' :
-                   activeTab === 'risks' ? 'Risk Assessment' :
-                   activeTab === 'technical' ? 'Technical Feasibility' :
-                   activeTab === 'regulatory' ? 'Regulatory Considerations' :
-                   activeTab === 'partnerships' ? 'Partnership Opportunities' :
-                   'Competitive Landscape'}
-                </span>
+              {/* Title */}
+              <div className="mb-3 flex justify-center">
+                <h3 className="font-medium text-primary flex items-center">
+                  <PieChartIcon className="h-4 w-4 mr-1.5" />
+                  <span>AI Evaluation Report</span>
+                </h3>
               </div>
               
               <div className="pb-1">
