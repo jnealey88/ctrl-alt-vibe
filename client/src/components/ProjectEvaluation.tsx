@@ -135,13 +135,16 @@ const ProjectEvaluation = ({ projectId, isUserOwner }: ProjectEvaluationProps) =
   // Manual fetch function to work around API issues
   const fetchManualData = async () => {
     try {
-      // Use fetch directly with specific headers to try to get JSON
-      const response = await fetch(`/api/ai/project-evaluation/${projectId}`, {
+      // Try using an endpoint with .json extension to bypass Vite middleware
+      const timestamp = new Date().getTime(); // Add timestamp to avoid caching
+      console.log(`Trying .json extension endpoint for project: ${projectId}`);
+      const response = await fetch(`/api/ai/evaluation/${projectId}.json?_t=${timestamp}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest' // Some servers check for this
+          'X-Requested-With': 'XMLHttpRequest', // Some servers check for this
+          'Cache-Control': 'no-cache, no-store'
         },
         credentials: 'include'
       });

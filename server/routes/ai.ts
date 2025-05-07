@@ -27,6 +27,36 @@ export function registerAIRoutes(app: Express) {
     });
   });
   
+  // Special route with .json extension to try to bypass Vite middleware
+  app.get(`${apiPrefix}/ai/evaluation/:projectId.json`, async (req: Request, res: Response) => {
+    try {
+      const { projectId } = req.params;
+      console.log(`[JSON Route] Getting evaluation for projectId: ${projectId}`);
+      
+      if (!projectId || isNaN(parseInt(projectId))) {
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(400).send(JSON.stringify({ error: 'Invalid project ID' }));
+      }
+      
+      const parsedProjectId = parseInt(projectId);
+      const evaluation = await storage.getProjectEvaluation(parsedProjectId);
+      
+      if (!evaluation) {
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(404).send(JSON.stringify({ error: 'No evaluation found' }));
+      }
+      
+      // Explicit response with multiple headers to ensure JSON delivery
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.status(200).send(JSON.stringify(evaluation));
+    } catch (error) {
+      console.error('[JSON Route] Error:', error);
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).send(JSON.stringify({ error: 'Server error' }));
+    }
+  });
+  
   // Debug route for project evaluation (dev only)
   app.get(`${apiPrefix}/ai/debug-evaluation/:projectId`, async (req: Request, res: Response) => {
     try {
@@ -34,7 +64,10 @@ export function registerAIRoutes(app: Express) {
       console.log(`[DEBUG] Getting project evaluation for projectId: ${projectId}`);
       
       if (!projectId || isNaN(parseInt(projectId))) {
-        return res.status(400).json({ error: 'Invalid project ID' });
+        // Explicit response to try to bypass Vite
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        return res.status(400).send(JSON.stringify({ error: 'Invalid project ID' }));
       }
       
       const parsedProjectId = parseInt(projectId);
@@ -43,20 +76,22 @@ export function registerAIRoutes(app: Express) {
       const evaluation = await storage.getProjectEvaluation(parsedProjectId);
       
       if (!evaluation) {
-        return res.status(404).json({ error: 'No evaluation found' });
+        // Explicit response to try to bypass Vite
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        return res.status(404).send(JSON.stringify({ error: 'No evaluation found' }));
       }
       
-      // Return raw DB data for debugging
-      return res.json({
-        rawData: evaluation,
-        objectKeys: Object.keys(evaluation),
-        evaluationType: typeof evaluation.evaluation,
-        evaluationKeys: typeof evaluation.evaluation === 'object' ? Object.keys(evaluation.evaluation) : 'not an object',
-        evaluationStringified: JSON.stringify(evaluation.evaluation, null, 2)
-      });
+      // Explicit response to try to bypass Vite
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      return res.status(200).send(JSON.stringify(evaluation));
     } catch (error) {
       console.error('Error in debug route:', error);
-      return res.status(500).json({ error: 'Debug route error' });
+      // Explicit response to try to bypass Vite
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      return res.status(500).send(JSON.stringify({ error: 'Debug route error' }));
     }
   });
   // Suggest tags based on project description
