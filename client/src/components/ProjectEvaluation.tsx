@@ -423,67 +423,49 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
               </div>
               
               <div className="pb-1">
-                  <TabsList className="flex flex-wrap gap-1.5 md:gap-2 justify-start w-full">
-                    {/* Market Category */}
-                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
-                      <GlobeIcon className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium text-primary">Market Analysis</span>
-                    </div>
-                    
-                    <TabsTrigger value="market-fit" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <BarChart3Icon className="h-4 w-4 mr-1" />
+                  <TabsList className="flex flex-wrap gap-2 justify-start w-full">
+                    <TabsTrigger value="market-fit" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <BarChart3Icon className="h-4 w-4 mr-1.5" />
                       <span>Market Fit</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="audience" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <UsersIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="audience" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <UsersIcon className="h-4 w-4 mr-1.5" />
                       <span>Audience</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="competition" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <BarChart4Icon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="competition" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <BarChart4Icon className="h-4 w-4 mr-1.5" />
                       <span>Competition</span>
                     </TabsTrigger>
                     
-                    {/* Business Category */}
-                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
-                      <TrendingUpIcon className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium text-primary">Business Strategy</span>
-                    </div>
-                    
-                    <TabsTrigger value="business" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <PieChartIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="business" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <PieChartIcon className="h-4 w-4 mr-1.5" />
                       <span>Business Plan</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="value" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <LightbulbIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="value" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <LightbulbIcon className="h-4 w-4 mr-1.5" />
                       <span>Value Prop</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="partnerships" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <HeartHandshakeIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="partnerships" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <HeartHandshakeIcon className="h-4 w-4 mr-1.5" />
                       <span>Partners</span>
                     </TabsTrigger>
                     
-                    {/* Implementation Category */}
-                    <div className="w-full flex items-center gap-2 px-2 py-2 mt-3 mb-2 border-b border-primary/10 bg-primary/5 rounded-sm">
-                      <TargetIcon className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium text-primary">Implementation & Risks</span>
-                    </div>
-                    
-                    <TabsTrigger value="risks" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <ShieldIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="risks" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <ShieldIcon className="h-4 w-4 mr-1.5" />
                       <span>Risks</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="technical" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <CodeIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="technical" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <CodeIcon className="h-4 w-4 mr-1.5" />
                       <span>Technical</span>
                     </TabsTrigger>
                     
-                    <TabsTrigger value="regulatory" className="px-3 py-2 text-xs flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                      <ScrollTextIcon className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="regulatory" className="px-3.5 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+                      <ScrollTextIcon className="h-4 w-4 mr-1.5" />
                       <span>Regulatory</span>
                     </TabsTrigger>
                   </TabsList>
