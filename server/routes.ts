@@ -189,6 +189,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.send(JSON.stringify({ type: 'auth_success' }));
           }
         }
+        // Handle evaluation data request
+        else if (data.type === 'fetch_evaluation') {
+          const userId = data.userId;
+          const projectId = parseInt(data.projectId);
+          
+          console.log(`WebSocket request to fetch evaluation for project ${projectId} from user ${userId}`);
+          
+          if (isNaN(projectId)) {
+            ws.send(JSON.stringify({
+              type: 'evaluation_error',
+              error: 'Invalid project ID',
+              projectId: data.projectId
+            }));
+            return;
+          }
+          
+          // Check if user is authenticated
+          if (!userId || !clients.has(userId)) {
+            console.log(`User ${userId} not authenticated for WebSocket evaluation request`);
+            ws.send(JSON.stringify({
+              type: 'evaluation_error',
+              error: 'Authentication required',
+              projectId
+            }));
+            return;
+          }
+          
+          // Use async IIFE to handle async/await
+          (async () => {
+            try {
+              // Get the project to check permissions
+              const project = await storage.getProjectById(projectId);
+              if (!project) {
+                ws.send(JSON.stringify({
+                  type: 'evaluation_error',
+                  error: 'Project not found',
+                  projectId
+                }));
+                return;
+              }
+              
+              // Check if the user can access this evaluation
+              if (project.author.id !== userId) {
+                const user = await storage.getUserById(userId);
+                if (!user || user.role !== 'admin') {
+                  ws.send(JSON.stringify({
+                    type: 'evaluation_error',
+                    error: 'Not authorized to view this evaluation',
+                    projectId
+                  }));
+                  return;
+                }
+              }
+              
+              // Get evaluation
+              const evaluation = await storage.getProjectEvaluation(projectId);
+              if (!evaluation) {
+                ws.send(JSON.stringify({
+                  type: 'evaluation_error',
+                  error: 'No evaluation exists for this project',
+                  projectId
+                }));
+                return;
+              }
+              
+              // Send evaluation via WebSocket
+              console.log(`Sending evaluation data for project ${projectId} via WebSocket`);
+              ws.send(JSON.stringify({
+                type: 'evaluation_data',
+                evaluation,
+                projectId
+              }));
+            } catch (error) {
+              console.error('Error fetching evaluation via WebSocket:', error);
+              ws.send(JSON.stringify({
+                type: 'evaluation_error',
+                error: 'Server error fetching evaluation',
+                projectId
+              }));
+            }
+          })();
+        }
       } catch (error) {
         console.error('WebSocket message error:', error);
       }
