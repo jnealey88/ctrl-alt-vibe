@@ -82,7 +82,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
   } = useQuery<ProjectEvaluationResponse>({
     queryKey: [`/api/ai/project-evaluation/${projectId}`],
     retry: false,
-    enabled: isOwner // For now, always run for owners; the API handles admin permissions
+    enabled: true // Always fetch to check for admin rights and evaluation data
   });
   
   // Check if user is admin based on response from API
@@ -338,6 +338,7 @@ export default function ProjectEvaluation({ projectId, isOwner }: ProjectEvaluat
   }
 
   // For non-owners/non-admins, don't show any evaluation
+  // (This will only be reached if there is an evaluation, since we have a separate check for no-evaluation cases)
   if (!isOwner && !isAdmin) {
     return null;
   }
