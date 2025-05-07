@@ -21,6 +21,7 @@ import {
   notifications,
   notificationTypes,
   projectGallery,
+  projectEvaluations,
 } from "@shared/schema";
 import type { 
   Project, 
@@ -43,7 +44,9 @@ import type {
   Notification,
   InsertNotification,
   ProjectGalleryImage,
-  InsertProjectGallery
+  InsertProjectGallery,
+  ProjectEvaluation,
+  InsertProjectEvaluation
 } from "@shared/schema";
 
 // Helper function to apply proper casing to tags
@@ -2206,5 +2209,79 @@ export const storage = {
       where: eq(projectGallery.projectId, projectId),
       orderBy: asc(projectGallery.displayOrder)
     });
+  },
+
+  /**
+   * Get project evaluation by project ID
+   * @param projectId Project ID
+   * @returns Project evaluation data or null if not found
+   */
+  async getProjectEvaluation(projectId: number): Promise<ProjectEvaluation | null> {
+    const evaluation = await db.query.projectEvaluations.findFirst({
+      where: eq(projectEvaluations.projectId, projectId)
+    });
+    
+    return evaluation || null;
+  },
+
+  /**
+   * Create or update project evaluation
+   * @param projectId Project ID
+   * @param evaluation Evaluation data
+   * @param fitScore Score from 0-100
+   * @returns Created/updated evaluation
+   */
+  async saveProjectEvaluation(
+    projectId: number, 
+    evaluationData: any, 
+    fitScore: number
+  ): Promise<ProjectEvaluation> {
+    // Check if evaluation already exists
+    const existingEval = await db.query.projectEvaluations.findFirst({
+      where: eq(projectEvaluations.projectId, projectId)
+    });
+
+    if (existingEval) {
+      // Update existing evaluation
+      const [updated] = await db.update(projectEvaluations)
+        .set({
+          evaluation: evaluationData,
+          fitScore,
+          updatedAt: new Date()
+        })
+        .where(eq(projectEvaluations.id, existingEval.id))
+        .returning();
+      
+      return updated;
+    } else {
+      // Create new evaluation
+      const [created] = await db.insert(projectEvaluations)
+        .values({
+          projectId,
+          evaluation: evaluationData,
+          fitScore,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return created;
+    }
+  },
+
+  /**
+   * Delete project evaluation
+   * @param projectId Project ID
+   * @returns Success status
+   */
+  async deleteProjectEvaluation(projectId: number): Promise<boolean> {
+    try {
+      await db.delete(projectEvaluations)
+        .where(eq(projectEvaluations.projectId, projectId));
+      return true;
+    } catch (error) {
+      console.error('Error deleting project evaluation:', error);
+      return false;
+    }
   }
 };
