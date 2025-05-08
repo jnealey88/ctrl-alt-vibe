@@ -958,7 +958,6 @@ const AdminDashboard = () => {
                       <TableRow>
                         <TableHead>ID</TableHead>
                         <TableHead>Username</TableHead>
-                        <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Created At</TableHead>
                         <TableHead>Actions</TableHead>
@@ -969,7 +968,6 @@ const AdminDashboard = () => {
                         <TableRow key={user.id}>
                           <TableCell>{user.id}</TableCell>
                           <TableCell className="font-medium">{user.username}</TableCell>
-                          <TableCell>{user.email}</TableCell>
                           <TableCell>
                             <span className={
                               user.role === "admin" 

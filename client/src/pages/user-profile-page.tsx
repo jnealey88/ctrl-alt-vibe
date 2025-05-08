@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
-import { Loader2, Mail, Heart, Eye, Grid, Image } from "lucide-react";
+import { Loader2, Heart, Eye, Grid, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
 import ProjectCard from "@/components/ProjectCard";
@@ -12,7 +12,6 @@ type UserProfileResponse = {
   user: {
     id: number;
     username: string;
-    email: string;
     bio?: string;
     avatarUrl?: string;
     createdAt: string;
@@ -86,10 +85,7 @@ export default function UserProfilePage() {
               <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 text-center md:text-left">
                 <div>
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{profileData.user.username}</h1>
-                  <div className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 mb-3">
-                    <Mail className="h-4 w-4" />
-                    {profileData.user.email}
-                  </div>
+
                   {profileData.user.bio && (
                     <p className="max-w-2xl mx-auto md:mx-0 text-sm md:text-base leading-relaxed">{profileData.user.bio}</p>
                   )}

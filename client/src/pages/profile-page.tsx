@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { 
-  Loader2, Camera, Mail, FileText, Heart, Eye, Grid, Image, Settings, User, LockKeyhole
+  Loader2, Camera, FileText, Heart, Eye, Grid, Image, Settings, User, LockKeyhole
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
