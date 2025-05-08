@@ -395,7 +395,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       </>
                     )}
                   </Button>
-                  <span className="text-xs text-muted-foreground italic">Evaluations are never cached</span>
+                  <span className="text-xs text-muted-foreground italic"></span>
                 </div>
               )}
             </div>
@@ -788,7 +788,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
             <div className="px-6 pb-6 pt-2 flex justify-between items-center border-t mt-6">
               <p className="text-sm text-muted-foreground italic">
                 <InfoIcon className="h-3 w-3 inline mr-1" />
-                Evaluations are never cached and always freshly generated
+                Evaluations are always freshly generated
               </p>
               <Button 
                 variant="outline" 

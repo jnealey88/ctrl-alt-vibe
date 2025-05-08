@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Brain, BarChart3, ShieldCheck, Code2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectCard from "@/components/ProjectCard";
 import FeaturedProject from "@/components/FeaturedProject";
@@ -420,6 +420,108 @@ const Home = () => {
             <h3 className="text-xl font-bold mb-2">Lovable</h3>
             <p className="text-gray-600 text-center mb-4">AI platform for creating engaging user experiences quickly.</p>
             <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">lovable.dev</a>
+          </div>
+        </div>
+      </div>
+
+      {/* AI-Powered Project Evaluation Feature Section */}
+      <div className="mb-20 border border-primary/20 rounded-xl overflow-hidden bg-gradient-to-r from-gray-50 to-sky-50 dark:from-gray-900 dark:to-slate-900">
+        <div className="grid md:grid-cols-2 items-stretch">
+          {/* Left side - content */}
+          <div className="p-8 md:p-10">
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary mb-6">
+              <Brain className="h-4 w-4 mr-2" />
+              New Feature
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-space">AI-Powered Project Evaluations</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Get comprehensive business insights and technical feasibility analysis for your vibe coded projects — tailored specifically for solo developers using AI-assisted coding.
+            </p>
+            
+            <div className="space-y-4 mb-8">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-full">
+                  <BarChart3 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium">Business Viability</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Market analysis, target audience profiling, and business plan generation</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <div className="flex-shrink-0 bg-amber-50 dark:bg-amber-900/30 p-2 rounded-full">
+                  <ShieldCheck className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium">Security Implementation Guidance</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Vibe coding security considerations, API protection strategies, and authentication best practices</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <div className="flex-shrink-0 bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-full">
+                  <Code2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium">Technical Feasibility</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Specialized guidance on vibe coding considerations and AI-assisted implementation</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <div className="flex-shrink-0 bg-rose-50 dark:bg-rose-900/30 p-2 rounded-full">
+                  <Lightbulb className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium">Implementation Roadmap</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Phased timelines with specific tasks and success metrics optimized for solo developers</p>
+                </div>
+              </div>
+            </div>
+            
+            <Link href="/submit">
+              <Button variant="default" className="px-6">
+                Create a Project to Try It
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Right side - image */}
+          <div className="hidden md:block bg-gradient-to-br from-primary-600 to-blue-700 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-xl"></div>
+              <div className="absolute bottom-10 right-10 w-48 h-48 bg-blue-200 rounded-full blur-xl"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3/4 h-3/4 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-2xl p-6 overflow-hidden">
+                <div className="border-b pb-4 mb-4">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+                      <Brain className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="ml-3 font-bold text-lg">Project Evaluation</h3>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                  <div className="pt-2"></div>
+                  <div className="h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-md border border-emerald-100 dark:border-emerald-800 p-3">
+                    <div className="h-3 bg-emerald-200 dark:bg-emerald-700 rounded w-1/2 mb-2"></div>
+                    <div className="h-3 bg-emerald-200 dark:bg-emerald-700 rounded w-5/6"></div>
+                    <div className="h-3 bg-emerald-200 dark:bg-emerald-700 rounded w-4/6 mt-2"></div>
+                  </div>
+                  <div className="pt-2"></div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="h-8 bg-blue-50 dark:bg-blue-900/20 rounded"></div>
+                    <div className="h-8 bg-purple-50 dark:bg-purple-900/20 rounded"></div>
+                    <div className="h-8 bg-amber-50 dark:bg-amber-900/20 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
