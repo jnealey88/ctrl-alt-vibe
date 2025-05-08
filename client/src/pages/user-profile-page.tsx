@@ -14,6 +14,10 @@ type UserProfileResponse = {
     username: string;
     bio?: string;
     avatarUrl?: string;
+    twitterUrl?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    websiteUrl?: string;
     createdAt: string;
     updatedAt: string;
   };

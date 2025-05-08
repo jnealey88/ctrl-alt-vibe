@@ -101,6 +101,10 @@ export default function ProfilePage() {
       form.reset({
         username: user.username,
         bio: user.bio || "",
+        twitterUrl: user.twitterUrl || "",
+        githubUrl: user.githubUrl || "",
+        linkedinUrl: user.linkedinUrl || "",
+        websiteUrl: user.websiteUrl || "",
       });
       
       // Check if this is a Google authenticated user by looking for a very long random password
