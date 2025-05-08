@@ -30,7 +30,6 @@ import {
 type User = {
   id: number;
   username: string;
-  email: string;
   avatarUrl: string | null;
   role: string;
   createdAt: string;
@@ -940,7 +939,7 @@ const AdminDashboard = () => {
               <CardDescription>View and manage all registered users</CardDescription>
               <div className="mt-4">
                 <Input 
-                  placeholder="Search users by username or email..." 
+                  placeholder="Search users by username..." 
                   value={userSearchQuery} 
                   onChange={(e) => setUserSearchQuery(e.target.value)} 
                   className="max-w-sm"
