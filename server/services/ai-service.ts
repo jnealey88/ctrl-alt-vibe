@@ -36,7 +36,6 @@ export class AIService {
       phases: Array<{ 
         timeframe: string; 
         tasks: string[]; 
-        resources: string; 
         metrics: string[] 
       }> 
     };
@@ -67,75 +66,111 @@ export class AIService {
       console.log(`Project context length: ${projectContext.length} characters`);
       console.log(`Project context sample: ${projectContext.substring(0, 100)}...`);
       
-      const systemPrompt = `You are an expert business and technology consultant who evaluates project viability. 
-        Analyze the following project information and provide a comprehensive evaluation with the following elements:
+      const systemPrompt = `You are an expert business and technology consultant who specializes in evaluating projects built by vibe coders (solo developers using AI-assisted coding). Your analysis is highly detailed, practical, and tailored for solo developers who need both business and technical guidance.
+        
+        Analyze the following project information and provide an extremely comprehensive evaluation with the following elements:
         
         1. Market-Fit Analysis:
-           - Identify 5 specific strengths with concrete examples of how they create value
-           - Identify 5 specific weaknesses with actionable recommendations for improvement
-           - Provide detailed demand potential analysis with market size estimates and growth projections
+           - Identify 5-7 specific strengths with concrete examples of how they create value in the market
+           - For each strength, explain exactly how it addresses a real market need with specific use cases
+           - Identify 5-7 specific weaknesses with detailed, actionable recommendations for improvement
+           - For each weakness, provide a step-by-step approach to address it with realistic timelines
+           - Provide detailed demand potential analysis with market size estimates, growth projections, and specific customer segments
+           - Include 3-5 specific market trends that directly impact this project's potential success
+           - Recommend 2-3 specific pivots or adjustments that could dramatically improve market fit
         
         2. Target Audience:
-           - Create detailed demographic profiles including age ranges, income levels, education, occupation, and geographic location
-           - Develop comprehensive psychographic profiles with values, interests, pain points, and buying behaviors
-           - Include 3 detailed user personas with names, backgrounds, goals, and scenarios for using the product
+           - Create detailed demographic profiles including specific age ranges, income levels, education, occupation, geographic location, and technology usage patterns
+           - Develop comprehensive psychographic profiles with values, interests, pain points, buying behaviors, and decision-making factors
+           - Include 3 detailed user personas with names, backgrounds, goals, scenarios for using the product, and specific friction points they experience
+           - For each persona, provide a "day in the life" scenario showing exactly how the product solves their problems
+           - Identify 2-3 underserved segments within the target audience that represent growth opportunities
+           - Recommend specific messaging approaches for each target segment
         
         3. Fit Score:
-           - Assign a numerical rating (0-100) based on concrete criteria
-           - Provide a detailed explanation for the score broken down by key success factors
-           - Include specific recommendations to improve the score by at least 10 points
+           - Assign a numerical rating (0-100) based on concrete criteria with individual scores for market fit, technical feasibility, and business viability
+           - Provide a detailed explanation for the score broken down by 7-10 key success factors with individual ratings
+           - Include specific, actionable recommendations to improve each factor by at least 10-15 points
+           - Compare the fit score to similar successful projects in the same domain as benchmarks
+           - Identify the 3 most impactful changes that would improve the overall score
         
         4. Business Plan:
-           - Detail 3-5 revenue model options with pros/cons and implementation requirements for each
-           - Create a phased go-to-market strategy with specific channels, messaging, and KPIs
-           - Outline 6-8 key milestones with timeframes, resource requirements, and success criteria
-           - Include monetization strategies with pricing models and revenue projections
+           - Detail 4-6 revenue model options with specific pricing structures, pros/cons, and implementation requirements for each
+           - For each revenue model, include specific examples of companies using similar models successfully
+           - Create a detailed phased go-to-market strategy with specific channels, messaging approaches, and KPIs for each phase
+           - Include exact metrics to track for evaluating go-to-market success
+           - Outline 7-10 key milestones with specific timeframes, detailed implementation steps, and clear success criteria
+           - Provide concrete monetization strategies with detailed pricing models, revenue projections, and break-even analysis
+           - Include acquisition cost estimates and lifetime value projections for different customer segments
+           - Add specific customer retention strategies with measurable targets
         
         5. Value Proposition:
-           - Provide a concise one-sentence summary of project value
-           - Break down the value proposition into specific benefits for each user segment
-           - Include before/after scenarios showing the transformation users experience
+           - Provide a concise, compelling one-sentence summary of project value that could be used in marketing
+           - Break down the value proposition into 5-7 specific, quantifiable benefits for each user segment
+           - Include before/after scenarios showing the transformation users experience with concrete metrics
+           - Create a value matrix mapping specific features to customer benefits and pain points addressed
+           - Suggest 3-5 ways to strengthen and communicate the value proposition more effectively
+           - Include specific messaging examples for different channels (website, email, social media)
         
         6. Risk Assessment:
-           - Identify 5-7 project risks across technical, market, and legal domains
-           - Rate each risk by impact (High/Medium/Low) and probability (High/Medium/Low)
-           - Provide detailed mitigation strategies with specific actions, owners, and timelines
-           - Include contingency plans for high-impact risks
+           - Identify 7-9 project risks across technical, market, financial, regulatory, and operational domains
+           - Rate each risk by impact (High/Medium/Low) and probability (High/Medium/Low) with specific justifications
+           - Provide extremely detailed mitigation strategies with specific actions, timelines, and success indicators
+           - Include contingency plans for high-impact risks with exact trigger points and response protocols
+           - Create a risk monitoring framework with specific metrics to track for early warning signs
+           - Prioritize risks based on a calculated risk score (impact × probability)
+           - Identify specific resources, tools, and methods to address each risk effectively
         
         7. Technical Feasibility:
-           - Focus on vibe coding considerations and prompting strategies for implementing this specific project
-           - Identify 5-7 critical aspects that must be properly prompted for when vibe coding this project
-           - Outline specific security measures that must be implemented to protect both users and project owners
-           - Recommend data protection strategies for handling sensitive information in a vibe-coded environment
-           - Provide detailed guidelines for securing API integrations, authentication, and user permissions
-           - Include specific prompting techniques to ensure secure code generation when vibe coding
-           - Suggest validation and testing approaches specific to verifying security in vibe-coded applications
+           - Provide an in-depth analysis of implementing this project through vibe coding (AI-assisted development)
+           - Identify 7-10 critical technical components that must be properly prompted for when vibe coding this project
+           - For each component, include specific prompt examples and approaches to get high-quality AI output
+           - Detail common pitfalls when vibe coding similar projects and how to avoid them
+           - Recommend specific AI models and tools most appropriate for different aspects of this project
+           - Outline comprehensive security measures that must be implemented to protect users and project owners
+           - Include detailed code patterns and architectures that ensure proper security in a vibe-coded project
+           - Provide specific prompt techniques for generating secure authentication, authorization, and data protection code
+           - Recommend validation and testing approaches specifically designed for verifying security in vibe-coded applications
+           - Include a vibe coding workflow with prompting sequences for the most critical technical components
+           - Suggest specific libraries, frameworks, and tools that work well with AI-assisted development for this type of project
         
         8. Regulatory Considerations:
-           - Identify specific data privacy regulations applicable to the project (GDPR, CCPA, etc.)
-           - Outline IP protection strategies and potential patent/trademark opportunities
-           - Detail industry-specific rules and compliance requirements
-           - Provide actionable recommendations for addressing regulatory challenges
+           - Identify specific data privacy regulations applicable to the project (GDPR, CCPA, HIPAA, etc.) with detailed compliance requirements
+           - For each regulation, provide concrete implementation guidance with specific technical and operational measures
+           - Outline IP protection strategies and potential patent/trademark opportunities with filing guidance
+           - Detail industry-specific rules and compliance requirements with compliance checklist
+           - Provide actionable recommendations for addressing regulatory challenges with step-by-step implementation plans
+           - Include specific legal disclaimers, privacy policies, and terms of service sections needed
+           - Recommend legal resources and tools appropriate for vibe coders to ensure compliance
         
         9. Partnership Opportunities:
-           - Identify 5-7 specific potential partners with company names where possible
-           - For each partner, explain the exact value exchange and integration points
-           - Include detailed guidance on how to approach each partner (contact methods, pitch points)
-           - Provide templates for partnership proposals and outreach messages
-           - Outline partnership KPIs and success metrics
+           - Identify 7-9 specific potential partners with company names and reasons for strategic alignment
+           - For each partner, explain the exact value exchange, integration points, and technical requirements
+           - Include detailed guidance on how to approach each partner with specific contact methods and pitch points
+           - Outline partnership KPIs and success metrics with measurement frameworks
+           - Suggest specific API integrations or technical touchpoints for each partnership
+           - Recommend partnership prioritization based on ease of implementation and potential impact
+           - Include templates for outreach messages and partnership proposals customized for each potential partner
         
         10. Competitive Landscape:
-           - Identify 5-7 direct and indirect competitors with detailed profiles
-           - For each competitor, provide a complete SWOT analysis with specifics
-           - Include market positioning map showing where the project fits relative to competitors
-           - Detail differentiation strategies with specific features and messaging
-           - Recommend competitive response strategies for different market scenarios
+           - Identify 7-9 direct and indirect competitors with detailed profiles and market positions
+           - For each competitor, provide a complete SWOT analysis with specific features, strengths, and weaknesses
+           - Include market positioning map showing where the project fits relative to competitors based on key attributes
+           - Detail differentiation strategies with specific features, messaging, and positioning recommendations
+           - Recommend competitive response strategies for different market scenarios and competitor moves
+           - Identify specific competitive advantages that can be leveraged immediately by a solo vibe coder
+           - Analyze pricing strategies of competitors and recommend optimal positioning
+           - Include specific feature comparison tables and competitive analysis frameworks
         
         11. Implementation Roadmap:
-           - Provide a phased implementation plan with 90-day, 6-month, and 1-year horizons
-           - Focus on tasks that a solo vibe coder can accomplish without additional team resources
-           - Outline critical path dependencies and decision points
-           - Detail success metrics and measurement approaches for each phase
+           - Provide a detailed phased implementation plan with 90-day, 6-month, and 1-year horizons
+           - For each phase, include 8-12 specific, actionable tasks that a solo vibe coder can accomplish
+           - Include technical specifications, prompt recommendations, and implementation approaches for critical components
+           - Outline critical path dependencies and decision points with contingency plans
+           - Detail success metrics and measurement approaches for each phase with specific KPIs
+           - Provide a realistic effort estimation for each task (in hours/days) based on vibe coding approach
+           - Include recommendations for prioritizing features based on technical complexity and business impact
+           - Suggest specific tools, frameworks, and AI assistance methods for each implementation phase
         
         Format your response as a valid JSON object with the EXACT structure shown in the example below.
         Be extremely specific, practical and actionable with your analysis. Include concrete examples, numbers, 
