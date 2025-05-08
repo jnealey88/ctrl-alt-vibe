@@ -1,0 +1,95 @@
+
+# Ctrl Alt Vibe
+
+A vibrant community platform showcasing creative projects, fostering collaboration, and sharing innovative ideas. Built with React, Express, and PostgreSQL.
+
+## Features
+
+- **Project Showcase**: Share and discover creative projects
+- **Blog System**: Rich text editor for creating and managing blog posts
+- **User Authentication**: Secure login with email or Google authentication
+- **Real-time Notifications**: WebSocket-powered notification system
+- **Comments & Interactions**: Engage with other users' projects
+- **Admin Dashboard**: Manage users, content, and site analytics
+- **Responsive Design**: Mobile-first UI built with Tailwind CSS
+- **Accessibility**: WCAG 2.1 Level AA compliant
+- **Image Management**: Upload and optimize project images
+- **SEO Optimization**: Built-in SEO components and sitemap generation
+
+## Tech Stack
+
+- **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI
+- **Backend**: Express.js, Node.js
+- **Database**: PostgreSQL with Drizzle ORM
+- **State Management**: React Query
+- **Real-time**: WebSocket
+- **Authentication**: Passport.js, Google OAuth
+- **Testing**: Jest, React Testing Library
+- **Image Processing**: Sharp
+- **Editor**: TipTap
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up the database:
+```bash
+npm run db:push
+npm run db:seed
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+The application will be available at `http://0.0.0.0:5000`
+
+## Project Structure
+
+```
+├── client/           # Frontend React application
+├── server/           # Backend Express server
+├── db/              # Database schemas and migrations
+├── shared/          # Shared types and utilities
+├── __tests__/       # Test suites
+└── public/          # Static assets
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+npm test             # Run all tests
+npm run test:client  # Run frontend tests
+npm run test:server  # Run backend tests
+```
+
+## Code Organization
+
+The project follows a modular architecture:
+
+- **Routes**: Feature-based API endpoints
+- **Services**: Business logic layer
+- **Components**: Reusable UI components
+- **Hooks**: Custom React hooks
+- **Utils**: Helper functions and utilities
+
+## Contributing
+
+1. Follow the code style and organization
+2. Write tests for new features
+3. Update documentation as needed
+4. Create descriptive commit messages
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Contact
+
+For support or questions, email: support@ctrlaltvibe.com
