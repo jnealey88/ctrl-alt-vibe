@@ -21,6 +21,10 @@ declare global {
       email: string;
       bio?: string | null;
       avatarUrl?: string | null;
+      twitterUrl?: string | null;
+      githubUrl?: string | null;
+      linkedinUrl?: string | null;
+      websiteUrl?: string | null;
       role: string;
       createdAt: Date;
       updatedAt: Date;
@@ -116,11 +120,22 @@ async function createUser(userData: any) {
 }
 
 async function updateUser(userId: number, userData: Partial<Omit<Express.User, 'id'>>) {
+  // Extract fields that are valid for the users table
+  const validFields: any = {
+    ...(userData.username !== undefined && { username: userData.username }),
+    ...(userData.email !== undefined && { email: userData.email }),
+    ...(userData.bio !== undefined && { bio: userData.bio }),
+    ...(userData.avatarUrl !== undefined && { avatarUrl: userData.avatarUrl }),
+    ...(userData.twitterUrl !== undefined && { twitterUrl: userData.twitterUrl }),
+    ...(userData.githubUrl !== undefined && { githubUrl: userData.githubUrl }),
+    ...(userData.linkedinUrl !== undefined && { linkedinUrl: userData.linkedinUrl }),
+    ...(userData.websiteUrl !== undefined && { websiteUrl: userData.websiteUrl }),
+    ...(userData.password !== undefined && { password: userData.password }),
+    updatedAt: new Date()
+  };
+
   const [user] = await db.update(users)
-    .set({
-      ...userData,
-      updatedAt: new Date()
-    })
+    .set(validFields)
     .where(eq(users.id, userId))
     .returning();
   
@@ -951,7 +966,7 @@ export function setupAuth(app: Express) {
       }
 
       const userId = req.user!.id;
-      const { bio, email, username } = req.body;
+      const { bio, email, username, twitterUrl, githubUrl, linkedinUrl, websiteUrl } = req.body;
 
       // Check if username already exists (if updating username)
       if (username && username !== req.user!.username) {
@@ -964,11 +979,28 @@ export function setupAuth(app: Express) {
         }
       }
 
+      // Validate social URLs if provided
+      if (twitterUrl && !twitterUrl.startsWith('https://twitter.com/')) {
+        return res.status(400).json({ message: "Twitter URL must start with https://twitter.com/" });
+      }
+      
+      if (githubUrl && !githubUrl.startsWith('https://github.com/')) {
+        return res.status(400).json({ message: "GitHub URL must start with https://github.com/" });
+      }
+      
+      if (linkedinUrl && !linkedinUrl.startsWith('https://linkedin.com/')) {
+        return res.status(400).json({ message: "LinkedIn URL must start with https://linkedin.com/" });
+      }
+
       // Only allow updating certain fields
       const updateData: Partial<Express.User> = {};
       if (bio !== undefined) updateData.bio = bio;
       if (email !== undefined) updateData.email = email;
       if (username !== undefined) updateData.username = username;
+      if (twitterUrl !== undefined) updateData.twitterUrl = twitterUrl;
+      if (githubUrl !== undefined) updateData.githubUrl = githubUrl;
+      if (linkedinUrl !== undefined) updateData.linkedinUrl = linkedinUrl;
+      if (websiteUrl !== undefined) updateData.websiteUrl = websiteUrl;
 
       const updatedUser = await updateUser(userId, updateData);
 
