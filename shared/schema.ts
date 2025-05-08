@@ -11,6 +11,10 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
+  twitterUrl: text("twitter_url"),
+  githubUrl: text("github_url"),
+  linkedinUrl: text("linkedin_url"),
+  websiteUrl: text("website_url"),
   role: text("role").default("user").notNull(), // Available roles: 'admin', 'user'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

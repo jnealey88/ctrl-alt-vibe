@@ -28,6 +28,10 @@ type ProfileResponse = {
     email: string;
     bio?: string;
     avatarUrl?: string;
+    twitterUrl?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    websiteUrl?: string;
   };
   projects: Project[];
 };
@@ -35,6 +39,10 @@ type ProfileResponse = {
 const profileEditSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
   bio: z.string().max(300, "Bio must be less than 300 characters").optional(),
+  twitterUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  githubUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  linkedinUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  websiteUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 type ProfileEditValues = z.infer<typeof profileEditSchema>;
