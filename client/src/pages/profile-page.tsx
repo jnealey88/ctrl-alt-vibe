@@ -34,7 +34,6 @@ type ProfileResponse = {
 
 const profileEditSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
-  email: z.string().email("Please enter a valid email address"),
   bio: z.string().max(300, "Bio must be less than 300 characters").optional(),
 });
 
@@ -67,7 +66,7 @@ export default function ProfilePage() {
   const form = useForm<ProfileEditValues>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
-      email: user?.email || "",
+      username: user?.username || "",
       bio: user?.bio || "",
     },
   });
@@ -93,7 +92,6 @@ export default function ProfilePage() {
     if (user) {
       form.reset({
         username: user.username,
-        email: user.email,
         bio: user.bio || "",
       });
       
@@ -421,24 +419,7 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </div>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               <FormField
                 control={form.control}
                 name="bio"
