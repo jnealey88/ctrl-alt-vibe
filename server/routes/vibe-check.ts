@@ -184,27 +184,8 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
       ? vibeCheck.projectDescription.substring(0, 197) + '...'
       : vibeCheck.projectDescription;
     
-    // Extract tags from the evaluation if available
-    let tagNames: string[] = [];
-    if (evaluation && typeof evaluation === 'object' && 'targetAudience' in evaluation) {
-      const targetAudience = evaluation.targetAudience as any;
-      
-      // Extract keywords from the target audience and market analysis
-      const tagSources = [
-        targetAudience?.demographic || '',
-        targetAudience?.psychographic || ''
-      ];
-      
-      // Basic extraction of potential tag words
-      const potentialTags = tagSources.join(' ')
-        .split(/\s+/)
-        .filter(word => word.length > 3 && !['and', 'with', 'that', 'this', 'from', 'have', 'they', 'their'].includes(word.toLowerCase()))
-        .slice(0, 10);
-      
-      // Deduplicate
-      const tagSet = new Set(potentialTags);
-      tagNames = Array.from(tagSet);
-    }
+    // Add a single "Vibe Check" tag for all converted projects
+    const tagNames: string[] = ["Vibe Check"];
     
     // Determine if project should be private or public
     const isPrivate = req.body?.isPrivate === true;
@@ -215,7 +196,7 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
       description: description,
       longDescription: vibeCheck.projectDescription,
       projectUrl: vibeCheck.websiteUrl || '',
-      imageUrl: '/ctrlaltvibelogo.png', // Default image
+      imageUrl: '/vibecheck-cover-image.png', // Default image specifically for vibe checks
       authorId: userId,
       isPrivate: isPrivate,
       vibeCodingTool: 'OpenAI'
