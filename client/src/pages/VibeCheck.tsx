@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,9 +46,13 @@ type VibeCheckFormValues = z.infer<typeof vibeCheckFormSchema>;
 
 export default function VibeCheck() {
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
+  
+  // Determine if user is authenticated by checking user existence
+  const isAuthenticated = !!user;
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
   const [isShowingResults, setIsShowingResults] = useState(false);
   const [vibeCheckId, setVibeCheckId] = useState<number | null>(null);
@@ -708,18 +713,33 @@ export default function VibeCheck() {
         <Card>
           <CardHeader>
             <CardTitle>Save Your Vibe Check</CardTitle>
-            <CardDescription>Create an account to save this evaluation as a project</CardDescription>
+            <CardDescription>
+              {isAuthenticated 
+                ? "Add this evaluation to your projects" 
+                : "Create an account to save this evaluation as a project"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">Want to save this evaluation and share it with others? Create an account (or log in) to add this as a project on your profile.</p>
-            <div className="flex gap-4">
-              <Button onClick={saveAsProject}>
-                Save as Project
-              </Button>
-              <Button variant="outline">
-                Log In / Sign Up
-              </Button>
-            </div>
+            {isAuthenticated ? (
+              <div className="flex flex-col gap-4">
+                <p className="mb-2">This evaluation can be saved to your profile as a project.</p>
+                <Button onClick={saveAsProject}>
+                  Save as Project
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <p className="mb-2">Want to save this evaluation and share it with others? Create an account (or log in) to add this as a project on your profile.</p>
+                <div className="flex gap-4">
+                  <Button onClick={saveAsProject}>
+                    Save as Project
+                  </Button>
+                  <Button variant="outline" onClick={() => window.location.href = '/auth'}>
+                    Log In / Sign Up
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
