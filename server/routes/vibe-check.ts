@@ -6,6 +6,42 @@ import { aiService } from '../services/ai-service';
 import { storage } from '../storage';
 import { eq, SQL } from 'drizzle-orm';
 
+// Transform function to convert the old evaluation structure to the new one with bootstrapping
+function transformEvaluationResponse(evaluation: any): any {
+  // Make a copy of the evaluation to avoid modifying the original
+  const updatedEvaluation = { ...evaluation };
+  
+  // Log available fields to help with debugging
+  console.log('Available fields in vibe check response:', Object.keys(evaluation).join(', '));
+  
+  // If the response has fundingGuidance but not bootstrappingGuide, convert it
+  if (evaluation.fundingGuidance && !evaluation.bootstrappingGuide) {
+    // Create a bootstrappingGuide from fundingGuidance data
+    updatedEvaluation.bootstrappingGuide = {
+      costMinimizationTips: [
+        "Utilize free cloud service tiers for development",
+        "Use open-source alternatives instead of paid tools",
+        "Leverage AI coding assistants to accelerate development",
+        "Start with minimal viable infrastructure and scale as needed",
+        "Focus on core features first, add premium features later"
+      ],
+      diySolutions: evaluation.fundingGuidance.bootstrappingOptions || 
+        "Focus on using existing free and open-source tools to build your project efficiently.",
+      growthWithoutFunding: "Focus on organic growth through community engagement and word-of-mouth marketing.",
+      timeManagement: "Prioritize features by impact and development complexity, focusing on the core value proposition first.",
+      milestonesOnBudget: [
+        "Launch MVP with essential features",
+        "Achieve first 100 active users",
+        "Add one revenue-generating feature",
+        "Reach break-even point on hosting costs",
+        "Build community-requested enhancements"
+      ]
+    };
+  }
+  
+  return updatedEvaluation;
+}
+
 // Register all vibe check routes to the main Express app
 export function registerVibeCheckRoutes(app: Express) {
   console.log('Registering vibe check routes');
@@ -32,11 +68,14 @@ vibeCheckRouter.post('/', async (req: Request, res: Response) => {
     
     // Generate the vibe check evaluation
     console.log('Generating vibe check evaluation...');
-    const evaluation = await aiService.generateVibeCheckEvaluation({
+    let evaluation = await aiService.generateVibeCheckEvaluation({
       websiteUrl: validatedData.websiteUrl || undefined,
       projectDescription: validatedData.projectDescription,
       desiredVibe: validatedData.desiredVibe || undefined
     });
+    
+    // Transform the evaluation to ensure it has bootstrappingGuide
+    evaluation = transformEvaluationResponse(evaluation);
     
     console.log('Vibe check evaluation generated successfully');
     
@@ -87,6 +126,11 @@ vibeCheckRouter.get('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Vibe check not found' });
     }
     
+    // Transform the evaluation to ensure it has bootstrappingGuide
+    if (vibeCheck.evaluation) {
+      vibeCheck.evaluation = transformEvaluationResponse(vibeCheck.evaluation);
+    }
+    
     return res.json(vibeCheck);
   } catch (error: any) {
     console.error('Error retrieving vibe check:', error);
@@ -122,9 +166,15 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
     // Get user info
     const userId = req.user.id;
     
+    // Transform the evaluation to ensure it has bootstrappingGuide
+    if (vibeCheck.evaluation) {
+      vibeCheck.evaluation = transformEvaluationResponse(vibeCheck.evaluation);
+    }
+    
     // Extract the value proposition as the title (or generate a title from description if not available)
     const evaluation = vibeCheck.evaluation || {};
-    const valueProposition = evaluation.valueProposition as string | undefined;
+    // Use type assertion to access valueProposition which may not be in the type definition
+    const valueProposition = (evaluation as any).valueProposition as string | undefined;
     
     const title = valueProposition || 
       vibeCheck.projectDescription.split('.')[0].substring(0, 100);
