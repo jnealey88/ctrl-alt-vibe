@@ -29,7 +29,8 @@ import {
   Users,
   PlusCircle,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +64,8 @@ const Navbar = () => {
     { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-1" /> },
     { name: "Browse", path: "/browse", icon: <Grid className="h-4 w-4 mr-1" /> },
     { name: "Blog", path: "/blog", icon: <BookOpen className="h-4 w-4 mr-1" /> },
-    { name: "Community", path: "/users", icon: <Users className="h-4 w-4 mr-1" /> }
+    { name: "Community", path: "/users", icon: <Users className="h-4 w-4 mr-1" /> },
+    { name: "Vibe Check", path: "/vibe-check", icon: <Brain className="h-4 w-4 mr-1" /> }
   ];
 
   return (
