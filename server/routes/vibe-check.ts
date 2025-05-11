@@ -14,9 +14,8 @@ function transformEvaluationResponse(evaluation: any): any {
   // Log available fields to help with debugging
   console.log('Available fields in vibe check response:', Object.keys(evaluation).join(', '));
   
-  // If the response has fundingGuidance but not bootstrappingGuide, convert it
-  if (evaluation.fundingGuidance && !evaluation.bootstrappingGuide) {
-    // Create a bootstrappingGuide from fundingGuidance data
+  // Ensure bootstrappingGuide exists
+  if (!updatedEvaluation.bootstrappingGuide) {
     updatedEvaluation.bootstrappingGuide = {
       costMinimizationTips: [
         "Utilize free cloud service tiers for development",
@@ -25,7 +24,7 @@ function transformEvaluationResponse(evaluation: any): any {
         "Start with minimal viable infrastructure and scale as needed",
         "Focus on core features first, add premium features later"
       ],
-      diySolutions: evaluation.fundingGuidance.bootstrappingOptions || 
+      diySolutions: (evaluation.fundingGuidance?.bootstrappingOptions) || 
         "Focus on using existing free and open-source tools to build your project efficiently.",
       growthWithoutFunding: "Focus on organic growth through community engagement and word-of-mouth marketing.",
       timeManagement: "Prioritize features by impact and development complexity, focusing on the core value proposition first.",
@@ -33,9 +32,76 @@ function transformEvaluationResponse(evaluation: any): any {
         "Launch MVP with essential features",
         "Achieve first 100 active users",
         "Add one revenue-generating feature",
-        "Reach break-even point on hosting costs",
-        "Build community-requested enhancements"
+        "Reach break-even on operational costs",
+        "Scale to 1,000 active users"
       ]
+    };
+  }
+  
+  // Ensure customerAcquisition exists
+  if (!updatedEvaluation.customerAcquisition) {
+    updatedEvaluation.customerAcquisition = {
+      primaryChannels: [
+        "Social media organic content",
+        "Content marketing via blog/tutorials",
+        "Word-of-mouth referrals", 
+        "Online communities and forums"
+      ],
+      costPerAcquisition: "Low, focused on organic strategies rather than paid acquisition",
+      conversionStrategy: "Provide immediate value through freemium model with clear upgrade path",
+      retentionTactics: [
+        "Regular feature updates based on user feedback",
+        "Community building through Discord or Slack channels",
+        "Email newsletter with tips and case studies",
+        "Exceptional customer support"
+      ],
+      growthOpportunities: "Encourage user-generated content and social sharing to amplify organic reach"
+    };
+  }
+  
+  // Ensure launchStrategy exists
+  if (!updatedEvaluation.launchStrategy) {
+    updatedEvaluation.launchStrategy = {
+      mvpFeatures: [
+        "Core functionality focused on solving the primary user pain point",
+        "Intuitive, user-friendly interface",
+        "Basic account system",
+        "Feedback mechanism"
+      ],
+      timeToMarket: "3-4 months for initial MVP using AI-assisted development",
+      marketEntryApproach: "Soft launch with limited features to early adopters for feedback before wider release",
+      criticalResources: [
+        "Development environment with AI coding tools",
+        "Simple landing page with clear value proposition",
+        "Documentation and help guides",
+        "Basic analytics setup"
+      ],
+      launchChecklist: [
+        "Functional and security testing complete",
+        "Privacy policy and terms of service ready",
+        "Analytics tracking configured",
+        "Social media accounts created",
+        "Launch announcement content prepared"
+      ]
+    };
+  }
+  
+  // Ensure revenueGeneration exists
+  if (!updatedEvaluation.revenueGeneration) {
+    updatedEvaluation.revenueGeneration = {
+      businessModels: [
+        "Freemium with premium features",
+        "Subscription tiers for enhanced functionality",
+        "One-time purchases for specific tools"
+      ],
+      pricingStrategy: "Value-based pricing tied to concrete benefits, with affordable entry point",
+      revenueStreams: [
+        "Premium subscriptions",
+        "Add-on features or templates",
+        "API access for integrations"
+      ],
+      unitEconomics: "Low marginal costs per user allows for profit once fixed development costs are covered",
+      scalingPotential: "Highly scalable with minimal increased costs as user base grows"
     };
   }
   
@@ -229,7 +295,12 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
           regulatoryConsiderations: evalData.regulatoryConsiderations,
           partnershipOpportunities: evalData.partnershipOpportunities,
           competitiveLandscape: evalData.competitiveLandscape,
-          implementationRoadmap: evalData.implementationRoadmap
+          implementationRoadmap: evalData.implementationRoadmap,
+          // Additional fields for the expanded evaluation format
+          launchStrategy: evalData.launchStrategy,
+          customerAcquisition: evalData.customerAcquisition,
+          revenueGeneration: evalData.revenueGeneration,
+          bootstrappingGuide: evalData.bootstrappingGuide
         });
       } catch (evalError) {
         console.error('Error creating project evaluation:', evalError);
