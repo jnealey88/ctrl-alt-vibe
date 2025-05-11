@@ -18,6 +18,7 @@ import {
   userSkills,
   userActivity,
   projectViews,
+  projectEvaluations,
   notifications,
   notificationTypes,
   projectGallery,

@@ -74,23 +74,75 @@ export default function AuthPage() {
     registerMutation.mutate(data);
   };
 
-  // Redirect to home if already logged in
+  // Redirect to home if already logged in or handle pending vibe check conversion
   const [redirected, setRedirected] = useState(false); // Track if we've started a redirect
   
   useEffect(() => {
     if (user && !isLoading && !redirected) {
-      console.log('User authenticated, redirecting to home page:', user.username);
-      // Use our safe navigation helper
       setRedirected(true);
-      // Import the safeNavigate function from App.tsx
-      import('@/App').then(module => {
-        // Use setTimeout to ensure we break out of the React render cycle
-        setTimeout(() => {
-          module.safeNavigate('/');
-        }, 0);
-      });
+      
+      // Check if there's a pending vibe check to convert to a project
+      const pendingVibeCheckId = sessionStorage.getItem('pendingVibeCheckId');
+      
+      if (pendingVibeCheckId) {
+        console.log('User authenticated, converting pending vibe check to project:', pendingVibeCheckId);
+        
+        // Clear the pending vibe check ID from session storage
+        sessionStorage.removeItem('pendingVibeCheckId');
+        
+        // Convert the vibe check to a project now that the user is logged in
+        fetch(`/api/vibe-check/${pendingVibeCheckId}/convert-to-project`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ isPrivate: false }),
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(errorData => {
+              throw new Error(errorData.error || "Failed to save as project");
+            });
+          }
+          return response.json();
+        })
+        .then(result => {
+          toast({
+            title: "Success!",
+            description: "Your vibe check has been saved as a project",
+          });
+          
+          // Navigate to the new project page
+          window.location.href = `/projects/${result.projectId}`;
+        })
+        .catch(error => {
+          console.error("Error saving vibe check as project:", error);
+          toast({
+            title: "Failed to Save",
+            description: error.message || "Failed to save as project",
+            variant: "destructive",
+          });
+          
+          // Fallback to home page
+          import('@/App').then(module => {
+            setTimeout(() => {
+              module.safeNavigate('/');
+            }, 0);
+          });
+        });
+      } else {
+        console.log('User authenticated, redirecting to home page:', user.username);
+        // Use our safe navigation helper
+        // Import the safeNavigate function from App.tsx
+        import('@/App').then(module => {
+          // Use setTimeout to ensure we break out of the React render cycle
+          setTimeout(() => {
+            module.safeNavigate('/');
+          }, 0);
+        });
+      }
     }
-  }, [user, isLoading, redirected]);
+  }, [user, isLoading, redirected, toast]);
 
   // Determine SEO title and description based on active tab
   const getSeoTitle = () => {
