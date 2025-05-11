@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAIRoutes(app, '/api');
   
   // Register Vibe Check routes
-  registerVibeCheckRoutes(app, '/api');
+  registerVibeCheckRoutes(app);
   
   // Create HTTP server once for the entire application
   const httpServer = createServer(app);
