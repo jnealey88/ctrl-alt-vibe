@@ -698,3 +698,22 @@ export type Notification = typeof notifications.$inferSelect & {
   };
 };
 export type InsertNotification = z.infer<typeof notificationInsertSchema>;
+
+// Vibe Check - AI project idea evaluation and lead generation
+export const vibeChecks = pgTable("vibe_checks", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }),
+  websiteUrl: varchar("website_url", { length: 500 }),
+  projectDescription: text("project_description").notNull(),
+  desiredVibe: text("desired_vibe"),
+  evaluation: jsonb("evaluation"), // JSON containing the evaluation results
+  convertedToProject: boolean("converted_to_project").default(false),
+  convertedProjectId: integer("converted_project_id").references(() => projects.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const vibeCheckInsertSchema = createInsertSchema(vibeChecks);
+
+export type VibeCheck = typeof vibeChecks.$inferSelect;
+export type InsertVibeCheck = z.infer<typeof vibeCheckInsertSchema>;
