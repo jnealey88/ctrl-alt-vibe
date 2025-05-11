@@ -200,7 +200,7 @@ export default function VibeCheck() {
         </div>
 
         <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 md:grid-cols-9 mb-4">
+          <TabsList className="flex flex-wrap gap-2 h-auto mb-4">
             <TabsTrigger value="market-fit">Market Fit</TabsTrigger>
             <TabsTrigger value="audience">Audience</TabsTrigger>
             <TabsTrigger value="business">Business</TabsTrigger>

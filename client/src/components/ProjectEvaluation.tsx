@@ -496,6 +496,38 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       <ChevronRightIcon className="h-4 w-4 mr-1.5" />
                       <span>Roadmap</span>
                     </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="launch" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <RocketIcon className="h-4 w-4 mr-1.5" />
+                      <span>Launch</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="customers" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <UsersIcon className="h-4 w-4 mr-1.5" />
+                      <span>Customers</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="revenue" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <CircleDollarSignIcon className="h-4 w-4 mr-1.5" />
+                      <span>Revenue</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="bootstrapping" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <WrenchIcon className="h-4 w-4 mr-1.5" />
+                      <span>Bootstrapping</span>
+                    </TabsTrigger>
                   </TabsList>
               </div>
             </div>
