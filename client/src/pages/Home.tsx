@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Brain, BarChart3, ShieldCheck, Code2, Lightbulb } from "lucide-react";
+import { ArrowRight, Brain, BarChart3, ShieldCheck, Code2, Lightbulb, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectCard from "@/components/ProjectCard";
 import FeaturedProject from "@/components/FeaturedProject";
@@ -175,6 +175,101 @@ const Home = () => {
                   Submit Your Project
                 </Button>
               </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Vibe Check Promotion */}
+      <div className="mb-16 bg-gradient-to-r from-violet-50 via-indigo-50 to-violet-50 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 rounded-xl overflow-hidden shadow-md border border-indigo-100 dark:border-slate-700">
+        <div className="grid md:grid-cols-2 items-center">
+          {/* Left side - Content */}
+          <div className="p-8 md:p-10 flex flex-col justify-center">
+            <div className="inline-block bg-violet-100 dark:bg-violet-900/30 p-2 rounded-full mb-4">
+              <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-slate-900 dark:text-white">Ready for a Vibe Check?</h2>
+            <p className="text-slate-700 dark:text-slate-300 mb-6">
+              Get instant AI-powered analysis for your project idea. Our comprehensive evaluation covers market fit, target audience, business potential, and implementation strategy.
+            </p>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Market Analysis</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Validate demand and opportunities</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Business Model</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Revenue strategies and planning</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Target Audience</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Define your ideal users</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Technical Assessment</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Feasibility and implementation</p>
+                </div>
+              </div>
+            </div>
+            <Link href="/vibe-check">
+              <Button className="w-full sm:w-auto" size="lg">
+                <Zap className="mr-2 h-5 w-5" />
+                Get Your Free Vibe Check
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Right side - Decorative */}
+          <div className="hidden md:block relative h-full bg-indigo-100/50 dark:bg-slate-800 p-8">
+            <div className="absolute inset-0 overflow-hidden opacity-10">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#5558a4_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            </div>
+            <div className="relative h-full flex flex-col justify-center items-center space-y-6">
+              <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg p-5 w-full max-w-xs transform rotate-3 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-md p-1">
+                    <BarChart3 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">87/100</div>
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Market Fit Score</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mb-3">Strong potential with some competition</p>
+                <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2 mb-2">
+                  <div className="bg-indigo-600 dark:bg-indigo-500 h-2 rounded-full" style={{ width: "87%" }}></div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg p-5 w-full max-w-xs transform -rotate-2 relative z-20">
+                <div className="flex items-center mb-3">
+                  <div className="bg-emerald-100 dark:bg-emerald-900/30 rounded-md p-1 mr-3">
+                    <Lightbulb className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Business Model</h3>
+                </div>
+                <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1 pl-4 list-disc">
+                  <li>Freemium with premium features</li>
+                  <li>Enterprise partnerships</li>
+                  <li>White label licensing opportunities</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
