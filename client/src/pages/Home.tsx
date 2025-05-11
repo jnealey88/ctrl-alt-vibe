@@ -188,9 +188,9 @@ const Home = () => {
             <div className="inline-block bg-violet-100 dark:bg-violet-900/30 p-2 rounded-full mb-4">
               <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-slate-900 dark:text-white">Ready for a Vibe Check?</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-slate-900 dark:text-white">Enhanced Business Vibe Check</h2>
             <p className="text-slate-700 dark:text-slate-300 mb-6">
-              Get instant AI-powered analysis for your project idea. Our comprehensive evaluation covers market fit, target audience, business potential, and implementation strategy.
+              Get comprehensive AI-powered analysis for your project idea. Our in-depth evaluation covers market fit, target audience, plus detailed guidance on launch strategy, customer acquisition, revenue models, and funding options.
             </p>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="flex items-start space-x-2">
