@@ -2,6 +2,7 @@ import { Express, Request, Response } from 'express';
 import { db } from '../../db';
 import { vibeChecks } from '../../shared/schema';
 import { aiService } from '../services/ai-service';
+import { eq } from 'drizzle-orm';
 
 /**
  * Register Vibe Check related routes
@@ -99,7 +100,7 @@ export function registerVibeCheckRoutes(app: Express, apiPrefix: string) {
       
       // Get the vibe check
       const vibeCheck = await db.query.vibeChecks.findFirst({
-        where: (vibeChecks, { eq }) => eq(vibeChecks.id, vibeCheckId)
+        where: eq(vibeChecks.id, vibeCheckId)
       });
       
       if (!vibeCheck) {

@@ -29,6 +29,7 @@ import multer from "multer";
 import monitoringRoutes from "./routes/monitoring";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerAIRoutes } from "./routes/ai";
+import { registerVibeCheckRoutes } from "./routes/vibe-check";
 // Profile routes are now directly implemented in this file
 import path from "path";
 import { processUrlForProject } from "./utils/url-metadata";
@@ -111,6 +112,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register AI routes
   registerAIRoutes(app, '/api');
+  
+  // Register Vibe Check routes
+  registerVibeCheckRoutes(app, '/api');
   
   // Create HTTP server once for the entire application
   const httpServer = createServer(app);
