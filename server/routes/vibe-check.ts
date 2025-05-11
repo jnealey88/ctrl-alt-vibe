@@ -1,134 +1,218 @@
-import { Express, Request, Response } from 'express';
-import { db } from '../../db';
-import { vibeChecks } from '../../shared/schema';
+import { Request, Response, Router, Express } from 'express';
+import { db } from '@db';
+import { vibeChecks, vibeCheckInsertSchema, projects, projectEvaluations } from '@shared/schema';
+import { z } from 'zod';
 import { aiService } from '../services/ai-service';
-import { eq } from 'drizzle-orm';
+import { storage } from '../storage';
+import { eq, SQL } from 'drizzle-orm';
 
-/**
- * Register Vibe Check related routes
- */
-export function registerVibeCheckRoutes(app: Express, apiPrefix: string) {
-  /**
-   * Process a vibe check request
-   * This endpoint is public and does not require authentication
-   */
-  app.post(`${apiPrefix}/vibe-check`, async (req: Request, res: Response) => {
-    try {
-      const { email, websiteUrl, projectDescription, desiredVibe } = req.body;
-      
-      console.log('Vibe Check requested for project idea:');
-      console.log(`Description length: ${projectDescription?.length || 0} characters`);
-      
-      // Validate required fields
-      if (!projectDescription || projectDescription.trim().length < 10) {
-        return res.status(400).json({ 
-          error: 'Please provide a project description of at least 10 characters' 
-        });
-      }
-      
-      // Basic validation for email if provided
-      if (email && (!email.includes('@') || !email.includes('.'))) {
-        return res.status(400).json({ error: 'Please provide a valid email address' });
-      }
-      
-      // Basic validation for website URL if provided
-      if (websiteUrl && !websiteUrl.startsWith('http')) {
-        return res.status(400).json({ error: 'Please provide a valid URL starting with http:// or https://' });
-      }
-      
-      console.log('Calling AI service to generate vibe check evaluation');
-      
-      // Generate the AI evaluation
-      const evaluation = await aiService.generateVibeCheckEvaluation({
-        websiteUrl,
-        projectDescription,
-        desiredVibe
-      });
-      
-      console.log('Vibe Check evaluation generated successfully');
-
-      // Store the vibe check information in the database
-      console.log('Saving vibe check to database');
-      
-      try {
-        const [savedVibeCheck] = await db.insert(vibeChecks).values({
-          email: email || null,
-          websiteUrl: websiteUrl || null,
-          projectDescription,
-          desiredVibe: desiredVibe || null,
-          evaluation
-        }).returning();
-        
-        console.log(`Vibe check saved with ID: ${savedVibeCheck.id}`);
-        
-        // Return the evaluation and vibeCheckId
-        return res.status(200).json({
-          success: true,
-          evaluation,
-          vibeCheckId: savedVibeCheck.id
-        });
-      } catch (dbError) {
-        console.error('Database error saving vibe check:', dbError);
-        // If we have the evaluation but database save fails, still return the evaluation to the user
-        return res.status(200).json({
-          success: true,
-          evaluation,
-          warning: 'Your evaluation was generated successfully but could not be saved to our database'
-        });
-      }
-    } catch (error) {
-      console.error('Error generating vibe check evaluation:', error);
-      return res.status(500).json({ error: 'Failed to generate vibe check evaluation' });
-    }
-  });
-  
-  /**
-   * Convert a vibe check to a project
-   * Requires authentication (user must be logged in)
-   */
-  app.post(`${apiPrefix}/vibe-check/:id/convert-to-project`, async (req: Request, res: Response) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'You must be logged in to convert a vibe check to a project' });
-      }
-      
-      const vibeCheckId = parseInt(req.params.id);
-      
-      if (isNaN(vibeCheckId)) {
-        return res.status(400).json({ error: 'Invalid vibe check ID' });
-      }
-      
-      // Get the vibe check
-      const vibeCheck = await db.query.vibeChecks.findFirst({
-        where: eq(vibeChecks.id, vibeCheckId)
-      });
-      
-      if (!vibeCheck) {
-        return res.status(404).json({ error: 'Vibe check not found' });
-      }
-      
-      // Check if it's already been converted
-      if (vibeCheck.convertedToProject) {
-        return res.status(400).json({ 
-          error: 'This vibe check has already been converted to a project',
-          projectId: vibeCheck.convertedProjectId
-        });
-      }
-      
-      // Create a project from the vibe check
-      const { isPrivate, tags } = req.body;
-      
-      // Here you would use your existing project creation logic to add the project
-      // This will depend on how projects are currently created in your system
-      // For now, we'll just return a success message
-      
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Vibe check will be converted to a project. This functionality is coming soon.' 
-      });
-    } catch (error) {
-      console.error('Error converting vibe check to project:', error);
-      return res.status(500).json({ error: 'Failed to convert vibe check to project' });
-    }
-  });
+// Register all vibe check routes to the main Express app
+export function registerVibeCheckRoutes(app: Express) {
+  console.log('Registering vibe check routes');
+  app.use('/api/vibe-check', vibeCheckRouter);
 }
+
+// Schema for validating vibe check requests
+const vibeCheckRequestSchema = z.object({
+  email: z.string().email().optional().or(z.literal('')),
+  websiteUrl: z.string().url().optional().or(z.literal('')),
+  projectDescription: z.string().min(10, 'Project description must be at least 10 characters long'),
+  desiredVibe: z.string().optional().or(z.literal(''))
+});
+
+export const vibeCheckRouter = Router();
+
+// Create a new vibe check
+vibeCheckRouter.post('/', async (req: Request, res: Response) => {
+  try {
+    console.log('Received vibe check request:', req.body);
+    
+    // Validate the request
+    const validatedData = vibeCheckRequestSchema.parse(req.body);
+    
+    // Generate the vibe check evaluation
+    console.log('Generating vibe check evaluation...');
+    const evaluation = await aiService.generateVibeCheckEvaluation({
+      websiteUrl: validatedData.websiteUrl || undefined,
+      projectDescription: validatedData.projectDescription,
+      desiredVibe: validatedData.desiredVibe || undefined
+    });
+    
+    console.log('Vibe check evaluation generated successfully');
+    
+    // Save the vibe check to database
+    const [vibeCheck] = await db.insert(vibeChecks).values({
+      email: validatedData.email || null,
+      websiteUrl: validatedData.websiteUrl || null,
+      projectDescription: validatedData.projectDescription,
+      desiredVibe: validatedData.desiredVibe || null,
+      evaluation: evaluation
+    }).returning();
+    
+    console.log(`Vibe check saved with ID: ${vibeCheck.id}`);
+    
+    // Return the vibe check evaluation and the ID
+    return res.status(201).json({
+      vibeCheckId: vibeCheck.id,
+      evaluation: evaluation
+    });
+    
+  } catch (error: any) {
+    console.error('Error creating vibe check:', error);
+    
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid input', details: error.errors });
+    }
+    
+    // Handle OpenAI API errors specifically
+    if (error.message?.includes('OpenAI')) {
+      return res.status(503).json({ error: 'AI service temporarily unavailable. Please try again later.' });
+    }
+    
+    return res.status(500).json({ error: 'Failed to generate vibe check evaluation' });
+  }
+});
+
+// Get a specific vibe check
+vibeCheckRouter.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    const [vibeCheck] = await db.select().from(vibeChecks).where(eq(vibeChecks.id, id));
+    
+    if (!vibeCheck) {
+      return res.status(404).json({ error: 'Vibe check not found' });
+    }
+    
+    return res.json(vibeCheck);
+  } catch (error: any) {
+    console.error('Error retrieving vibe check:', error);
+    return res.status(500).json({ error: 'Failed to retrieve vibe check' });
+  }
+});
+
+// Convert a vibe check to a project (for authenticated users)
+vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Response) => {
+  try {
+    // This endpoint requires authentication
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const vibeCheckId = parseInt(req.params.id);
+    if (isNaN(vibeCheckId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    // Get the vibe check
+    const [vibeCheck] = await db.select().from(vibeChecks).where(eq(vibeChecks.id, vibeCheckId));
+    
+    if (!vibeCheck) {
+      return res.status(404).json({ error: 'Vibe check not found' });
+    }
+    
+    // Check if this vibe check has already been converted
+    if (vibeCheck.convertedToProject) {
+      return res.status(400).json({ error: 'This vibe check has already been converted to a project' });
+    }
+    
+    // Get user info
+    const userId = req.user.id;
+    
+    // Extract the value proposition as the title (or generate a title from description if not available)
+    const evaluation = vibeCheck.evaluation || {};
+    const valueProposition = evaluation.valueProposition as string | undefined;
+    
+    const title = valueProposition || 
+      vibeCheck.projectDescription.split('.')[0].substring(0, 100);
+    
+    // Generate a description from the project description
+    const description = vibeCheck.projectDescription.length > 200 
+      ? vibeCheck.projectDescription.substring(0, 197) + '...'
+      : vibeCheck.projectDescription;
+    
+    // Extract tags from the evaluation if available
+    let tagNames: string[] = [];
+    if (evaluation && typeof evaluation === 'object' && 'targetAudience' in evaluation) {
+      const targetAudience = evaluation.targetAudience as any;
+      
+      // Extract keywords from the target audience and market analysis
+      const tagSources = [
+        targetAudience?.demographic || '',
+        targetAudience?.psychographic || ''
+      ];
+      
+      // Basic extraction of potential tag words
+      const potentialTags = tagSources.join(' ')
+        .split(/\s+/)
+        .filter(word => word.length > 3 && !['and', 'with', 'that', 'this', 'from', 'have', 'they', 'their'].includes(word.toLowerCase()))
+        .slice(0, 10);
+      
+      // Deduplicate
+      const tagSet = new Set(potentialTags);
+      tagNames = Array.from(tagSet);
+    }
+    
+    // Determine if project should be private or public
+    const isPrivate = req.body?.isPrivate === true;
+    
+    // Create a new project
+    const project = await storage.createProject({
+      title: title,
+      description: description,
+      longDescription: vibeCheck.projectDescription,
+      projectUrl: vibeCheck.websiteUrl || '',
+      imageUrl: '/ctrlaltvibelogo.png', // Default image
+      authorId: userId,
+      isPrivate: isPrivate,
+      vibeCodingTool: 'OpenAI'
+    }, tagNames);
+    
+    // Update the vibe check to mark it as converted
+    await db.update(vibeChecks)
+      .set({
+        convertedToProject: true,
+        convertedProjectId: project.id,
+        updatedAt: new Date()
+      })
+      .where(eq(vibeChecks.id, vibeCheckId));
+    
+    // If we have evaluation data, also create a project evaluation
+    if (vibeCheck.evaluation) {
+      try {
+        const evalData = vibeCheck.evaluation as any;
+        
+        await db.insert(projectEvaluations).values({
+          projectId: project.id,
+          marketFitAnalysis: evalData.marketFitAnalysis,
+          targetAudience: evalData.targetAudience,
+          fitScore: evalData.fitScore,
+          fitScoreExplanation: evalData.fitScoreExplanation,
+          businessPlan: evalData.businessPlan,
+          valueProposition: evalData.valueProposition,
+          riskAssessment: evalData.riskAssessment,
+          technicalFeasibility: evalData.technicalFeasibility,
+          regulatoryConsiderations: evalData.regulatoryConsiderations,
+          partnershipOpportunities: evalData.partnershipOpportunities,
+          competitiveLandscape: evalData.competitiveLandscape,
+          implementationRoadmap: evalData.implementationRoadmap
+        });
+      } catch (evalError) {
+        console.error('Error creating project evaluation:', evalError);
+        // Still continue, just without the evaluation
+      }
+    }
+    
+    return res.status(201).json({ 
+      message: 'Vibe check converted to project successfully', 
+      projectId: project.id 
+    });
+    
+  } catch (error: any) {
+    console.error('Error converting vibe check to project:', error);
+    return res.status(500).json({ error: 'Failed to convert vibe check to project' });
+  }
+});
