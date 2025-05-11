@@ -21,7 +21,10 @@ import {
   PieChartIcon,
   TargetIcon,
   GlobeIcon,
-  InfoIcon
+  InfoIcon,
+  RocketIcon,
+  CircleDollarSignIcon,
+  WrenchIcon
 } from 'lucide-react';
 
 interface ProjectEvaluationProps {
@@ -81,6 +84,35 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
           tasks: string[];
           metrics: string[];
         }>;
+      };
+      // Enhanced business guidance sections
+      launchStrategy?: {
+        mvpFeatures: string[];
+        timeToMarket: string;
+        marketEntryApproach: string;
+        criticalResources: string[];
+        launchChecklist: string[];
+      };
+      customerAcquisition?: {
+        primaryChannels: string[];
+        acquisitionCost: string;
+        conversionStrategy: string;
+        retentionTactics: string[];
+        growthOpportunities: string;
+      };
+      revenueGeneration?: {
+        businessModels: string[];
+        pricingStrategy: string;
+        revenueStreams: string[];
+        unitEconomics: string;
+        scalingPotential: string;
+      };
+      bootstrappingGuide?: {
+        costMinimizationTips: string[];
+        diySolutions: string;
+        growthWithoutFunding: string;
+        timeManagement: string;
+        milestonesOnBudget: string[];
       };
     } | null;
     error?: string;
@@ -809,6 +841,234 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                           </p>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              {/* Launch Strategy Tab */}
+              <TabsContent value="launch" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+                      <RocketIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Launch Strategy</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.launchStrategy?.mvpFeatures && evaluation.launchStrategy.mvpFeatures.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">MVP Features</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.launchStrategy.mvpFeatures.map((feature: string, index: number) => (
+                          <li key={index}>{feature}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.launchStrategy?.timeToMarket && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Time to Market</h4>
+                      <p>{evaluation.launchStrategy.timeToMarket}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.launchStrategy?.marketEntryApproach && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Market Entry Approach</h4>
+                      <p>{evaluation.launchStrategy.marketEntryApproach}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.launchStrategy?.criticalResources && evaluation.launchStrategy.criticalResources.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Critical Resources</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.launchStrategy.criticalResources.map((resource: string, index: number) => (
+                          <li key={index}>{resource}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.launchStrategy?.launchChecklist && evaluation.launchStrategy.launchChecklist.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Launch Checklist</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.launchStrategy.launchChecklist.map((item: string, index: number) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              {/* Customer Acquisition Tab */}
+              <TabsContent value="customers" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-full">
+                      <UsersIcon className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Customer Acquisition</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.customerAcquisition?.primaryChannels && evaluation.customerAcquisition.primaryChannels.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Primary Channels</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.customerAcquisition.primaryChannels.map((channel: string, index: number) => (
+                          <li key={index}>{channel}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.customerAcquisition?.acquisitionCost && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Acquisition Cost</h4>
+                      <p>{evaluation.customerAcquisition.acquisitionCost}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.customerAcquisition?.conversionStrategy && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Conversion Strategy</h4>
+                      <p>{evaluation.customerAcquisition.conversionStrategy}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.customerAcquisition?.retentionTactics && evaluation.customerAcquisition.retentionTactics.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Retention Tactics</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.customerAcquisition.retentionTactics.map((tactic: string, index: number) => (
+                          <li key={index}>{tactic}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.customerAcquisition?.growthOpportunities && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Growth Opportunities</h4>
+                      <p>{evaluation.customerAcquisition.growthOpportunities}</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              {/* Revenue Generation Tab */}
+              <TabsContent value="revenue" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-violet-50 dark:bg-violet-900/20 rounded-full">
+                      <CircleDollarSignIcon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Revenue Generation</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.revenueGeneration?.businessModels && evaluation.revenueGeneration.businessModels.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Business Models</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.revenueGeneration.businessModels.map((model: string, index: number) => (
+                          <li key={index}>{model}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.revenueGeneration?.pricingStrategy && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Pricing Strategy</h4>
+                      <p>{evaluation.revenueGeneration.pricingStrategy}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.revenueGeneration?.revenueStreams && evaluation.revenueGeneration.revenueStreams.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Revenue Streams</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.revenueGeneration.revenueStreams.map((stream: string, index: number) => (
+                          <li key={index}>{stream}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.revenueGeneration?.unitEconomics && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Unit Economics</h4>
+                      <p>{evaluation.revenueGeneration.unitEconomics}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.revenueGeneration?.scalingPotential && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Scaling Potential</h4>
+                      <p>{evaluation.revenueGeneration.scalingPotential}</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              {/* Bootstrapping Guide Tab */}
+              <TabsContent value="bootstrapping" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-full">
+                      <WrenchIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Bootstrapping Guide</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.bootstrappingGuide?.costMinimizationTips && evaluation.bootstrappingGuide.costMinimizationTips.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Cost Minimization Tips</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.bootstrappingGuide.costMinimizationTips.map((tip: string, index: number) => (
+                          <li key={index}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.bootstrappingGuide?.diySolutions && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">DIY Solutions</h4>
+                      <p>{evaluation.bootstrappingGuide.diySolutions}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.bootstrappingGuide?.growthWithoutFunding && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Growth Without Funding</h4>
+                      <p>{evaluation.bootstrappingGuide.growthWithoutFunding}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.bootstrappingGuide?.timeManagement && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Time Management</h4>
+                      <p>{evaluation.bootstrappingGuide.timeManagement}</p>
+                    </div>
+                  )}
+                  
+                  {evaluation.bootstrappingGuide?.milestonesOnBudget && evaluation.bootstrappingGuide.milestonesOnBudget.length > 0 && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Milestones on a Budget</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.bootstrappingGuide.milestonesOnBudget.map((milestone: string, index: number) => (
+                          <li key={index}>{milestone}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>
