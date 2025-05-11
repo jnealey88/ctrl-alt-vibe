@@ -209,7 +209,7 @@ export default function VibeCheck() {
             <TabsTrigger value="launch">Launch</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="funding">Funding</TabsTrigger>
+            <TabsTrigger value="bootstrapping">Bootstrapping</TabsTrigger>
           </TabsList>
 
           {/* Market Fit Tab */}
@@ -641,48 +641,61 @@ export default function VibeCheck() {
             </Card>
           </TabsContent>
 
-          {/* Funding Guidance Tab */}
-          <TabsContent value="funding" className="space-y-6">
+          {/* Bootstrapping Guide Tab */}
+          <TabsContent value="bootstrapping" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Funding Guidance</CardTitle>
+                <CardTitle>Bootstrapping Guide</CardTitle>
                 <CardDescription>
-                  Strategies for financing your project development
+                  DIY strategies for solo developers on a budget
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Bootstrapping Options */}
+                {/* Cost Minimization Tips */}
                 <div>
-                  <h3 className="text-lg font-medium mb-2">Bootstrapping Options</h3>
-                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.bootstrappingOptions}</p>
-                </div>
-                
-                {/* Investor Fit */}
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Investor Fit</h3>
-                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.investorFit}</p>
-                </div>
-                
-                {/* Funding Requirements */}
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Funding Requirements</h3>
-                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.fundingRequirements}</p>
-                </div>
-                
-                {/* Pitch Guidance */}
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Pitch Guidance</h3>
-                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.pitchGuidance}</p>
-                </div>
-                
-                {/* Key Metrics */}
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Key Metrics for Investors</h3>
+                  <h3 className="text-lg font-medium mb-3">Cost Minimization Tips</h3>
                   <ul className="space-y-2">
-                    {evaluationResult?.fundingGuidance?.keyMetrics?.map((metric: string, index: number) => (
+                    {evaluationResult?.bootstrappingGuide?.costMinimizationTips?.map((tip: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary/70 mt-1.5" />
-                        <span>{metric}</span>
+                        <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-xs">💰</span>
+                        </div>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* DIY Solutions */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">DIY Solutions & Free Tools</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.bootstrappingGuide?.diySolutions}</p>
+                </div>
+                
+                {/* Growth Without Funding */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Organic Growth Strategies</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.bootstrappingGuide?.growthWithoutFunding}</p>
+                </div>
+                
+                {/* Time Management */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Solo Developer Time Management</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.bootstrappingGuide?.timeManagement}</p>
+                </div>
+                
+                {/* Milestones on Budget */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Achievable Milestones on a Budget</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.bootstrappingGuide?.milestonesOnBudget?.map((milestone: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="text-emerald-500 flex-shrink-0 mt-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                          </svg>
+                        </div>
+                        <span>{milestone}</span>
                       </li>
                     ))}
                   </ul>

@@ -57,12 +57,12 @@ export class AIService {
       unitEconomics: string;
       scalingPotential: string;
     };
-    fundingGuidance: {
-      bootstrappingOptions: string;
-      investorFit: string;
-      fundingRequirements: string;
-      pitchGuidance: string;
-      keyMetrics: string[];
+    bootstrappingGuide: {
+      costMinimizationTips: string[];
+      diySolutions: string;
+      growthWithoutFunding: string;
+      timeManagement: string;
+      milestonesOnBudget: string[];
     };
   }> {
     console.log(`Generating vibe check evaluation for a project idea`);
@@ -215,12 +215,12 @@ export class AIService {
            - Include unit economics analysis with cost structures, margins, and break-even calculations
            - Detail scaling strategies to grow from initial revenue to sustainable profitability
         
-        15. Funding Guidance:
-           - Outline bootstrapping options and self-funding strategies for early development
-           - Assess investor fit with specific types of investors (angel, VC, strategic) that would be interested
-           - Provide realistic funding requirements with allocation breakdown and funding milestones
-           - Include detailed guidance for creating an effective investor pitch with key talking points
-           - List critical metrics investors will evaluate, with target benchmarks for each stage
+        15. Bootstrapping Guide:
+           - Provide 5-7 practical cost minimization tips specifically for solo developers
+           - Detail DIY solutions and free/low-cost tools that can replace expensive services
+           - Outline strategies for organic growth without external funding
+           - Provide time management advice for solo developers juggling multiple project aspects
+           - List 5-7 achievable milestones that can be completed on a minimal budget
         
         Format your response as a valid JSON object with the EXACT structure shown in the example below.
         Be extremely specific, practical and actionable with your analysis. Include concrete examples, numbers, 
@@ -320,12 +320,12 @@ export class AIService {
             "unitEconomics": "Description of unit economics",
             "scalingPotential": "Description of scaling potential"
           },
-          "fundingGuidance": {
-            "bootstrappingOptions": "Description of bootstrapping options",
-            "investorFit": "Description of potential investor types",
-            "fundingRequirements": "Description of funding needs",
-            "pitchGuidance": "Guidance for investor pitches",
-            "keyMetrics": ["Metric 1", "Metric 2", "Metric 3"]
+          "bootstrappingGuide": {
+            "costMinimizationTips": ["Tip 1", "Tip 2", "Tip 3"],
+            "diySolutions": "Description of DIY solutions and free/low-cost tools",
+            "growthWithoutFunding": "Strategies for organic growth",
+            "timeManagement": "Time management advice for solo developers",
+            "milestonesOnBudget": ["Milestone 1", "Milestone 2", "Milestone 3"]
           }
         }`;
         
