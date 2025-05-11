@@ -35,6 +35,35 @@ export class AIService {
         metrics: string[] 
       }> 
     };
+    // Enhanced business guidance sections
+    launchStrategy: {
+      mvpFeatures: string[];
+      timeToMarket: string;
+      marketEntryApproach: string;
+      criticalResources: string[];
+      launchChecklist: string[];
+    };
+    customerAcquisition: {
+      primaryChannels: string[];
+      acquisitionCost: string;
+      conversionStrategy: string;
+      retentionTactics: string[];
+      growthOpportunities: string;
+    };
+    revenueGeneration: {
+      businessModels: string[];
+      pricingStrategy: string;
+      revenueStreams: string[];
+      unitEconomics: string;
+      scalingPotential: string;
+    };
+    fundingGuidance: {
+      bootstrappingOptions: string;
+      investorFit: string;
+      fundingRequirements: string;
+      pitchGuidance: string;
+      keyMetrics: string[];
+    };
   }> {
     console.log(`Generating vibe check evaluation for a project idea`);
     
@@ -162,6 +191,37 @@ export class AIService {
            - Include recommendations for prioritizing features based on technical complexity and business impact
            - Suggest specific tools, frameworks, and AI assistance methods for each implementation phase
         
+        12. Launch Strategy:
+           - Identify 5-7 critical MVP features required for a successful initial launch
+           - Provide a realistic timeline from development to launch with specific milestones
+           - Outline a detailed market entry approach with specific tactics for gaining initial traction
+           - List all critical resources (human, technical, financial) needed for a successful launch
+           - Create a comprehensive pre-launch and launch-day checklist with specific action items
+           - Include contingency plans for common launch obstacles and technical issues
+           - Detail post-launch monitoring and rapid iteration strategies for the first 30/60/90 days
+        
+        13. Customer Acquisition Strategy:
+           - Identify 5-7 primary customer acquisition channels with specific targeting parameters and tactics for each
+           - Provide realistic customer acquisition cost estimates based on industry benchmarks
+           - Detail a complete conversion funnel from awareness to activation with optimization strategies for each stage
+           - Outline 3-5 specific customer retention tactics with implementation guidance
+           - Identify untapped growth opportunities and expansion strategies based on initial market entry
+           - Include performance metrics and tracking mechanisms for each acquisition channel
+        
+        14. Revenue Generation Models:
+           - Present 4-6 viable business models tailored to this specific project with pros/cons analysis
+           - Provide detailed pricing strategy recommendations with price points, tiers, and packaging options
+           - Identify multiple revenue streams and prioritize them based on implementation complexity and potential returns
+           - Include unit economics analysis with cost structures, margins, and break-even calculations
+           - Detail scaling strategies to grow from initial revenue to sustainable profitability
+        
+        15. Funding Guidance:
+           - Outline bootstrapping options and self-funding strategies for early development
+           - Assess investor fit with specific types of investors (angel, VC, strategic) that would be interested
+           - Provide realistic funding requirements with allocation breakdown and funding milestones
+           - Include detailed guidance for creating an effective investor pitch with key talking points
+           - List critical metrics investors will evaluate, with target benchmarks for each stage
+        
         Format your response as a valid JSON object with the EXACT structure shown in the example below.
         Be extremely specific, practical and actionable with your analysis. Include concrete examples, numbers, 
         and detailed recommendations throughout. Avoid generic advice and tailor everything to this specific project.
@@ -238,6 +298,34 @@ export class AIService {
                 "metrics": ["Metric 1", "Metric 2"]
               }
             ]
+          },
+          "launchStrategy": {
+            "mvpFeatures": ["Feature 1", "Feature 2", "Feature 3"],
+            "timeToMarket": "Estimated time to market",
+            "marketEntryApproach": "Description of market entry approach",
+            "criticalResources": ["Resource 1", "Resource 2", "Resource 3"],
+            "launchChecklist": ["Checklist item 1", "Checklist item 2", "Checklist item 3"]
+          },
+          "customerAcquisition": {
+            "primaryChannels": ["Channel 1", "Channel 2", "Channel 3"],
+            "acquisitionCost": "Estimated cost of customer acquisition",
+            "conversionStrategy": "Description of conversion funnel strategy",
+            "retentionTactics": ["Tactic 1", "Tactic 2", "Tactic 3"],
+            "growthOpportunities": "Description of growth opportunities"
+          },
+          "revenueGeneration": {
+            "businessModels": ["Model 1", "Model 2", "Model 3"],
+            "pricingStrategy": "Description of pricing strategy",
+            "revenueStreams": ["Stream 1", "Stream 2", "Stream 3"],
+            "unitEconomics": "Description of unit economics",
+            "scalingPotential": "Description of scaling potential"
+          },
+          "fundingGuidance": {
+            "bootstrappingOptions": "Description of bootstrapping options",
+            "investorFit": "Description of potential investor types",
+            "fundingRequirements": "Description of funding needs",
+            "pitchGuidance": "Guidance for investor pitches",
+            "keyMetrics": ["Metric 1", "Metric 2", "Metric 3"]
           }
         }`;
         

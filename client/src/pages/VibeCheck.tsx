@@ -200,12 +200,16 @@ export default function VibeCheck() {
         </div>
 
         <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-4">
+          <TabsList className="grid grid-cols-3 md:grid-cols-9 mb-4">
             <TabsTrigger value="market-fit">Market Fit</TabsTrigger>
             <TabsTrigger value="audience">Audience</TabsTrigger>
             <TabsTrigger value="business">Business</TabsTrigger>
             <TabsTrigger value="technical">Technical</TabsTrigger>
             <TabsTrigger value="risks">Risks</TabsTrigger>
+            <TabsTrigger value="launch">Launch</TabsTrigger>
+            <TabsTrigger value="customers">Customers</TabsTrigger>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="funding">Funding</TabsTrigger>
           </TabsList>
 
           {/* Market Fit Tab */}
@@ -449,6 +453,240 @@ export default function VibeCheck() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground whitespace-pre-line">{evaluationResult.fitScoreExplanation}</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Launch Strategy Tab */}
+          <TabsContent value="launch" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Launch Strategy</CardTitle>
+                <CardDescription>
+                  Key components for a successful product launch
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* MVP Features */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Critical MVP Features</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.launchStrategy?.mvpFeatures?.map((feature: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="bg-primary/10 text-primary h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-xs">{index + 1}</span>
+                        </div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Time to Market */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Time to Market</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.launchStrategy?.timeToMarket}</p>
+                </div>
+                
+                {/* Market Entry Approach */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Market Entry Approach</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.launchStrategy?.marketEntryApproach}</p>
+                </div>
+                
+                {/* Critical Resources */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Critical Resources</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.launchStrategy?.criticalResources?.map((resource: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/70 mt-1.5" />
+                        <span>{resource}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Launch Checklist */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Launch Checklist</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.launchStrategy?.launchChecklist?.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="text-green-500 flex-shrink-0 mt-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                          </svg>
+                        </div>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Customer Acquisition Tab */}
+          <TabsContent value="customers" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Acquisition Strategy</CardTitle>
+                <CardDescription>
+                  Strategies for attracting and retaining customers
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Primary Channels */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Primary Acquisition Channels</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {evaluationResult?.customerAcquisition?.primaryChannels?.map((channel: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-1">
+                        {channel}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Acquisition Cost */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Customer Acquisition Cost</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.customerAcquisition?.acquisitionCost}</p>
+                </div>
+                
+                {/* Conversion Strategy */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Conversion Strategy</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.customerAcquisition?.conversionStrategy}</p>
+                </div>
+                
+                {/* Retention Tactics */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Retention Tactics</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.customerAcquisition?.retentionTactics?.map((tactic: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/70 mt-1.5" />
+                        <span>{tactic}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Growth Opportunities */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Growth Opportunities</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.customerAcquisition?.growthOpportunities}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Revenue Generation Tab */}
+          <TabsContent value="revenue" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Generation Models</CardTitle>
+                <CardDescription>
+                  Strategies for monetizing your product
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Business Models */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Viable Business Models</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {evaluationResult?.revenueGeneration?.businessModels?.map((model: string, index: number) => (
+                      <Badge key={index} variant="outline" className="px-3 py-1">
+                        {model}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Pricing Strategy */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Pricing Strategy</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.revenueGeneration?.pricingStrategy}</p>
+                </div>
+                
+                {/* Revenue Streams */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Revenue Streams</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.revenueGeneration?.revenueStreams?.map((stream: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="bg-primary/10 text-primary h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-xs">{index + 1}</span>
+                        </div>
+                        <span>{stream}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Unit Economics */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Unit Economics</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.revenueGeneration?.unitEconomics}</p>
+                </div>
+                
+                {/* Scaling Potential */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Scaling Potential</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.revenueGeneration?.scalingPotential}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Funding Guidance Tab */}
+          <TabsContent value="funding" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Funding Guidance</CardTitle>
+                <CardDescription>
+                  Strategies for financing your project development
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Bootstrapping Options */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Bootstrapping Options</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.bootstrappingOptions}</p>
+                </div>
+                
+                {/* Investor Fit */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Investor Fit</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.investorFit}</p>
+                </div>
+                
+                {/* Funding Requirements */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Funding Requirements</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.fundingRequirements}</p>
+                </div>
+                
+                {/* Pitch Guidance */}
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Pitch Guidance</h3>
+                  <p className="text-muted-foreground">{evaluationResult?.fundingGuidance?.pitchGuidance}</p>
+                </div>
+                
+                {/* Key Metrics */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Key Metrics for Investors</h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.fundingGuidance?.keyMetrics?.map((metric: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/70 mt-1.5" />
+                        <span>{metric}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -229,6 +229,33 @@ const Home = () => {
                   <p className="text-sm text-slate-700 dark:text-slate-300">Feasibility and implementation</p>
                 </div>
               </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Launch Strategy</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Time-to-market and MVP guidance</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Revenue Generation</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Pricing and business models</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="mt-1 flex-shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">Funding Guidance</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">Bootstrapping and investor strategies</p>
+                </div>
+              </div>
             </div>
             <Link href="/vibe-check">
               <Button className="w-full sm:w-auto" size="lg">
