@@ -125,9 +125,26 @@ export default function VibeCheck() {
     }
   };
 
+  // Save the vibeCheckId to session storage for after login
+  const storeVibeCheckAndRedirect = () => {
+    if (vibeCheckId) {
+      // Store the vibe check ID in session storage so we can convert it after login
+      sessionStorage.setItem('pendingVibeCheckId', vibeCheckId.toString());
+      
+      // Redirect to auth page
+      window.location.href = '/auth';
+    }
+  };
+  
   // Save vibe check as project
   const saveAsProject = async () => {
     if (!vibeCheckId) return;
+
+    // If user is not logged in, store ID and redirect to login
+    if (!isAuthenticated) {
+      storeVibeCheckAndRedirect();
+      return;
+    }
 
     try {
       const response = await fetch(`/api/vibe-check/${vibeCheckId}/convert-to-project`, {
@@ -140,7 +157,18 @@ export default function VibeCheck() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        if (errorData.error.includes("already been converted")) {
+        
+        // If authentication error, redirect to login
+        if (response.status === 401) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to save this vibe check as a project",
+          });
+          storeVibeCheckAndRedirect();
+          return;
+        }
+        
+        if (errorData.error?.includes("already been converted")) {
           toast({
             title: "Already Saved",
             description: "This evaluation has already been saved as a project",
@@ -157,6 +185,9 @@ export default function VibeCheck() {
         title: "Success!",
         description: "Your vibe check has been saved as a project",
       });
+      
+      // Navigate to the new project page
+      window.location.href = `/projects/${result.projectId}`;
     } catch (error) {
       console.error("Error saving as project:", error);
       toast({

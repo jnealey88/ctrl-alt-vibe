@@ -1771,6 +1771,10 @@ export const storage = {
         await tx.delete(bookmarks)
           .where(eq(bookmarks.projectId, projectId));
           
+        // Delete project evaluations
+        await tx.delete(projectEvaluations)
+          .where(eq(projectEvaluations.projectId, projectId));
+
         // Delete gallery images related to the project
         await tx.delete(projectGallery)
           .where(eq(projectGallery.projectId, projectId));
