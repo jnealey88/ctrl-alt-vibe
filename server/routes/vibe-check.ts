@@ -262,7 +262,7 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
       description: description,
       longDescription: vibeCheck.projectDescription,
       projectUrl: vibeCheck.websiteUrl || '',
-      imageUrl: '/vibecheck-cover-image.png', // Default image specifically for vibe checks
+      imageUrl: '/images/vibe-check-cover.png', // Default image specifically for vibe checks
       authorId: userId,
       isPrivate: isPrivate,
       vibeCodingTool: 'OpenAI'

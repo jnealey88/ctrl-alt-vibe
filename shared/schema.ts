@@ -207,7 +207,7 @@ export const shares = pgTable("shares", {
 // Project evaluations (AI-generated analysis for project owners)
 export const projectEvaluations = pgTable("project_evaluations", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id).notNull().unique(), // One evaluation per project
+  projectId: integer("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull().unique(), // One evaluation per project
   marketFitAnalysis: jsonb("market_fit_analysis"), // { strengths: string[], weaknesses: string[], demandPotential: string }
   targetAudience: jsonb("target_audience"), // { demographic: string, psychographic: string }
   fitScore: integer("fit_score"), // 0-100 score
@@ -220,6 +220,11 @@ export const projectEvaluations = pgTable("project_evaluations", {
   partnershipOpportunities: jsonb("partnership_opportunities"), // { partners: string[] }
   competitiveLandscape: jsonb("competitive_landscape"), // { competitors: Array<{ name: string, differentiation: string }> }
   implementationRoadmap: jsonb("implementation_roadmap"), // { phases: Array<{ timeframe: string, tasks: string[], metrics: string[] }> }
+  // Additional comprehensive business guidance fields
+  launchStrategy: jsonb("launch_strategy"), // Launch strategy guidance
+  customerAcquisition: jsonb("customer_acquisition"), // Customer acquisition strategy
+  revenueGeneration: jsonb("revenue_generation"), // Revenue generation models and pricing
+  bootstrappingGuide: jsonb("bootstrapping_guide"), // Bootstrapping guidance for solo developers
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {
@@ -708,7 +713,7 @@ export const vibeChecks = pgTable("vibe_checks", {
   desiredVibe: text("desired_vibe"),
   evaluation: jsonb("evaluation"), // JSON containing the evaluation results
   convertedToProject: boolean("converted_to_project").default(false),
-  convertedProjectId: integer("converted_project_id").references(() => projects.id),
+  convertedProjectId: integer("converted_project_id").references(() => projects.id, { onDelete: 'set null' }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
