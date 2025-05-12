@@ -62,6 +62,7 @@ export default function VibeCheck() {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Market-fit remains the first tab in our logical progression
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
   
@@ -193,6 +194,7 @@ export default function VibeCheck() {
       setEvaluationResult(null);
       setVibeCheckId(null);
       setIsShowingResults(false);
+      // Reset to the first tab in our progression
       setActiveTab("market-fit");
       
       // Reset form
@@ -321,29 +323,34 @@ export default function VibeCheck() {
 
         <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex flex-wrap gap-2 h-auto mb-4">
+            {/* Group 1: Understanding the idea */}
             <TabsTrigger value="market-fit" className="flex items-center gap-1">
               <BarChart3 className="h-4 w-4" /> Market Fit
             </TabsTrigger>
             <TabsTrigger value="audience" className="flex items-center gap-1">
               <Target className="h-4 w-4" /> Audience
             </TabsTrigger>
+            <TabsTrigger value="technical" className="flex items-center gap-1">
+              <Code className="h-4 w-4" /> Technical
+            </TabsTrigger>
+            
+            {/* Group 2: Building the business */}
             <TabsTrigger value="business" className="flex items-center gap-1">
               <Briefcase className="h-4 w-4" /> Business
             </TabsTrigger>
-            <TabsTrigger value="technical" className="flex items-center gap-1">
-              <Code className="h-4 w-4" /> Technical
+            <TabsTrigger value="revenue" className="flex items-center gap-1">
+              <DollarSign className="h-4 w-4" /> Revenue
             </TabsTrigger>
             <TabsTrigger value="risks" className="flex items-center gap-1">
               <AlertTriangle className="h-4 w-4" /> Risks
             </TabsTrigger>
-            <TabsTrigger value="launch" className="flex items-center gap-1">
-              <Rocket className="h-4 w-4" /> Launch
-            </TabsTrigger>
+            
+            {/* Group 3: Taking action */}
             <TabsTrigger value="customers" className="flex items-center gap-1">
               <Users className="h-4 w-4" /> Customers
             </TabsTrigger>
-            <TabsTrigger value="revenue" className="flex items-center gap-1">
-              <DollarSign className="h-4 w-4" /> Revenue
+            <TabsTrigger value="launch" className="flex items-center gap-1">
+              <Rocket className="h-4 w-4" /> Launch
             </TabsTrigger>
             <TabsTrigger value="bootstrapping" className="flex items-center gap-1">
               <HandHelping className="h-4 w-4" /> Bootstrapping
