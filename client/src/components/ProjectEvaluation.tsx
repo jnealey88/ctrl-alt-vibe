@@ -587,6 +587,14 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                   </div>
                   <Separator className="mb-4" />
                   
+                  {/* Value Proposition Section */}
+                  {evaluation.valueProposition && (
+                    <div className="my-6 bg-primary/5 p-5 rounded-md border border-primary/20">
+                      <h4 className="font-medium text-primary mb-3">Value Proposition</h4>
+                      <p className="italic text-gray-700 dark:text-gray-300">{evaluation.valueProposition}</p>
+                    </div>
+                  )}
+                  
                   {evaluation.marketFitAnalysis?.strengths && (
                     <div className="my-4">
                       <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">Strengths</h4>
