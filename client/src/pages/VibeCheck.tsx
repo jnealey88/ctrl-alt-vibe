@@ -60,8 +60,8 @@ const vibeCheckFormSchema = z.object({
     .or(z.literal("")),
   projectDescription: z
     .string()
-    .min(10, "Please provide at least 10 characters"),
-  desiredVibe: z.string().optional(),
+    .min(10, "Please provide at least 10 characters")
+  // desiredVibe field removed as requested
 });
 
 type VibeCheckFormValues = z.infer<typeof vibeCheckFormSchema>;
@@ -108,7 +108,6 @@ export default function VibeCheck() {
       email: "",
       websiteUrl: "",
       projectDescription: "",
-      desiredVibe: "",
     },
   });
 
@@ -1462,24 +1461,7 @@ export default function VibeCheck() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 mb-6">
-                <p className="text-base">
-                  Share your idea below and our AI will analyze its potential
-                  through multiple lenses:
-                </p>
-                <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                  <li>Market fit analysis and demand prediction</li>
-                  <li>Target audience profiling and size estimation</li>
-                  <li>Competitive landscape analysis</li>
-                  <li>Revenue model suggestions and business strategy</li>
-                  <li>Technical feasibility assessment</li>
-                  <li>Detailed bootstrapping guide and launch strategy</li>
-                </ul>
-                <p className="font-medium text-violet-600 dark:text-violet-400 pt-2">
-                  Stop wondering if your idea has potential—get actionable
-                  insights now!
-                </p>
-              </div>
+              
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
@@ -1534,23 +1516,7 @@ export default function VibeCheck() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="desiredVibe"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Desired Vibe/Style (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Describe the aesthetic, style, or 'vibe' you're aiming for with this project..."
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+{/* Desired Vibe field removed as requested */}
 
                   <Button
                     type="submit"
