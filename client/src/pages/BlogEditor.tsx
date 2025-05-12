@@ -657,8 +657,8 @@ const BlogEditor = () => {
                       <Label htmlFor="editor" className="text-base font-medium">Content</Label>
                     </div>
                     <div className="mt-1.5 sticky top-4 z-10">
-                      {/* ReactQuill Editor with Quill 2.0 */}
-                      <ReactQuill
+                      {/* Quill Editor Component */}
+                      <QuillEditor
                         ref={quillRef}
                         id="editor"
                         theme="snow"

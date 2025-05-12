@@ -35,9 +35,8 @@ import { Upload, Image, Loader2 } from "lucide-react";
 import { projectInsertSchema } from "@shared/schema";
 
 
-// Import Quill editor components (using v2.0)
-import ReactQuill from 'react-quill';
-import 'quill/dist/quill.snow.css';
+// Import Quill editor wrapper component
+import QuillEditor from '@/components/QuillEditor';
 
 // Modified schema for client-side validation
 const submitProjectSchema = z.object({
@@ -94,7 +93,7 @@ const SubmitProject = () => {
   const [showUrlExtraction, setShowUrlExtraction] = useState(false);
   const [extractUrl, setExtractUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const quillRef = useRef<ReactQuill>(null);
+  const quillRef = useRef<any>(null);
   
   // Fetch AI coding tools from database
   const { tools, isLoading: isLoadingAiTools } = useCodingTools();

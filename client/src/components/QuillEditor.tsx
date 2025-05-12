@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import 'quill/dist/quill.snow.css';
+import type { ReactQuillProps } from 'react-quill';
 
 // Define a fallback component that will be used until the real ReactQuill is loaded
 const QuillFallback = ({ className }: { className?: string }) => (
@@ -13,35 +14,44 @@ const QuillFallback = ({ className }: { className?: string }) => (
   </div>
 );
 
-// Create a dynamic import for ReactQuill to prevent SSR issues
-const ReactQuill = React.lazy(() => 
-  import('react-quill').then(module => ({
-    default: module.default || module
-  }))
-);
-
-// Our wrapped Quill component with error handling
-const QuillEditor = React.forwardRef(({ 
-  value, 
-  onChange, 
-  placeholder, 
-  modules,
-  formats,
-  theme = "snow",
-  className,
-  ...props 
-}: {
+// Define our extended props type
+export interface QuillEditorProps extends Omit<ReactQuillProps, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
-  modules?: any;
-  formats?: string[];
-  theme?: string;
   className?: string;
-  [key: string]: any;
-}, ref: any) => {
+}
+
+// Create a component that dynamically loads ReactQuill
+const DynamicQuill = ({ 
+  forwardedRef, 
+  ...props 
+}: QuillEditorProps & { forwardedRef: React.Ref<any> }) => {
+  const ReactQuill = React.lazy(() => 
+    import('react-quill').then(module => ({
+      default: module.default || module
+    }))
+  );
+
+  return (
+    <ReactQuill ref={forwardedRef} {...props} />
+  );
+};
+
+// Use a wrapper to handle the dynamic import and provide a fallback
+function DynamicQuillWrapper(
+  props: QuillEditorProps & { forwardedRef: React.Ref<any> }
+) {
+  return (
+    <React.Suspense fallback={<QuillFallback className={props.className} />}>
+      <DynamicQuill {...props} />
+    </React.Suspense>
+  );
+}
+
+// Our wrapped Quill component with error handling and ref forwarding
+const QuillEditor = React.forwardRef<any, QuillEditorProps>((props, ref) => {
   // Use standard modules if none are provided
-  const defaultModules = {
+  const defaultModules = useMemo(() => ({
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike', 'blockquote'],
@@ -52,23 +62,17 @@ const QuillEditor = React.forwardRef(({
     clipboard: {
       matchVisual: false,
     }
+  }), []);
+
+  // Merge default modules with provided modules
+  const mergedProps = {
+    ...props,
+    modules: props.modules || defaultModules,
+    theme: props.theme || "snow",
+    forwardedRef: ref,
   };
 
-  return (
-    <React.Suspense fallback={<QuillFallback className={className} />}>
-      <ReactQuill
-        ref={ref}
-        theme={theme}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        modules={modules || defaultModules}
-        formats={formats}
-        className={className}
-        {...props}
-      />
-    </React.Suspense>
-  );
+  return <DynamicQuillWrapper {...mergedProps} />;
 });
 
 QuillEditor.displayName = 'QuillEditor';
