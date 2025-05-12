@@ -758,22 +758,6 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 </div>
               </TabsContent>
               
-              <TabsContent value="regulatory" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full">
-                      <ScrollTextIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </div>
-                    <h3 className="font-semibold text-lg">Regulatory Considerations</h3>
-                  </div>
-                  <Separator className="mb-4" />
-                  
-                  <div className="my-4">
-                    <p>{evaluation.regulatoryConsiderations}</p>
-                  </div>
-                </div>
-              </TabsContent>
-              
               <TabsContent value="roadmap" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
                   <div className="flex items-center gap-3 mb-4">
