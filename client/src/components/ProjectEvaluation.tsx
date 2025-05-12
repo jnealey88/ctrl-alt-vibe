@@ -233,7 +233,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
             
             if (convertResponse.ok) {
               toast({
-                title: 'Evaluation generated',
+                title: 'Vibe Check generated',
                 description: 'Your project Vibe Check has been created.',
               });
               
@@ -280,7 +280,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold mb-0">Project Analysis</h2>
+          <h2 className="text-2xl font-bold mb-0">Project Vibe Check</h2>
         </div>
         
         <Card className="w-full border border-primary/20 bg-primary/5">
@@ -340,9 +340,9 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       <BarChart3Icon className="h-6 w-6 text-primary" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-medium mb-2">Generating Your Evaluation</h3>
+                  <h3 className="text-lg font-medium mb-2">Generating Your Vibe Check</h3>
                   <p className="text-sm text-muted-foreground max-w-md mb-4">
-                    Our AI is analyzing your project and creating a comprehensive business evaluation. 
+                    Our AI is analyzing your project and creating a comprehensive business vibe check. 
                     This typically takes 30-60 seconds.
                   </p>
                   <Progress className="h-1 w-full max-w-xs mx-auto" value={60} />
@@ -355,7 +355,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 size="lg"
               >
                 <BarChart3Icon className="h-4 w-4" />
-                Generate Evaluation
+                Generate Vibe Check
               </Button>
             )}
             
@@ -426,8 +426,8 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Project Analysis</h2>
-            <p className="text-muted-foreground text-sm">AI-powered comprehensive business evaluation</p>
+            <h2 className="text-2xl font-bold mb-2">Project Vibe Check</h2>
+            <p className="text-muted-foreground text-sm">AI-powered comprehensive business vibe check</p>
           </div>
           <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
             <span className="text-xs text-muted-foreground mb-1">Viability Score</span>
@@ -459,7 +459,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     ) : (
                       <>
                         <BarChart3Icon className="h-4 w-4" />
-                        <span>Regenerate</span>
+                        <span>Regenerate Vibe Check</span>
                       </>
                     )}
                   </Button>
