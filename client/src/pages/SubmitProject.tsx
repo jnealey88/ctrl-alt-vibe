@@ -483,7 +483,7 @@ const SubmitProject = () => {
                   <FormItem>
                     <FormLabel>Detailed Description (Optional)</FormLabel>
                     <FormControl>
-                      <ReactQuill
+                      <QuillEditor
                         ref={quillRef}
                         theme="snow"
                         value={field.value || ''}
