@@ -80,6 +80,31 @@ function transformEvaluationResponse(evaluation: any): any {
     };
   }
   
+  // Ensure adjacentIdeas exists
+  if (!updatedEvaluation.adjacentIdeas) {
+    updatedEvaluation.adjacentIdeas = {
+      complementaryProducts: [
+        "Mobile companion app for on-the-go access",
+        "Browser extension for quicker access to features",
+        "Analytics dashboard for user insights",
+        "API for integrations with other tools"
+      ],
+      pivotPossibilities: [
+        "Enterprise version with team collaboration features",
+        "White-label solution for agencies",
+        "Specialized version for specific industry verticals",
+        "Education/training platform around the core functionality"
+      ],
+      expansionOpportunities: [
+        "Additional language support for international markets",
+        "Premium templates or presets for specific use cases",
+        "Managed service option for enterprises",
+        "Community marketplace for user-generated content"
+      ],
+      strategicRecommendations: "Focus on building a strong core product first, then expand to adjacent markets through partnerships and integrations."
+    };
+  }
+  
   // Ensure customerAcquisition exists
   if (!updatedEvaluation.customerAcquisition) {
     updatedEvaluation.customerAcquisition = {
@@ -421,7 +446,8 @@ vibeCheckRouter.post('/:id/convert-to-project-evaluation', async (req: Request, 
       launchStrategy: evalData.launchStrategy,
       customerAcquisition: evalData.customerAcquisition,
       revenueGeneration: evalData.revenueGeneration,
-      bootstrappingGuide: evalData.bootstrappingGuide
+      bootstrappingGuide: evalData.bootstrappingGuide,
+      adjacentIdeas: evalData.adjacentIdeas
     });
     
     // Update the vibe check to mark it as referenced
@@ -538,7 +564,8 @@ vibeCheckRouter.post('/:id/convert-to-project', async (req: Request, res: Respon
           launchStrategy: evalData.launchStrategy,
           customerAcquisition: evalData.customerAcquisition,
           revenueGeneration: evalData.revenueGeneration,
-          bootstrappingGuide: evalData.bootstrappingGuide
+          bootstrappingGuide: evalData.bootstrappingGuide,
+          adjacentIdeas: evalData.adjacentIdeas
         });
       } catch (evalError) {
         console.error('Error creating project evaluation:', evalError);

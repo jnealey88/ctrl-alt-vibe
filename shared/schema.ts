@@ -225,6 +225,7 @@ export const projectEvaluations = pgTable("project_evaluations", {
   customerAcquisition: jsonb("customer_acquisition"), // Customer acquisition strategy
   revenueGeneration: jsonb("revenue_generation"), // Revenue generation models and pricing
   bootstrappingGuide: jsonb("bootstrapping_guide"), // Bootstrapping guidance for solo developers
+  adjacentIdeas: jsonb("adjacent_ideas"), // Complementary products and pivot possibilities
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {
