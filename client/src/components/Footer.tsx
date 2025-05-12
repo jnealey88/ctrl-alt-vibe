@@ -1,7 +1,9 @@
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const Footer = () => {
+  const footerLinkClass = "text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary";
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -16,16 +18,16 @@ const Footer = () => {
             <h3 className="text-gray-900 dark:text-gray-100 font-medium">Explore</h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <Link href="/" className="text-gray-500 hover:text-primary">Home</Link>
+                <Link href="/" className={footerLinkClass}>Home</Link>
               </li>
               <li>
-                <Link href="/browse" className="text-gray-500 hover:text-primary">Browse Projects</Link>
+                <Link href="/browse" className={footerLinkClass}>Browse Projects</Link>
               </li>
               <li>
-                <Link href="/submit" className="text-gray-500 hover:text-primary">Submit Project</Link>
+                <Link href="/submit" className={footerLinkClass}>Submit Project</Link>
               </li>
               <li>
-                <Link href="/users" className="text-gray-500 hover:text-primary">Community Members</Link>
+                <Link href="/users" className={footerLinkClass}>Community Members</Link>
               </li>
             </ul>
           </div>
@@ -33,13 +35,13 @@ const Footer = () => {
             <h3 className="text-gray-900 dark:text-gray-100 font-medium">Account</h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <Link href="/profile" className="text-gray-500 hover:text-primary">Your Profile</Link>
+                <Link href="/profile" className={footerLinkClass}>Your Profile</Link>
               </li>
               <li>
-                <Link href="/auth" className="text-gray-500 hover:text-primary">Login / Register</Link>
+                <Link href="/auth" className={footerLinkClass}>Login / Register</Link>
               </li>
               <li>
-                <Link href="/admin" className="text-gray-500 hover:text-primary">Admin Dashboard</Link>
+                <Link href="/admin" className={footerLinkClass}>Admin Dashboard</Link>
               </li>
             </ul>
           </div>
@@ -53,12 +55,12 @@ const Footer = () => {
             </div>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-4 md:gap-6">
-            <Link href="/browse" className="text-gray-400 hover:text-gray-500 text-sm">Browse</Link>
-            <Link href="/submit" className="text-gray-400 hover:text-gray-500 text-sm">Submit</Link>
-            <Link href="/profile" className="text-gray-400 hover:text-gray-500 text-sm">Profile</Link>
-            <Link href="/privacy" className="text-gray-400 hover:text-gray-500 text-sm">Privacy Policy</Link>
-            <Link href="/terms" className="text-gray-400 hover:text-gray-500 text-sm">Terms of Service</Link>
-            <Link href="/accessibility" className="text-gray-400 hover:text-gray-500 text-sm">Accessibility</Link>
+            <Link href="/browse" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Browse</Link>
+            <Link href="/submit" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Submit</Link>
+            <Link href="/profile" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Profile</Link>
+            <Link href="/privacy" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Privacy Policy</Link>
+            <Link href="/terms" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Terms of Service</Link>
+            <Link href="/accessibility" className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 text-sm">Accessibility</Link>
           </div>
         </div>
       </div>
