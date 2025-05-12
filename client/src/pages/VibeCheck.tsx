@@ -70,7 +70,8 @@ export default function VibeCheck() {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   // Market-fit remains the first tab in our logical progression
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
@@ -86,9 +87,12 @@ export default function VibeCheck() {
     try {
       const savedVibeCheck = sessionStorage.getItem("savedVibeCheck");
       if (savedVibeCheck) {
-        const { evaluation, id } = JSON.parse(savedVibeCheck);
+        const { evaluation, id, shareUrl } = JSON.parse(savedVibeCheck);
         setEvaluationResult(evaluation);
         setVibeCheckId(id);
+        if (shareUrl) {
+          setShareUrl(shareUrl);
+        }
         setIsShowingResults(true);
         console.log("Loaded vibe check from session storage");
       }
@@ -148,6 +152,13 @@ export default function VibeCheck() {
 
       setEvaluationResult(result.evaluation);
       setVibeCheckId(result.vibeCheckId);
+      
+      // Save share URL if available
+      if (result.shareUrl) {
+        setShareUrl(result.shareUrl);
+        console.log("Share URL generated:", result.shareUrl);
+      }
+      
       setIsShowingResults(true);
 
       // Save vibe check results to session storage
@@ -157,6 +168,7 @@ export default function VibeCheck() {
           JSON.stringify({
             evaluation: result.evaluation,
             id: result.vibeCheckId,
+            shareUrl: result.shareUrl || null,
           }),
         );
         console.log("Saved vibe check to session storage");
@@ -314,30 +326,75 @@ export default function VibeCheck() {
     </div>
   );
 
-  // Export the current vibe check to PDF
-  const handleExportToPdf = async () => {
-    try {
-      setIsGeneratingPdf(true);
-      await generateVibeCheckPdf(evaluationResult, {
-        title: "Vibe Check Results",
-        filename: `vibe-check-${new Date().toISOString().slice(0, 10)}.pdf`,
-        pageSize: "a4",
-        orientation: "portrait",
-      });
+  // Share the current vibe check via URL
+  const handleShareResults = async () => {
+    // If we already have a share URL, just copy it to clipboard
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
       toast({
-        title: "PDF Generated Successfully",
-        description: "Your Vibe Check report has been downloaded as a PDF",
+        title: "Link Copied",
+        description: "Share link copied to clipboard",
+      });
+      return;
+    }
+    
+    try {
+      setIsGeneratingShareLink(true);
+      
+      // If the evaluation result already has a shareUrl property, use that
+      if (evaluationResult.shareUrl) {
+        setShareUrl(evaluationResult.shareUrl);
+        navigator.clipboard.writeText(evaluationResult.shareUrl);
+        toast({
+          title: "Link Generated & Copied",
+          description: "Share link copied to clipboard",
+        });
+        return;
+      }
+      
+      // Otherwise, we need to generate a new share link via API
+      const response = await fetch(`/api/vibe-check/${vibeCheckId}/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to generate share link");
+      }
+      
+      const result = await response.json();
+      setShareUrl(result.shareUrl);
+      
+      // Save the shareUrl to session storage
+      const savedVibeCheck = sessionStorage.getItem("savedVibeCheck");
+      if (savedVibeCheck) {
+        const data = JSON.parse(savedVibeCheck);
+        sessionStorage.setItem(
+          "savedVibeCheck",
+          JSON.stringify({
+            ...data,
+            shareUrl: result.shareUrl,
+          })
+        );
+      }
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(result.shareUrl);
+      toast({
+        title: "Share Link Created",
+        description: "Share link copied to clipboard",
       });
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Error generating share link:", error);
       toast({
-        title: "PDF Generation Failed",
-        description:
-          "There was an error generating your PDF. Please try again.",
+        title: "Share Link Generation Failed",
+        description: "Failed to generate a share link. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsGeneratingPdf(false);
+      setIsGeneratingShareLink(false);
     }
   };
 
@@ -366,19 +423,28 @@ export default function VibeCheck() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportToPdf}
-              disabled={isGeneratingPdf}
+              onClick={handleShareResults}
+              disabled={isGeneratingShareLink}
               className="text-xs flex items-center gap-1"
             >
-              {isGeneratingPdf ? (
+              {isGeneratingShareLink ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <FileDown className="h-3.5 w-3.5" />
-                  Export to PDF
+                  {shareUrl ? (
+                    <>
+                      <Download className="h-3.5 w-3.5" />
+                      Copy Share Link
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="h-3.5 w-3.5" />
+                      Generate Share Link
+                    </>
+                  )}
                 </>
               )}
             </Button>

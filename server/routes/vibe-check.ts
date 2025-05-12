@@ -220,6 +220,53 @@ vibeCheckRouter.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Generate or update share link for a vibe check
+vibeCheckRouter.post('/:id/share', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    
+    // Get the vibe check
+    const [vibeCheck] = await db.select().from(vibeChecks).where(eq(vibeChecks.id, id));
+    
+    if (!vibeCheck) {
+      return res.status(404).json({ error: 'Vibe check not found' });
+    }
+    
+    // Check if it already has a shareId
+    if (vibeCheck.shareId) {
+      // Return the existing share URL
+      return res.json({ 
+        shareUrl: `${req.protocol}://${req.get('host')}/vibe-check/share/${vibeCheck.shareId}`,
+        shareId: vibeCheck.shareId
+      });
+    }
+    
+    // Generate a new shareId
+    const shareId = generateShareId();
+    
+    // Update the vibe check to make it shareable
+    await db.update(vibeChecks)
+      .set({
+        shareId: shareId,
+        isPublic: true,
+        updatedAt: new Date()
+      })
+      .where(eq(vibeChecks.id, id));
+    
+    // Return the share URL
+    return res.json({ 
+      shareUrl: `${req.protocol}://${req.get('host')}/vibe-check/share/${shareId}`,
+      shareId: shareId 
+    });
+  } catch (error: any) {
+    console.error('Error generating share link:', error);
+    return res.status(500).json({ error: 'Failed to generate share link' });
+  }
+});
+
 // Get a vibe check by share ID
 vibeCheckRouter.get('/share/:shareId', async (req: Request, res: Response) => {
   try {
