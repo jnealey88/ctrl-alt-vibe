@@ -34,6 +34,7 @@ import { useKeyboardConfetti } from "@/hooks/use-keyboard-confetti";
 import { HelmetProvider } from "react-helmet-async";
 import SEO from "@/components/SEO";
 import { SkipToContent, useAnnouncement } from "@/components/ui/accessibility";
+import { ThemeProvider } from "@/hooks/use-theme";
 
 // Helper function to safely navigate to a new URL
 export const safeNavigate = (url: string): void => {
@@ -139,16 +140,18 @@ function App() {
   
   return (
     <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ErrorBoundary onError={handleGlobalError}>
-            <SEO />
-            <AnnouncementRegion />
-            <Router />
-          </ErrorBoundary>
-          <Toaster />
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vibe-theme">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ErrorBoundary onError={handleGlobalError}>
+              <SEO />
+              <AnnouncementRegion />
+              <Router />
+            </ErrorBoundary>
+            <Toaster />
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </HelmetProvider>
   );
 }
