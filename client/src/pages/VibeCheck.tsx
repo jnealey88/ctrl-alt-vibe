@@ -362,13 +362,32 @@ export default function VibeCheck() {
                 </>
               )}
             </Button>
-            <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
-              <span className="text-xs text-muted-foreground mb-1">Vibe Score</span>
-              <span className="text-3xl font-bold text-primary">{evaluationResult.fitScore}</span>
-              <span className="text-xs text-muted-foreground">out of 100</span>
-            </div>
           </div>
         </div>
+        
+        {/* Vibe Score and Explanation Card */}
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+              {/* Vibe Score */}
+              <div className="flex flex-col items-center justify-center sm:border-r sm:border-primary/20 sm:pr-6 mb-4 sm:mb-0">
+                <span className="text-sm text-muted-foreground mb-1">Vibe Score</span>
+                <span className="text-4xl font-bold text-primary">{evaluationResult.fitScore}</span>
+                <span className="text-xs text-muted-foreground">out of 100</span>
+              </div>
+              
+              {/* Fit Score Explanation */}
+              <div className="flex-1">
+                <h3 className="font-medium text-sm mb-2">Fit Score Explanation</h3>
+                <p className="text-sm text-muted-foreground">
+                  {evaluationResult.fitScoreExplanation ? 
+                    evaluationResult.fitScoreExplanation : 
+                    "This score represents how well your idea fits the market and its potential for success."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex flex-wrap gap-2 h-auto mb-4">

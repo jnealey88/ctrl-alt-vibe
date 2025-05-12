@@ -37,7 +37,6 @@ export async function generateVibeCheckPdf(
     const sectionSpacing = 15; // Space between major sections
     const subsectionSpacing = 8; // Space between subsections
     const lineHeight = 6; // Line height for normal text
-    const bulletLeftPadding = 5; // Left padding for bullet points
     
     // Helper function to check if we need a new page and add it
     const checkForNewPage = (currentY: number, requiredSpace: number = 20): number => {
@@ -71,9 +70,9 @@ export async function generateVibeCheckPdf(
       
       pdf.setFontSize(16);
       pdf.setTextColor(70, 130, 180);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text(`${evaluationResult.fitScore}/100`, 65, 45);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
     }
     
     let yPosition = 65; // Start of content after header
@@ -92,9 +91,9 @@ export async function generateVibeCheckPdf(
       // Strengths header with colored icon
       pdf.setFontSize(14);
       pdf.setTextColor(46, 125, 50); // Green
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('✓ Strengths', 25, yPosition);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       yPosition += 8;
       
       // List strengths
@@ -127,9 +126,9 @@ export async function generateVibeCheckPdf(
       // Weaknesses header with colored icon
       pdf.setFontSize(14);
       pdf.setTextColor(211, 47, 47); // Red
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('! Areas for Improvement', 25, yPosition);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       yPosition += 8;
       
       // List weaknesses
@@ -156,9 +155,9 @@ export async function generateVibeCheckPdf(
       // Subsection header
       pdf.setFontSize(14);
       pdf.setTextColor(51, 51, 51);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('Value Proposition', 20, yPosition);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       yPosition += 8;
       
       // Style the value proposition as a quote
@@ -183,9 +182,9 @@ export async function generateVibeCheckPdf(
       // Add the text
       pdf.setFontSize(11);
       pdf.setTextColor(70, 70, 70);
-      pdf.setFont(undefined, 'italic');
+      pdf.setFont('helvetica', 'italic');
       pdf.text(vpLines, 35, yPosition + 3);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       
       yPosition += quoteHeight + subsectionSpacing;
     }
@@ -204,9 +203,9 @@ export async function generateVibeCheckPdf(
       if (evaluationResult.targetAudience.demographic) {
         pdf.setFontSize(14);
         pdf.setTextColor(51, 51, 51);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Demographics', 20, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         pdf.setFontSize(11);
@@ -224,9 +223,9 @@ export async function generateVibeCheckPdf(
         
         pdf.setFontSize(14);
         pdf.setTextColor(51, 51, 51);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Psychographics', 20, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         pdf.setFontSize(11);
@@ -311,9 +310,9 @@ export async function generateVibeCheckPdf(
         // Draw competitor name with styling
         pdf.setFontSize(13);
         pdf.setTextColor(0, 70, 120);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text(competitorName, 25, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         
         // Add market position if available
         if (competitor.marketPosition) {
@@ -342,9 +341,9 @@ export async function generateVibeCheckPdf(
           if (competitor.strengths?.length > 0) {
             pdf.setFontSize(11);
             pdf.setTextColor(46, 125, 50); // Green
-            pdf.setFont(undefined, 'bold');
+            pdf.setFont('helvetica', 'bold');
             pdf.text('Strengths:', 25, yPosition);
-            pdf.setFont(undefined, 'normal');
+            pdf.setFont('helvetica', 'normal');
             yPosition += 5;
             
             pdf.setFontSize(10);
@@ -368,9 +367,9 @@ export async function generateVibeCheckPdf(
             
             pdf.setFontSize(11);
             pdf.setTextColor(211, 47, 47); // Red
-            pdf.setFont(undefined, 'bold');
+            pdf.setFont('helvetica', 'bold');
             pdf.text('Weaknesses:', rightColumnX, yPosition);
-            pdf.setFont(undefined, 'normal');
+            pdf.setFont('helvetica', 'normal');
             yPosition += 5;
             
             pdf.setFontSize(10);
@@ -393,9 +392,9 @@ export async function generateVibeCheckPdf(
         if (competitor.pricingStrategy) {
           pdf.setFontSize(10);
           pdf.setTextColor(0, 0, 0);
-          pdf.setFont(undefined, 'bold');
+          pdf.setFont('helvetica', 'bold');
           pdf.text('Pricing Strategy:', 25, yPosition + 5);
-          pdf.setFont(undefined, 'normal');
+          pdf.setFont('helvetica', 'normal');
           
           pdf.setTextColor(60, 60, 60);
           const priceText = competitor.pricingStrategy || '';
@@ -458,9 +457,9 @@ export async function generateVibeCheckPdf(
         // Draw risk type with styling
         pdf.setFontSize(13);
         pdf.setTextColor(211, 47, 47); // Red
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text(risk.type || 'Risk', 25, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         // Description
@@ -472,9 +471,9 @@ export async function generateVibeCheckPdf(
         // Mitigation with green styling
         pdf.setFontSize(11);
         pdf.setTextColor(46, 125, 50); // Green
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Mitigation Strategy:', 25, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 5;
         
         // Mitigation details
@@ -498,9 +497,9 @@ export async function generateVibeCheckPdf(
       if (evaluationResult.businessPlan.revenueModel) {
         pdf.setFontSize(14);
         pdf.setTextColor(51, 51, 51);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Revenue Model', 20, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         pdf.setFontSize(11);
@@ -518,9 +517,9 @@ export async function generateVibeCheckPdf(
         
         pdf.setFontSize(14);
         pdf.setTextColor(51, 51, 51);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Go-To-Market Strategy', 20, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         pdf.setFontSize(11);
@@ -538,9 +537,9 @@ export async function generateVibeCheckPdf(
         
         pdf.setFontSize(14);
         pdf.setTextColor(51, 51, 51);
-        pdf.setFont(undefined, 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.text('Key Milestones', 20, yPosition);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         yPosition += 8;
         
         // Style the milestones as a timeline
@@ -598,9 +597,9 @@ export async function generateVibeCheckPdf(
       // MVP Features
       pdf.setFontSize(14);
       pdf.setTextColor(51, 51, 51);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('MVP Features', 20, yPosition);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       yPosition += 8;
       
       // Style MVP features as a checklist
@@ -658,9 +657,9 @@ function renderSectionHeader(pdf: jsPDF, title: string, yPosition: number): numb
   
   pdf.setFontSize(16);
   pdf.setTextColor(0, 102, 204); // Blue
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text(title, 20, yPosition);
-  pdf.setFont(undefined, 'normal');
+  pdf.setFont('helvetica', 'normal');
   
   return yPosition + 12; // Return updated position after header
 }
