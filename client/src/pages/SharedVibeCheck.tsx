@@ -217,7 +217,6 @@ export default function SharedVibeCheck() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab Contents (same as regular VibeCheck, just read-only) */}
         {/* Market Fit Analysis Tab */}
         <TabsContent value="market-fit" className="space-y-6">
           <Card>
@@ -272,7 +271,302 @@ export default function SharedVibeCheck() {
           </Card>
         </TabsContent>
         
-        {/* Rest of the tabs would follow the same pattern... */}
+        {/* Target Audience Tab */}
+        <TabsContent value="target-audience" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Target Audience</h3>
+              
+              {evaluationResult.targetAudience?.demographic && (
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium mb-3">Demographics</h4>
+                  <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.targetAudience.demographic}</p>
+                </div>
+              )}
+              
+              {evaluationResult.targetAudience?.psychographic && (
+                <div>
+                  <h4 className="text-lg font-medium mb-3">Psychographics</h4>
+                  <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.targetAudience.psychographic}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Competition Tab */}
+        <TabsContent value="competition" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Competitive Landscape</h3>
+              
+              {evaluationResult.competitiveLandscape?.marketPositioning && (
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium mb-3">Market Position</h4>
+                  <p className="bg-muted/50 p-4 rounded-md">
+                    {evaluationResult.competitiveLandscape.marketPositioning}
+                  </p>
+                </div>
+              )}
+              
+              {evaluationResult.competitiveLandscape?.competitors && evaluationResult.competitiveLandscape.competitors.length > 0 ? (
+                <div>
+                  <h4 className="text-lg font-medium mb-3">Key Competitors</h4>
+                  <div className="space-y-4">
+                    {evaluationResult.competitiveLandscape.competitors.map((competitor: any, index: number) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <h5 className="text-md font-semibold mb-2">{competitor.name}</h5>
+                        <p className="text-sm text-muted-foreground mb-3">{competitor.differentiation}</p>
+                        
+                        {competitor.strengths && competitor.strengths.length > 0 && (
+                          <div className="mt-2">
+                            <h6 className="text-sm font-medium text-green-600 mb-1">Strengths:</h6>
+                            <ul className="text-sm">
+                              {competitor.strengths.map((s: string, idx: number) => (
+                                <li key={idx} className="flex items-start gap-1 mb-1">
+                                  <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0 mt-1" />
+                                  <span>{s}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {competitor.weaknesses && competitor.weaknesses.length > 0 && (
+                          <div className="mt-2">
+                            <h6 className="text-sm font-medium text-red-600 mb-1">Weaknesses:</h6>
+                            <ul className="text-sm">
+                              {competitor.weaknesses.map((w: string, idx: number) => (
+                                <li key={idx} className="flex items-start gap-1 mb-1">
+                                  <AlertTriangle className="h-3 w-3 text-red-500 shrink-0 mt-1" />
+                                  <span>{w}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p>No competitor analysis available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Risks Tab */}
+        <TabsContent value="risks" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Risk Assessment</h3>
+              
+              {evaluationResult.riskAssessment?.risks && evaluationResult.riskAssessment.risks.length > 0 ? (
+                <div className="space-y-6">
+                  {evaluationResult.riskAssessment.risks.map((risk: any, index: number) => (
+                    <div key={index} className="border border-red-200 rounded-lg p-4 bg-red-50/30">
+                      <h4 className="text-lg font-medium mb-2 text-red-700">{risk.type}</h4>
+                      <p className="mb-4">{risk.description}</p>
+                      
+                      {risk.mitigation && (
+                        <div className="bg-green-50/30 border border-green-200 p-3 rounded-md">
+                          <h5 className="text-sm font-semibold text-green-700 mb-1">Mitigation Strategy:</h5>
+                          <p className="text-sm">{risk.mitigation}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No risk assessment available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Business Plan Tab */}
+        <TabsContent value="business-plan" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Business Plan</h3>
+              
+              {evaluationResult.businessPlan ? (
+                <div className="space-y-6">
+                  {evaluationResult.businessPlan.revenueModel && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Revenue Model</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.businessPlan.revenueModel}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.businessPlan.goToMarket && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Go-To-Market Strategy</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.businessPlan.goToMarket}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.businessPlan.milestones && evaluationResult.businessPlan.milestones.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Key Milestones</h4>
+                      <ol className="list-decimal pl-5 space-y-2">
+                        {evaluationResult.businessPlan.milestones.map((milestone: string, index: number) => (
+                          <li key={index} className="pl-1">{milestone}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p>No business plan available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Launch Strategy Tab */}
+        <TabsContent value="launch-strategy" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Launch Strategy</h3>
+              
+              {evaluationResult.launchStrategy ? (
+                <div className="space-y-6">
+                  {evaluationResult.launchStrategy.mvpFeatures && evaluationResult.launchStrategy.mvpFeatures.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">MVP Features</h4>
+                      <ul className="space-y-2">
+                        {evaluationResult.launchStrategy.mvpFeatures.map((feature: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <div className="h-5 w-5 border rounded flex-shrink-0 mt-0.5"></div>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.launchStrategy.timeToMarket && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Time to Market</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.launchStrategy.timeToMarket}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.launchStrategy.marketEntryApproach && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Market Entry Approach</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.launchStrategy.marketEntryApproach}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p>No launch strategy available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Bootstrapping Tab */}
+        <TabsContent value="bootstrapping" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Bootstrapping Guide</h3>
+              
+              {evaluationResult.bootstrappingGuide ? (
+                <div className="space-y-6">
+                  {evaluationResult.bootstrappingGuide.costMinimizationTips && evaluationResult.bootstrappingGuide.costMinimizationTips.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Cost Minimization Tips</h4>
+                      <ul className="space-y-2">
+                        {evaluationResult.bootstrappingGuide.costMinimizationTips.map((tip: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <DollarSign className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.bootstrappingGuide.diySolutions && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">DIY Solutions</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.bootstrappingGuide.diySolutions}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.bootstrappingGuide.growthWithoutFunding && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Growth Without Funding</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.bootstrappingGuide.growthWithoutFunding}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p>No bootstrapping guide available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Customer Acquisition Tab */}
+        <TabsContent value="customer-acquisition" className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-medium mb-6">Customer Acquisition</h3>
+              
+              {evaluationResult.customerAcquisition ? (
+                <div className="space-y-6">
+                  {evaluationResult.customerAcquisition.primaryChannels && evaluationResult.customerAcquisition.primaryChannels.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Primary Channels</h4>
+                      <ul className="space-y-2">
+                        {evaluationResult.customerAcquisition.primaryChannels.map((channel: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <Users className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                            <span>{channel}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.customerAcquisition.costPerAcquisition && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Cost Per Acquisition</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.customerAcquisition.costPerAcquisition}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.customerAcquisition.conversionStrategy && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Conversion Strategy</h4>
+                      <p className="bg-muted/50 p-4 rounded-md">{evaluationResult.customerAcquisition.conversionStrategy}</p>
+                    </div>
+                  )}
+                  
+                  {evaluationResult.customerAcquisition.retentionTactics && evaluationResult.customerAcquisition.retentionTactics.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium mb-3">Retention Tactics</h4>
+                      <ul className="space-y-2">
+                        {evaluationResult.customerAcquisition.retentionTactics.map((tactic: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                            <span>{tactic}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p>No customer acquisition details available for this evaluation.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         
       </Tabs>
       
