@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,7 +67,7 @@ const vibeCheckFormSchema = z.object({
 
 type VibeCheckFormValues = z.infer<typeof vibeCheckFormSchema>;
 
-export default function VibeCheck() {
+function VibeCheckForm() {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,6 +76,9 @@ export default function VibeCheck() {
   // Market-fit remains the first tab in our logical progression
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
+  
+  // Get reCAPTCHA hook
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // Determine if user is authenticated by checking user existence
   const isAuthenticated = !!user;
@@ -130,12 +134,27 @@ export default function VibeCheck() {
     }, 1000);
 
     try {
+      // Execute reCAPTCHA and get token
+      if (!executeRecaptcha) {
+        throw new Error("reCAPTCHA not available");
+      }
+      
+      const recaptchaToken = await executeRecaptcha('vibe_check_submission');
+      
+      if (!recaptchaToken) {
+        throw new Error("Failed to get reCAPTCHA token");
+      }
+      
+      // Send data with reCAPTCHA token
       const response = await fetch("/api/vibe-check", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          recaptchaToken
+        }),
       });
 
       clearInterval(progressInterval);
@@ -1461,12 +1480,16 @@ export default function VibeCheck() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
+              {!executeRecaptcha ? (
+                <div className="p-4 text-center">
+                  <p>Loading reCAPTCHA...</p>
+                </div>
+              ) : (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                   <FormField
                     control={form.control}
                     name="email"
@@ -1532,7 +1555,8 @@ export default function VibeCheck() {
                     )}
                   </Button>
                 </form>
-              </Form>
+                </Form>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col items-center text-center border-t pt-6">
               <div className="space-y-4 w-full">
