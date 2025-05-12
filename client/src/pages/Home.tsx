@@ -236,7 +236,7 @@ const Home = () => {
               <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-slate-900 dark:text-white">
-              Vibe Check Your Vibe Coding Project
+              Does it pass the vibe check?
             </h2>
             <p className="text-slate-700 dark:text-slate-300 mb-6">
               Get comprehensive AI-powered analysis for your project idea. Our
