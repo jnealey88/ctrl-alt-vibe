@@ -42,8 +42,11 @@ import {
   Rocket, 
   Users, 
   DollarSign, 
-  HandHelping
+  HandHelping,
+  FileDown,
+  Download
 } from "lucide-react";
+import { generateVibeCheckPdf } from "../utils/pdfGenerator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -293,6 +296,32 @@ export default function VibeCheck() {
     </div>
   );
 
+  // Export the current vibe check to PDF
+  const handleExportToPdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      await generateVibeCheckPdf(evaluationResult, {
+        title: 'Vibe Check Results',
+        filename: `vibe-check-${new Date().toISOString().slice(0, 10)}.pdf`,
+        pageSize: 'a4',
+        orientation: 'portrait'
+      });
+      toast({
+        title: "PDF Generated Successfully",
+        description: "Your Vibe Check report has been downloaded as a PDF",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "There was an error generating your PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Render evaluation results
   const renderEvaluationResults = () => {
     if (!evaluationResult) return null;
@@ -312,6 +341,25 @@ export default function VibeCheck() {
               className="text-xs"
             >
               Try Another Idea
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportToPdf}
+              disabled={isGeneratingPdf}
+              className="text-xs flex items-center gap-1"
+            >
+              {isGeneratingPdf ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-3.5 w-3.5" />
+                  Export to PDF
+                </>
+              )}
             </Button>
             <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
               <span className="text-xs text-muted-foreground mb-1">Vibe Score</span>
