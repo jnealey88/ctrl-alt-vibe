@@ -46,7 +46,7 @@ import {
   FileDown,
   Download
 } from "lucide-react";
-import { generateVibeCheckPdf } from "../utils/pdfGenerator";
+import { generateVibeCheckPdf } from "../utils/pdfExport";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -65,6 +65,7 @@ export default function VibeCheck() {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   // Market-fit remains the first tab in our logical progression
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
