@@ -21,7 +21,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,7 +65,7 @@ const vibeCheckFormSchema = z.object({
     .or(z.literal("")),
   projectDescription: z
     .string()
-    .min(10, "Please provide at least 10 characters")
+    .min(10, "Please provide at least 10 characters"),
   // desiredVibe field removed as requested
 });
 
@@ -77,7 +80,7 @@ function VibeCheckForm() {
   // Market-fit remains the first tab in our logical progression
   const [activeTab, setActiveTab] = useState("market-fit");
   const [progress, setProgress] = useState(0);
-  
+
   // Get reCAPTCHA hook
   const { executeRecaptcha } = useGoogleReCaptcha();
 
@@ -86,10 +89,15 @@ function VibeCheckForm() {
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
   const [isShowingResults, setIsShowingResults] = useState(false);
   const [vibeCheckId, setVibeCheckId] = useState<number | null>(null);
+
+  // Define the type for vibe check count response
+  interface VibeCheckCountResponse {
+    count: number;
+  }
   
   // Fetch the total count of vibe checks
-  const { data: vibeCheckCountData } = useQuery({
-    queryKey: ['/api/vibe-check-count'],
+  const { data: vibeCheckCountData } = useQuery<VibeCheckCountResponse>({
+    queryKey: ["/api/vibe-check-count"],
     refetchOnWindowFocus: false,
   });
 
@@ -146,16 +154,19 @@ function VibeCheckForm() {
         console.error("reCAPTCHA hook not available");
         throw new Error("reCAPTCHA not available");
       }
-      
+
       console.log("Executing reCAPTCHA verification...");
-      const recaptchaToken = await executeRecaptcha('vibe_check_submission');
-      console.log("reCAPTCHA token received:", recaptchaToken ? "Token received" : "No token received");
-      
+      const recaptchaToken = await executeRecaptcha("vibe_check_submission");
+      console.log(
+        "reCAPTCHA token received:",
+        recaptchaToken ? "Token received" : "No token received",
+      );
+
       if (!recaptchaToken) {
         console.error("Failed to get reCAPTCHA token");
         throw new Error("Failed to get reCAPTCHA token");
       }
-      
+
       // Send data with reCAPTCHA token
       const response = await fetch("/api/vibe-check", {
         method: "POST",
@@ -164,7 +175,7 @@ function VibeCheckForm() {
         },
         body: JSON.stringify({
           ...data,
-          recaptchaToken
+          recaptchaToken,
         }),
       });
 
@@ -181,13 +192,13 @@ function VibeCheckForm() {
 
       setEvaluationResult(result.evaluation);
       setVibeCheckId(result.vibeCheckId);
-      
+
       // Save share URL if available
       if (result.shareUrl) {
         setShareUrl(result.shareUrl);
         console.log("Share URL generated:", result.shareUrl);
       }
-      
+
       setIsShowingResults(true);
 
       // Save vibe check results to session storage
@@ -366,10 +377,10 @@ function VibeCheckForm() {
       });
       return;
     }
-    
+
     try {
       setIsGeneratingShareLink(true);
-      
+
       // If the evaluation result already has a shareUrl property, use that
       if (evaluationResult.shareUrl) {
         setShareUrl(evaluationResult.shareUrl);
@@ -380,7 +391,7 @@ function VibeCheckForm() {
         });
         return;
       }
-      
+
       // Otherwise, we need to generate a new share link via API
       const response = await fetch(`/api/vibe-check/${vibeCheckId}/share`, {
         method: "POST",
@@ -388,14 +399,14 @@ function VibeCheckForm() {
           "Content-Type": "application/json",
         },
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to generate share link");
       }
-      
+
       const result = await response.json();
       setShareUrl(result.shareUrl);
-      
+
       // Save the shareUrl to session storage
       const savedVibeCheck = sessionStorage.getItem("savedVibeCheck");
       if (savedVibeCheck) {
@@ -405,10 +416,10 @@ function VibeCheckForm() {
           JSON.stringify({
             ...data,
             shareUrl: result.shareUrl,
-          })
+          }),
         );
       }
-      
+
       // Copy to clipboard
       navigator.clipboard.writeText(result.shareUrl);
       toast({
@@ -1416,9 +1427,9 @@ function VibeCheckForm() {
               Vibe Check Your Next Big Idea
             </h1>
             <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-              Transform your concept into a successful reality with our
-              AI-powered evaluation system. Get insights that 95% of startups
-              wish they had before launching.
+              Transform your vibe into a successful reality with our AI-powered
+              evaluation system. Get insights that 95% of startups need to have
+              before launching.
             </p>
             <p className="text-lg mb-8 max-w-2xl mx-auto">
               Stop guessing if your idea will work. Our AI analyzes market fit,
@@ -1483,7 +1494,7 @@ function VibeCheckForm() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Get Your Vibe Check in Minutes
+                Does it pass the Vibe check?
               </CardTitle>
               <CardDescription>
                 Tell us about your project idea and we'll provide an AI-powered
@@ -1501,71 +1512,71 @@ function VibeCheckForm() {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="your@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="your@email.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="websiteUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Existing Website URL (Optional)</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://yourwebsite.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="websiteUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Existing Website URL (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://yourwebsite.com"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="projectDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Describe your project idea in detail. What problem does it solve? Who is it for? What are the main features? The more specific you are, the more accurate your vibe check will be!"
-                            className="min-h-[150px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="projectDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Description</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe your project idea in detail. What problem does it solve? Who is it for? What are the main features? The more specific you are, the more accurate your vibe check will be!"
+                              className="min-h-[150px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-{/* Desired Vibe field removed as requested */}
+                    {/* Desired Vibe field removed as requested */}
 
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-6 text-lg font-medium"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Analyzing Your Idea...
-                      </>
-                    ) : (
-                      <>Get Your Free Vibe Check Now</>
-                    )}
-                  </Button>
-                </form>
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-6 text-lg font-medium"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Analyzing Your Idea...
+                        </>
+                      ) : (
+                        <>Get Your Free Vibe Check Now</>
+                      )}
+                    </Button>
+                  </form>
                 </Form>
               )}
             </CardContent>
@@ -1587,8 +1598,9 @@ function VibeCheckForm() {
                   business analysis
                 </p>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  Over {vibeCheckCountData?.count || "0"} projects have been analyzed with Vibe Check
-                  to validate ideas before investing time and resources into development
+                  Over {vibeCheckCountData?.count || "0"} projects have been
+                  analyzed with Vibe Check to validate ideas before investing
+                  time and resources into development
                 </p>
               </div>
             </CardFooter>
@@ -1603,16 +1615,16 @@ function VibeCheckForm() {
 export default function VibeCheck() {
   // Use reCAPTCHA site key directly
   const reCaptchaKey = "6Lf2fjcrAAAAACLa3kDH0gU1eRSsRdBjd7zzSeZg";
-  
+
   console.log("Using reCAPTCHA site key");
-  
+
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={reCaptchaKey}
       scriptProps={{
         async: true,
         defer: true,
-        appendTo: 'head',
+        appendTo: "head",
       }}
     >
       <VibeCheckForm />

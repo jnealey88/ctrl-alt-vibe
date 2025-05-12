@@ -6,6 +6,7 @@ A vibrant community platform showcasing creative projects, fostering collaborati
 ## Features
 
 - **Project Showcase**: Share and discover creative projects
+- **Vibe Check**: AI-powered project evaluation tool with real-time counter showing total projects analyzed
 - **Blog System**: Rich text editor for creating and managing blog posts
 - **User Authentication**: Secure login with email or Google authentication
 - **Real-time Notifications**: WebSocket-powered notification system
@@ -23,6 +24,7 @@ A vibrant community platform showcasing creative projects, fostering collaborati
 - **Database**: PostgreSQL with Drizzle ORM
 - **State Management**: React Query
 - **Real-time**: WebSocket
+- **AI Integration**: OpenAI GPT-4o for Vibe Check analysis
 - **Authentication**: Passport.js, Google OAuth
 - **Testing**: Jest, React Testing Library
 - **Image Processing**: Sharp
