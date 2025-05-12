@@ -85,17 +85,19 @@ export default function SharedVibeCheck() {
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] p-10 text-center">
-        <div className="relative mb-6">
-          <div className="h-24 w-24 rounded-full border-4 border-primary/20 border-t-4 border-t-primary animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Brain className="h-10 w-10 text-primary" />
+      <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="relative mb-6">
+            <div className="h-24 w-24 rounded-full border-4 border-primary/20 border-t-4 border-t-primary animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Brain className="h-10 w-10 text-primary" />
+            </div>
           </div>
+          <h3 className="text-2xl font-medium mb-3">Loading Shared Vibe Check</h3>
+          <p className="text-muted-foreground max-w-md mb-6">
+            Please wait while we retrieve the shared evaluation...
+          </p>
         </div>
-        <h3 className="text-2xl font-medium mb-3">Loading Shared Vibe Check</h3>
-        <p className="text-muted-foreground max-w-md mb-6">
-          Please wait while we retrieve the shared evaluation...
-        </p>
       </div>
     );
   }
@@ -103,16 +105,18 @@ export default function SharedVibeCheck() {
   // Render error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
-        <Alert variant="destructive" className="max-w-lg mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <p className="text-muted-foreground mb-6">
-          The shared Vibe Check could not be loaded. It may have been deleted or made private.
-        </p>
-        <Button onClick={handleStartNewVibeCheck}>Create Your Own Vibe Check</Button>
+      <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <Alert variant="destructive" className="max-w-lg mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <p className="text-muted-foreground mb-6 text-center">
+            The shared Vibe Check could not be loaded. It may have been deleted or made private.
+          </p>
+          <Button onClick={handleStartNewVibeCheck}>Create Your Own Vibe Check</Button>
+        </div>
       </div>
     );
   }
@@ -121,7 +125,7 @@ export default function SharedVibeCheck() {
   if (!evaluationResult) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
