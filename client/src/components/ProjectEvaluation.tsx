@@ -631,6 +631,27 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       <p>{evaluation.marketFitAnalysis.demandPotential}</p>
                     </div>
                   )}
+
+                  {/* Fit Score Section */}
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="font-medium mb-3 text-primary/80">Project Vibe Score</h4>
+                    <div className="bg-muted/30 p-4 rounded-md border">
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="bg-primary/10 rounded-full p-2 flex items-center justify-center h-12 w-12">
+                          <span className="text-xl font-bold text-primary">{evaluation.fitScore}</span>
+                        </div>
+                        <div className="flex-1">
+                          <Progress value={evaluation.fitScore} className="h-2.5 w-full" />
+                          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                            <span>0</span>
+                            <span>50</span>
+                            <span>100</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm">{evaluation.fitScoreExplanation}</p>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
               
@@ -694,28 +715,6 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                       </ol>
                     </div>
                   )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="value" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full">
-                      <LightbulbIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <h3 className="font-semibold text-lg">Value Proposition</h3>
-                  </div>
-                  <Separator className="mb-4" />
-                  
-                  <div className="my-4 p-4 bg-muted rounded-md border">
-                    <p className="italic text-center">{evaluation.valueProposition}</p>
-                  </div>
-                  
-                  <div className="my-4">
-                    <h4 className="font-medium mb-2">Fit Score: {evaluation.fitScore}/100</h4>
-                    <Progress value={evaluation.fitScore} className="h-2 w-full" />
-                    <p className="mt-4">{evaluation.fitScoreExplanation}</p>
-                  </div>
                 </div>
               </TabsContent>
               
