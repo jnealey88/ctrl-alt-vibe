@@ -140,7 +140,7 @@ function App() {
   
   return (
     <HelmetProvider>
-      <ThemeProvider defaultTheme="system" storageKey="vibe-theme">
+      <ThemeProvider defaultTheme="light" storageKey="vibe-theme">
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ErrorBoundary onError={handleGlobalError}>
