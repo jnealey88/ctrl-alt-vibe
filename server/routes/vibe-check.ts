@@ -124,8 +124,8 @@ export function registerVibeCheckRoutes(app: Express) {
 const vibeCheckRequestSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   websiteUrl: z.string().url().optional().or(z.literal('')),
-  projectDescription: z.string().min(10, 'Project description must be at least 10 characters long'),
-  desiredVibe: z.string().optional().or(z.literal(''))
+  projectDescription: z.string().min(10, 'Project description must be at least 10 characters long')
+  // desiredVibe field removed as it's not needed for vibe check
 });
 
 export const vibeCheckRouter = Router();
@@ -142,8 +142,7 @@ vibeCheckRouter.post('/', async (req: Request, res: Response) => {
     console.log('Generating vibe check evaluation...');
     let evaluation = await aiService.generateVibeCheckEvaluation({
       websiteUrl: validatedData.websiteUrl || undefined,
-      projectDescription: validatedData.projectDescription,
-      desiredVibe: validatedData.desiredVibe || undefined
+      projectDescription: validatedData.projectDescription
     });
     
     // Transform the evaluation to ensure it has bootstrappingGuide
@@ -159,7 +158,6 @@ vibeCheckRouter.post('/', async (req: Request, res: Response) => {
       email: validatedData.email || null,
       websiteUrl: validatedData.websiteUrl || null,
       projectDescription: validatedData.projectDescription,
-      desiredVibe: validatedData.desiredVibe || null,
       evaluation: evaluation,
       shareId: shareId,
       isPublic: true // Make all vibe checks publicly shareable by default

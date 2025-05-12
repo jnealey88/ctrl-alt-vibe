@@ -15,7 +15,6 @@ export class AIService {
   async generateVibeCheckEvaluation(projectInfo: {
     websiteUrl?: string;
     projectDescription: string;
-    desiredVibe?: string;
   }): Promise<{
     marketFitAnalysis: { strengths: string[]; weaknesses: string[]; demandPotential: string };
     targetAudience: { demographic: string; psychographic: string };
@@ -89,7 +88,6 @@ export class AIService {
     const projectContext = `
       Project Description: ${projectInfo.projectDescription}
       ${projectInfo.websiteUrl ? `Project Website URL: ${projectInfo.websiteUrl}` : ''}
-      ${projectInfo.desiredVibe ? `Desired Vibe/Style: ${projectInfo.desiredVibe}` : ''}
     `;
     
     // Log the project context (limited for privacy)
@@ -657,18 +655,22 @@ export class AIService {
         await Promise.race(runningTasks);
       }
       
-      // Create a task wrapper that removes itself from the set when done
-      const taskPromise = (async () => {
+      // Create a task wrapper
+      const runTask = async () => {
         try {
           results.push(await task());
         } catch (error) {
           console.error('Task error:', error);
           throw error;
-        } finally {
-          runningTasks.delete(taskPromise);
         }
-      })();
+      };
       
+      // Create the promise and track it
+      const taskPromise = runTask().finally(() => {
+        runningTasks.delete(taskPromise);
+      });
+      
+      // Add to running tasks
       runningTasks.add(taskPromise);
     }
     
