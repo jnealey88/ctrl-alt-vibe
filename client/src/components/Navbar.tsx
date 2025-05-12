@@ -39,7 +39,6 @@ const Navbar = () => {
   const isMobile = useMobile();
   const isMediumScreen = useMediumScreen();
   const { user, logoutMutation } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
 
   // Track scroll position for navbar styling
@@ -52,13 +51,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setLocation(`/browse?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
 
   const navLinks = [
     { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-1" /> },
@@ -110,20 +102,6 @@ const Navbar = () => {
 
           {!isMobile && (
             <div className="ml-3 lg:ml-6 flex items-center">
-              <form onSubmit={handleSearch} className="relative w-40 lg:w-64" role="search">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
-                  <Search className="h-4 w-4 text-gray-400" />
-                </div>
-                <Input
-                  type="search"
-                  className="pl-10 h-10 bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0 text-sm"
-                  placeholder={isMediumScreen ? "Search..." : "Search projects..."}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search projects"
-                />
-              </form>
-
               {user ? (
                 <>
                   <Link href="/submit">
@@ -202,37 +180,6 @@ const Navbar = () => {
 
           {isMobile && (
             <div className="flex items-center space-x-3">
-              {/* Search icon for mobile */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <button className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors">
-                    <Search className="h-5 w-5" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="top" className="w-full pt-16">
-                  <div className="px-4 py-6">
-                    <h3 className="text-lg font-medium mb-3">Search Projects</h3>
-                    <form onSubmit={handleSearch} className="relative" role="search">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" aria-hidden="true">
-                        <Search className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <Input
-                        type="search"
-                        className="pl-10 h-12 w-full bg-gray-50 border-gray-200 focus-visible:bg-white transition-colors focus-visible:ring-primary/30 focus-visible:ring-offset-0"
-                        placeholder="Search by title, description or tags..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        aria-label="Search projects by title, description or tags"
-                        autoFocus
-                      />
-                      <Button type="submit" className="mt-3 w-full h-12 bg-primary hover:bg-primary/90 transition-colors">
-                        <Search className="h-4 w-4 mr-2" />
-                        Search Projects
-                      </Button>
-                    </form>
-                  </div>
-                </SheetContent>
-              </Sheet>
 
               {/* User actions for mobile */}
               {user && (
