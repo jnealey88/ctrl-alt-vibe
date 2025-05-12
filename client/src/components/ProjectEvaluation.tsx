@@ -170,68 +170,104 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
     }
   }, [projectId, evaluation, isLoading]);
 
-  // Generate evaluation when requested by owner or admin
+  // Generate Vibe Check evaluation when requested by owner or admin
   const generateEvaluation = async (regenerate = false) => {
     // Allow both owners and admins to generate evaluations
     if (!isOwner && !isAdmin) return;
     
     setIsGenerating(true);
-    console.log(`${regenerate ? 'Regenerating' : 'Generating'} evaluation for project:`, projectId);
+    console.log(`${regenerate ? 'Regenerating' : 'Generating'} Vibe Check for project:`, projectId);
     
     try {
-      console.log('Starting evaluation generation for project:', projectId);
-      const response = await fetch('/api/ai/evaluate-project', {
+      // Get project data first to pass to Vibe Check
+      console.log('Fetching project data for Vibe Check generation');
+      const projectResponse = await fetch(`/api/projects/${projectId}`);
+      
+      if (!projectResponse.ok) {
+        throw new Error('Failed to fetch project data');
+      }
+      
+      const projectData = await projectResponse.json();
+      console.log('Project data retrieved for Vibe Check:', projectData);
+      
+      // Create a Vibe Check using the project description
+      console.log('Starting Vibe Check generation for project:', projectId);
+      
+      // Get reCAPTCHA token - using a dummy value as we're authenticated
+      const recaptchaToken = "authenticated-user-token";
+      
+      const response = await fetch('/api/vibe-check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          projectId,
-          regenerate
+          projectDescription: projectData.longDescription || projectData.description,
+          websiteUrl: projectData.projectUrl || '',
+          email: '',
+          recaptchaToken: recaptchaToken
         }),
       });
       
-      const responseText = await response.text();
-      console.log('Raw API response:', responseText);
-      
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse JSON response:', e);
-        toast({
-          title: 'Error',
-          description: 'The server returned an invalid response',
-          variant: 'destructive',
-        });
-        setIsGenerating(false);
-        return;
-      }
+      const responseData = await response.json();
+      console.log('Vibe Check response:', responseData);
       
       if (response.ok) {
-        console.log('Evaluation generation successful:', result);
-        toast({
-          title: 'Evaluation generated',
-          description: 'Your project evaluation has been created.',
-        });
+        console.log('Vibe Check generation successful:', responseData);
         
-        // Wait a moment to ensure data is available before refetching
-        setTimeout(() => {
-          refetchOwner();
-        }, 500);
+        // If we have a vibeCheckId, convert it to a project evaluation
+        if (responseData.vibeCheckId) {
+          console.log('Converting Vibe Check to project evaluation');
+          
+          try {
+            // Now use the vibeCheckId to convert back to a project evaluation
+            const convertResponse = await fetch(`/api/vibe-check/${responseData.vibeCheckId}/convert-to-project-evaluation`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ 
+                projectId
+              }),
+            });
+            
+            if (convertResponse.ok) {
+              toast({
+                title: 'Evaluation generated',
+                description: 'Your project Vibe Check has been created.',
+              });
+              
+              // Wait a moment to ensure data is available before refetching
+              setTimeout(() => {
+                refetchOwner();
+              }, 500);
+            } else {
+              throw new Error('Failed to convert Vibe Check to project evaluation');
+            }
+          } catch (convertError) {
+            console.error('Error converting Vibe Check to evaluation:', convertError);
+            toast({
+              title: 'Error',
+              description: 'Failed to save Vibe Check results',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          throw new Error('No Vibe Check ID returned from API');
+        }
       } else {
-        console.error('Error generating evaluation:', result);
+        console.error('Error generating Vibe Check:', responseData);
         toast({
           title: 'Error',
-          description: result.error || 'Failed to generate evaluation',
+          description: responseData.error || 'Failed to generate Vibe Check',
           variant: 'destructive',
         });
       }
     } catch (error) {
-      console.error('Error generating evaluation:', error);
+      console.error('Error generating Vibe Check:', error);
       toast({
         title: 'Error',
-        description: 'Could not connect to the evaluation service',
+        description: 'Could not connect to the Vibe Check service',
         variant: 'destructive',
       });
     } finally {
