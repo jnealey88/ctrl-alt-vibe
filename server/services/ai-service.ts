@@ -169,7 +169,7 @@ export class AIService {
       for (const { section, response } of results) {
         try {
           // Parse the section result
-          const sectionContent = response.choices[0].message.content;
+          const sectionContent = response.choices[0].message.content || '';
           const sectionResult = JSON.parse(sectionContent);
           
           // Add all fields from this section to the merged result
@@ -625,7 +625,7 @@ export class AIService {
    * Helper method to make OpenAI API requests
    */
   private async makeOpenAIRequest(prompt: string) {
-    return await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
       model: OPENAI_MODEL,
       messages: [
         {
@@ -637,6 +637,14 @@ export class AIService {
       temperature: 0.7,
       max_tokens: 4000,
     });
+    
+    // Ensure content is not null
+    if (response.choices && response.choices[0]) {
+      // Force content to be a string
+      response.choices[0].message.content = response.choices[0].message.content || '';
+    }
+    
+    return response;
   }
   
   /**
@@ -665,13 +673,16 @@ export class AIService {
         }
       };
       
-      // Create the promise and track it
-      const taskPromise = runTask().finally(() => {
-        runningTasks.delete(taskPromise);
+      // Create the promise
+      const taskPromise = runTask();
+      
+      // Add to running tasks with cleanup
+      const wrappedPromise = taskPromise.finally(() => {
+        runningTasks.delete(wrappedPromise);
       });
       
       // Add to running tasks
-      runningTasks.add(taskPromise);
+      runningTasks.add(wrappedPromise);
     }
     
     // Wait for remaining tasks to complete
