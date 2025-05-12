@@ -115,6 +115,12 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
         timeManagement: string;
         milestonesOnBudget: string[];
       };
+      adjacentIdeas?: {
+        complementaryProducts: string[];
+        pivotPossibilities: string[];
+        expansionOpportunities: string[];
+        strategicRecommendations: string;
+      };
     } | null;
     error?: string;
     isAdmin?: boolean;
@@ -1078,6 +1084,58 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                   )}
                 </div>
               </TabsContent>
+
+              <TabsContent value="adjacent-ideas" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full">
+                      <ArrowRight className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Adjacent Ideas</h3>
+                  </div>
+                  <Separator className="mb-4" />
+                  
+                  {evaluation.adjacentIdeas?.complementaryProducts && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Complementary Products</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.adjacentIdeas.complementaryProducts.map((product: string, index: number) => (
+                          <li key={index}>{product}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.adjacentIdeas?.pivotPossibilities && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Pivot Possibilities</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.adjacentIdeas.pivotPossibilities.map((pivot: string, index: number) => (
+                          <li key={index}>{pivot}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.adjacentIdeas?.expansionOpportunities && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Expansion Opportunities</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {evaluation.adjacentIdeas.expansionOpportunities.map((opportunity: string, index: number) => (
+                          <li key={index}>{opportunity}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {evaluation.adjacentIdeas?.strategicRecommendations && (
+                    <div className="my-4">
+                      <h4 className="font-medium mb-2">Strategic Recommendations</h4>
+                      <p>{evaluation.adjacentIdeas.strategicRecommendations}</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </div>
           </Tabs>
           
@@ -1095,7 +1153,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 disabled={isGenerating}
               >
                 <BarChart3Icon className="h-4 w-4" />
-                {isGenerating ? 'Regenerating...' : 'Regenerate Evaluation'}
+                {isGenerating ? 'Regenerating...' : 'Regenerate Vibe Check'}
               </Button>
             </div>
           )}
