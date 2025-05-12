@@ -25,6 +25,7 @@ Vibe Check provides a detailed evaluation of business ideas, including:
 - **Business Plan Guidance**: Revenue models and business approach recommendations
 - **Risk Assessment**: Potential challenges and mitigation strategies
 - **Bootstrapping Guide**: Cost-effective implementation recommendations
+- **Adjacent Ideas**: Related concepts and natural extensions that could outperform or enhance the core idea
 
 ### 3. Sharing and Project Conversion
 
@@ -42,6 +43,24 @@ Vibe Check provides a detailed evaluation of business ideas, including:
   - `GET /api/vibe-check/share/:shareId` - View a shared vibe check
   - `POST /api/vibe-check/:id/convert-to-project` - Convert to project
 
+### 4. Adjacent Ideas Analysis
+
+The Adjacent Ideas section provides alternatives and extensions to the core project concept:
+
+- **Related Concepts**: Alternative approaches that might outperform the original idea, with:
+  - Detailed description of each concept
+  - Potential advantages over the original idea
+  - Implementation complexity assessment
+  
+- **Natural Extensions**: Features or capabilities that could be added to enhance the core idea, with:
+  - Description of each extension
+  - Synergies with the original concept
+  - Timeline for implementation
+  
+- **Alternative Approaches**: Different ways to solve the same problem with alternate technologies, business models, or target audiences
+
+This feature helps entrepreneurs explore a broader solution space and consider variations that might have greater market potential or reduced implementation complexity.
+
 ## Future Enhancements
 
 Potential improvements for the Vibe Check feature:
@@ -51,3 +70,4 @@ Potential improvements for the Vibe Check feature:
 3. **Success Stories**: Highlight projects that went from vibe check to successful launch
 4. **Enhanced AI Analysis**: Incorporate more specialized market data and trend analysis
 5. **Comparative Analysis**: Allow comparing multiple project ideas side by side
+6. **Adjacent Ideas Ranking**: Provide quantitative scores for alternative concepts and extensions

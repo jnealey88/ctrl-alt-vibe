@@ -625,7 +625,187 @@ export async function generateVibeCheckPdf(
       yPosition += subsectionSpacing;
     }
     
-    // 7. ATTRIBUTION FOOTER
+    // 7. ADJACENT IDEAS SECTION
+    if (evaluationResult.adjacentIdeas) {
+      yPosition = checkForNewPage(yPosition, 60);
+      
+      // Add a separator line
+      pdf.setDrawColor(220, 220, 220);
+      pdf.line(20, yPosition - subsectionSpacing/2, pageWidth - 20, yPosition - subsectionSpacing/2);
+      
+      yPosition = renderSectionHeader(pdf, 'Adjacent Ideas & Alternatives', yPosition);
+      
+      // Related Concepts
+      if (evaluationResult.adjacentIdeas.relatedConcepts?.length > 0) {
+        pdf.setFontSize(14);
+        pdf.setTextColor(51, 51, 51);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Related Concepts', 20, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        yPosition += 8;
+        
+        // Loop through related concepts
+        for (const concept of evaluationResult.adjacentIdeas.relatedConcepts) {
+          yPosition = checkForNewPage(yPosition, 40);
+          
+          // Create a concept card with styling
+          pdf.setFillColor(250, 250, 255); // Very light blue
+          pdf.setDrawColor(220, 220, 230);
+          const conceptCardStart = yPosition - 5;
+          
+          pdf.setFontSize(12);
+          pdf.setTextColor(0, 70, 120);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(concept.name || 'Concept', 25, yPosition);
+          pdf.setFont('helvetica', 'normal');
+          yPosition += 6;
+          
+          // Description
+          pdf.setFontSize(10);
+          pdf.setTextColor(60, 60, 60);
+          const descLines = pdf.splitTextToSize(concept.description || '', contentWidth - 10);
+          pdf.text(descLines, 25, yPosition);
+          yPosition += (descLines.length * 5) + 5;
+          
+          // Potential advantages
+          if (concept.potentialAdvantages?.length > 0) {
+            pdf.setFontSize(10);
+            pdf.setTextColor(46, 125, 50); // Green
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Potential Advantages:', 25, yPosition);
+            pdf.setFont('helvetica', 'normal');
+            yPosition += 5;
+            
+            pdf.setFontSize(9);
+            pdf.setTextColor(60, 60, 60);
+            
+            for (const advantage of concept.potentialAdvantages) {
+              const advLines = pdf.splitTextToSize(`• ${advantage}`, contentWidth - 30);
+              pdf.text(advLines, 30, yPosition);
+              yPosition += (advLines.length * 4) + 2;
+            }
+          }
+          
+          // Implementation complexity
+          if (concept.implementationComplexity) {
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`Implementation Complexity: ${concept.implementationComplexity}`, 25, yPosition);
+            yPosition += 8;
+          }
+          
+          // Draw the concept card border after calculating content height
+          const conceptCardHeight = yPosition - conceptCardStart;
+          pdf.roundedRect(20, conceptCardStart, contentWidth, conceptCardHeight, 3, 3, 'D');
+          
+          yPosition += 5; // Space after concept card
+        }
+        
+        yPosition += subsectionSpacing;
+      }
+      
+      // Natural Extensions
+      if (evaluationResult.adjacentIdeas.naturalExtensions?.length > 0) {
+        yPosition = checkForNewPage(yPosition, 40);
+        
+        pdf.setFontSize(14);
+        pdf.setTextColor(51, 51, 51);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Natural Extensions', 20, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        yPosition += 8;
+        
+        // Loop through natural extensions
+        for (const extension of evaluationResult.adjacentIdeas.naturalExtensions) {
+          yPosition = checkForNewPage(yPosition, 40);
+          
+          // Create an extension card with styling
+          pdf.setFillColor(245, 245, 255); // Very light purple
+          pdf.setDrawColor(220, 220, 230);
+          const extensionCardStart = yPosition - 5;
+          
+          pdf.setFontSize(12);
+          pdf.setTextColor(90, 50, 120); // Purple
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(extension.name || 'Extension', 25, yPosition);
+          pdf.setFont('helvetica', 'normal');
+          yPosition += 6;
+          
+          // Description
+          pdf.setFontSize(10);
+          pdf.setTextColor(60, 60, 60);
+          const descLines = pdf.splitTextToSize(extension.description || '', contentWidth - 10);
+          pdf.text(descLines, 25, yPosition);
+          yPosition += (descLines.length * 5) + 5;
+          
+          // Synergies
+          if (extension.synergies?.length > 0) {
+            pdf.setFontSize(10);
+            pdf.setTextColor(90, 50, 120); // Purple
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Synergies with Core Idea:', 25, yPosition);
+            pdf.setFont('helvetica', 'normal');
+            yPosition += 5;
+            
+            pdf.setFontSize(9);
+            pdf.setTextColor(60, 60, 60);
+            
+            for (const synergy of extension.synergies) {
+              const synLines = pdf.splitTextToSize(`• ${synergy}`, contentWidth - 30);
+              pdf.text(synLines, 30, yPosition);
+              yPosition += (synLines.length * 4) + 2;
+            }
+          }
+          
+          // Timeline to implement
+          if (extension.timelineToImplement) {
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(`Implementation Timeline: ${extension.timelineToImplement}`, 25, yPosition);
+            yPosition += 8;
+          }
+          
+          // Draw the extension card border after calculating content height
+          const extensionCardHeight = yPosition - extensionCardStart;
+          pdf.roundedRect(20, extensionCardStart, contentWidth, extensionCardHeight, 3, 3, 'D');
+          
+          yPosition += 5; // Space after extension card
+        }
+        
+        yPosition += subsectionSpacing;
+      }
+      
+      // Alternative Approaches
+      if (evaluationResult.adjacentIdeas.alternativeApproaches?.length > 0) {
+        yPosition = checkForNewPage(yPosition, 40);
+        
+        pdf.setFontSize(14);
+        pdf.setTextColor(51, 51, 51);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Alternative Approaches', 20, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        yPosition += 8;
+        
+        // Add a light background for the alternatives section
+        pdf.setFillColor(255, 250, 240); // Very light amber
+        pdf.roundedRect(20, yPosition - 5, contentWidth, 10 + (evaluationResult.adjacentIdeas.alternativeApproaches.length * 8), 2, 2, 'F');
+        
+        pdf.setFontSize(11);
+        pdf.setTextColor(60, 60, 60);
+        
+        // List alternative approaches
+        for (let i = 0; i < evaluationResult.adjacentIdeas.alternativeApproaches.length; i++) {
+          const approach = evaluationResult.adjacentIdeas.alternativeApproaches[i];
+          yPosition = checkForNewPage(yPosition, 10);
+          
+          const approachLines = pdf.splitTextToSize(`${i+1}. ${approach}`, contentWidth - 10);
+          pdf.text(approachLines, 25, yPosition);
+          yPosition += (approachLines.length * 6);
+        }
+      }
+    }
+    
+    // 8. ATTRIBUTION FOOTER
     // Add to the last page
     const footerY = maxY - 20;
     
