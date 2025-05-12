@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { aiService } from '../services/ai-service';
 import { storage } from '../storage';
 import { eq, SQL } from 'drizzle-orm';
+import crypto from 'crypto';
 
 // Transform function to convert the old evaluation structure to the new one with bootstrapping
 function transformEvaluationResponse(evaluation: any): any {

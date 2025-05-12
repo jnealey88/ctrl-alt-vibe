@@ -712,6 +712,8 @@ export const vibeChecks = pgTable("vibe_checks", {
   projectDescription: text("project_description").notNull(),
   desiredVibe: text("desired_vibe"),
   evaluation: jsonb("evaluation"), // JSON containing the evaluation results
+  shareId: varchar("share_id", { length: 64 }).unique(), // Unique ID for sharing
+  isPublic: boolean("is_public").default(false), // Whether the vibe check is publicly shareable
   convertedToProject: boolean("converted_to_project").default(false),
   convertedProjectId: integer("converted_project_id").references(() => projects.id, { onDelete: 'set null' }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
