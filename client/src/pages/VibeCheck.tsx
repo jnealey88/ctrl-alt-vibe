@@ -86,6 +86,12 @@ function VibeCheckForm() {
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
   const [isShowingResults, setIsShowingResults] = useState(false);
   const [vibeCheckId, setVibeCheckId] = useState<number | null>(null);
+  
+  // Fetch the total count of vibe checks
+  const { data: vibeCheckCountData } = useQuery({
+    queryKey: ['/api/vibe-check-count'],
+    refetchOnWindowFocus: false,
+  });
 
   // Load saved vibe check results from session storage on component mount
   useEffect(() => {
@@ -1581,8 +1587,8 @@ function VibeCheckForm() {
                   business analysis
                 </p>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  Over 500 entrepreneurs have used Vibe Check to validate their
-                  ideas before investing time and resources into development
+                  Over {vibeCheckCountData?.count || "0"} projects have been analyzed with Vibe Check
+                  to validate ideas before investing time and resources into development
                 </p>
               </div>
             </CardFooter>
