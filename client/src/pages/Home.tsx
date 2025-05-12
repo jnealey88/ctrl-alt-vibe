@@ -875,7 +875,7 @@ const Home = () => {
               <div className="absolute bottom-10 right-10 w-48 h-48 bg-blue-200 rounded-full blur-xl"></div>
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3/4 h-3/4 bg-white/90 dark:bg-gray-800/90 rounded-lg shadow-2xl p-6 overflow-hidden">
+              <div className="w-96 h-96 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-2xl p-6 overflow-hidden flex items-center justify-center">
                 <div className="border-b pb-4 mb-4">
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
