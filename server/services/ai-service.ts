@@ -75,6 +75,22 @@ export class AIService {
       timeManagement: string;
       milestonesOnBudget: string[];
     };
+    // Adjacent ideas section
+    adjacentIdeas: {
+      relatedConcepts: Array<{
+        name: string;
+        description: string;
+        potentialAdvantages: string[];
+        implementationComplexity: string;
+      }>;
+      naturalExtensions: Array<{
+        name: string;
+        description: string;
+        synergies: string[];
+        timelineToImplement: string;
+      }>;
+      alternativeApproaches: string[];
+    };
   }> {
     console.log(`Generating vibe check evaluation with separate API calls for each section`);
     
@@ -149,6 +165,11 @@ export class AIService {
           name: 'technicalAndRegulatory',
           prompt: this.createVibeCheckPrompt('technicalAndRegulatory', projectContext),
           fields: ['technicalFeasibility', 'regulatoryConsiderations', 'partnershipOpportunities', 'implementationRoadmap']
+        },
+        {
+          name: 'adjacentIdeas',
+          prompt: this.createVibeCheckPrompt('adjacentIdeas', projectContext),
+          fields: ['adjacentIdeas']
         }
       ];
       
@@ -190,7 +211,7 @@ export class AIService {
         'marketFitAnalysis', 'targetAudience', 'fitScore', 'fitScoreExplanation',
         'businessPlan', 'valueProposition', 'riskAssessment', 'technicalFeasibility',
         'regulatoryConsiderations', 'partnershipOpportunities', 'competitiveLandscape',
-        'launchStrategy', 'customerAcquisition', 'bootstrappingGuide'
+        'launchStrategy', 'customerAcquisition', 'bootstrappingGuide', 'adjacentIdeas'
       ];
       
       const missingFields = requiredFields.filter(field => !mergedResult[field]);

@@ -1,7 +1,9 @@
 
 # Ctrl Alt Vibe
 
-A vibrant community platform showcasing creative projects, fostering collaboration, and sharing innovative ideas. Built with React, Express, and PostgreSQL.
+A cutting-edge community platform that leverages AI to empower developers in discovering, collaborating, and showcasing innovative coding projects. This platform combines modern web technologies with AI-powered tools to provide comprehensive project evaluation and community engagement.
+
+Built with React, Express, PostgreSQL, and OpenAI integration for intelligent project evaluation.
 
 ## Features
 
@@ -54,7 +56,18 @@ The application will be available at `http://0.0.0.0:5000`
 
 ```
 ├── client/           # Frontend React application
+│   ├── src/          # Source code
+│   │   ├── components/  # Reusable UI components
+│   │   ├── hooks/       # Custom React hooks
+│   │   ├── lib/         # Library code and utilities
+│   │   ├── pages/       # Page components
+│   │   ├── types/       # TypeScript type definitions
+│   │   └── utils/       # Utility functions
 ├── server/           # Backend Express server
+│   ├── routes/       # API routes organized by feature
+│   ├── services/     # Business logic and external services
+│   ├── middleware/   # Express middleware
+│   └── utils/        # Server utilities
 ├── db/              # Database schemas and migrations
 ├── shared/          # Shared types and utilities
 ├── __tests__/       # Test suites
@@ -73,13 +86,23 @@ npm run test:server  # Run backend tests
 
 ## Code Organization
 
-The project follows a modular architecture:
+The project follows a modular architecture with clear separation of concerns:
 
-- **Routes**: Feature-based API endpoints
-- **Services**: Business logic layer
-- **Components**: Reusable UI components
-- **Hooks**: Custom React hooks
-- **Utils**: Helper functions and utilities
+### Backend Architecture
+- **Routes**: Feature-based API endpoints organized by domain area
+- **Services**: Business logic layer implementing core functionality
+- **Middleware**: Cross-cutting concerns like authentication and error handling
+- **Utils**: Reusable helper functions for common tasks
+- **Database**: SQL schema definitions and Drizzle ORM integration
+
+### Frontend Architecture
+- **Components**: Reusable UI components with Shadcn/UI integration
+- **Pages**: Main application views and routes
+- **Hooks**: Custom React hooks for shared logic
+- **Query Client**: TanStack Query for data fetching and caching
+- **Utils**: Helper functions for frontend-specific tasks
+
+See [CODE_ORGANIZATION.md](./CODE_ORGANIZATION.md) for detailed information about the code structure and architectural decisions.
 
 ## Contributing
 
