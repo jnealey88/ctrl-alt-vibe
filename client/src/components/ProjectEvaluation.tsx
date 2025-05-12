@@ -24,7 +24,8 @@ import {
   InfoIcon,
   RocketIcon,
   CircleDollarSignIcon,
-  WrenchIcon
+  WrenchIcon,
+  ArrowRight
 } from 'lucide-react';
 
 interface ProjectEvaluationProps {
@@ -502,35 +503,11 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     </TabsTrigger>
                     
                     <TabsTrigger 
-                      value="competition" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <BarChart4Icon className="h-4 w-4 mr-1.5" />
-                      <span>Competition</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
                       value="business" 
                       className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
                     >
                       <PieChartIcon className="h-4 w-4 mr-1.5" />
-                      <span>Business Plan</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="value" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <LightbulbIcon className="h-4 w-4 mr-1.5" />
-                      <span>Value Prop</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="partnerships" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <HeartHandshakeIcon className="h-4 w-4 mr-1.5" />
-                      <span>Partners</span>
+                      <span>Business</span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
@@ -550,19 +527,11 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     </TabsTrigger>
                     
                     <TabsTrigger 
-                      value="regulatory" 
+                      value="adjacent-ideas" 
                       className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
                     >
-                      <ScrollTextIcon className="h-4 w-4 mr-1.5" />
-                      <span>Regulatory</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="roadmap" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <ChevronRightIcon className="h-4 w-4 mr-1.5" />
-                      <span>Roadmap</span>
+                      <ArrowRight className="h-4 w-4 mr-1.5" />
+                      <span>Adjacent Ideas</span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
