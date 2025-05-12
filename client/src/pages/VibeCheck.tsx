@@ -29,7 +29,21 @@ import {
 } from "@/components/ui/tabs";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Brain, BarChart3, CheckCircle2, ArrowRight } from "lucide-react";
+import { 
+  Loader2, 
+  Brain, 
+  BarChart3, 
+  CheckCircle2, 
+  ArrowRight, 
+  Target, 
+  Briefcase, 
+  Code, 
+  AlertTriangle, 
+  Rocket, 
+  Users, 
+  DollarSign, 
+  HandHelping
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -243,15 +257,33 @@ export default function VibeCheck() {
 
         <Tabs defaultValue="market-fit" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex flex-wrap gap-2 h-auto mb-4">
-            <TabsTrigger value="market-fit">Market Fit</TabsTrigger>
-            <TabsTrigger value="audience">Audience</TabsTrigger>
-            <TabsTrigger value="business">Business</TabsTrigger>
-            <TabsTrigger value="technical">Technical</TabsTrigger>
-            <TabsTrigger value="risks">Risks</TabsTrigger>
-            <TabsTrigger value="launch">Launch</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="bootstrapping">Bootstrapping</TabsTrigger>
+            <TabsTrigger value="market-fit" className="flex items-center gap-1">
+              <BarChart3 className="h-4 w-4" /> Market Fit
+            </TabsTrigger>
+            <TabsTrigger value="audience" className="flex items-center gap-1">
+              <Target className="h-4 w-4" /> Audience
+            </TabsTrigger>
+            <TabsTrigger value="business" className="flex items-center gap-1">
+              <Briefcase className="h-4 w-4" /> Business
+            </TabsTrigger>
+            <TabsTrigger value="technical" className="flex items-center gap-1">
+              <Code className="h-4 w-4" /> Technical
+            </TabsTrigger>
+            <TabsTrigger value="risks" className="flex items-center gap-1">
+              <AlertTriangle className="h-4 w-4" /> Risks
+            </TabsTrigger>
+            <TabsTrigger value="launch" className="flex items-center gap-1">
+              <Rocket className="h-4 w-4" /> Launch
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="flex items-center gap-1">
+              <Users className="h-4 w-4" /> Customers
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="flex items-center gap-1">
+              <DollarSign className="h-4 w-4" /> Revenue
+            </TabsTrigger>
+            <TabsTrigger value="bootstrapping" className="flex items-center gap-1">
+              <HandHelping className="h-4 w-4" /> Bootstrapping
+            </TabsTrigger>
           </TabsList>
 
           {/* Market Fit Tab */}
@@ -786,50 +818,61 @@ export default function VibeCheck() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
-            Vibe Check Your Next Big Idea
-          </h1>
-          <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-            Transform your concept into a successful reality with our AI-powered evaluation system. 
-            Get insights that 95% of startups wish they had before launching.
-          </p>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Stop guessing if your idea will work. Our AI analyzes market fit, audience targeting, 
-            and business potential in seconds—giving you the clarity successful founders need.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
-            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
-              <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
-              <h3 className="font-medium mb-1">AI-Powered Analysis</h3>
-              <p className="text-sm text-muted-foreground">Make data-driven decisions with our advanced AI evaluation</p>
+        {/* Hero Section - Only show full version when not displaying results */}
+        {!isShowingResults ? (
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
+              Vibe Check Your Next Big Idea
+            </h1>
+            <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+              Transform your concept into a successful reality with our AI-powered evaluation system. 
+              Get insights that 95% of startups wish they had before launching.
+            </p>
+            <p className="text-lg mb-8 max-w-2xl mx-auto">
+              Stop guessing if your idea will work. Our AI analyzes market fit, audience targeting, 
+              and business potential in seconds—giving you the clarity successful founders need.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+              <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+                <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+                <h3 className="font-medium mb-1">AI-Powered Analysis</h3>
+                <p className="text-sm text-muted-foreground">Make data-driven decisions with our advanced AI evaluation</p>
+              </div>
+              <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+                <BarChart3 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+                <h3 className="font-medium mb-1">Market Insights</h3>
+                <p className="text-sm text-muted-foreground">Understand your competition and market position before launching</p>
+              </div>
+              <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+                <CheckCircle2 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+                <h3 className="font-medium mb-1">Launch Strategy</h3>
+                <p className="text-sm text-muted-foreground">Get a customized action plan to take your idea from concept to reality</p>
+              </div>
             </div>
-            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
-              <BarChart3 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
-              <h3 className="font-medium mb-1">Market Insights</h3>
-              <p className="text-sm text-muted-foreground">Understand your competition and market position before launching</p>
-            </div>
-            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
-              <CheckCircle2 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
-              <h3 className="font-medium mb-1">Launch Strategy</h3>
-              <p className="text-sm text-muted-foreground">Get a customized action plan to take your idea from concept to reality</p>
+            
+            <div className="flex justify-center gap-2">
+              <Badge variant="outline" className="px-3 py-1">
+                <Brain className="h-4 w-4 mr-1" /> AI Analysis
+              </Badge>
+              <Badge variant="outline" className="px-3 py-1">
+                <BarChart3 className="h-4 w-4 mr-1" /> Business Insights
+              </Badge>
+              <Badge variant="outline" className="px-3 py-1">
+                <CheckCircle2 className="h-4 w-4 mr-1" /> Development Guidance
+              </Badge>
             </div>
           </div>
-          
-          <div className="flex justify-center gap-2">
-            <Badge variant="outline" className="px-3 py-1">
-              <Brain className="h-4 w-4 mr-1" /> AI Analysis
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <BarChart3 className="h-4 w-4 mr-1" /> Business Insights
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Development Guidance
-            </Badge>
+        ) : (
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
+              Your Vibe Check Results
+            </h1>
+            <p className="text-muted-foreground">
+              Detailed AI-powered analysis of your business idea
+            </p>
           </div>
-        </div>
+        )}
 
         {isShowingResults ? (
           renderEvaluationResults()

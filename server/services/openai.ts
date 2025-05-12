@@ -28,7 +28,7 @@ export async function generateTldrSummary(content: string, title: string): Promi
           content: `Title: ${title}\n\nContent: ${textContent}\n\nProvide a TL;DR summary in 2-3 sentences max:"`
         }
       ],
-      max_tokens: 150,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 
@@ -62,7 +62,7 @@ export async function generateBlogPost(title: string, keywords: string[]): Promi
           content: `Title: ${title}\n\nPrimary keywords: ${keywords.join(', ')}\n\nPlease write a comprehensive blog post with the following elements:\n1. An engaging introduction that hooks the reader\n2. 7 distinct, practical tips or techniques as h2 sections\n3. Code examples where relevant\n4. A conclusion that summarizes the key takeaways\n\nFormat the content with proper HTML tags for a blog.`
         }
       ],
-      max_tokens: 3500,
+      max_tokens: 10000,
       temperature: 0.7,
     });
 
