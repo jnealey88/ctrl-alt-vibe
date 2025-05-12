@@ -781,11 +781,37 @@ export default function VibeCheck() {
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-4">Vibe Check</h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Get a comprehensive AI-powered evaluation for your vibe coding project idea.
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
+            Vibe Check Your Next Big Idea
+          </h1>
+          <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+            Transform your concept into a successful reality with our AI-powered evaluation system. 
+            Get insights that 95% of startups wish they had before launching.
           </p>
+          <p className="text-lg mb-8 max-w-2xl mx-auto">
+            Stop guessing if your idea will work. Our AI analyzes market fit, audience targeting, 
+            and business potential in seconds—giving you the clarity successful founders need.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+              <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+              <h3 className="font-medium mb-1">AI-Powered Analysis</h3>
+              <p className="text-sm text-muted-foreground">Make data-driven decisions with our advanced AI evaluation</p>
+            </div>
+            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+              <BarChart3 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+              <h3 className="font-medium mb-1">Market Insights</h3>
+              <p className="text-sm text-muted-foreground">Understand your competition and market position before launching</p>
+            </div>
+            <div className="bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
+              <CheckCircle2 className="h-6 w-6 text-violet-600 dark:text-violet-400 mb-2 mx-auto" />
+              <h3 className="font-medium mb-1">Launch Strategy</h3>
+              <p className="text-sm text-muted-foreground">Get a customized action plan to take your idea from concept to reality</p>
+            </div>
+          </div>
+          
           <div className="flex justify-center gap-2">
             <Badge variant="outline" className="px-3 py-1">
               <Brain className="h-4 w-4 mr-1" /> AI Analysis
@@ -806,9 +832,22 @@ export default function VibeCheck() {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Get Your Vibe Check</CardTitle>
-              <CardDescription>
-                Tell us about your project idea and we'll provide an AI-powered business evaluation
+              <CardTitle className="text-2xl">Get Your Vibe Check in Minutes</CardTitle>
+              <CardDescription className="text-base">
+                <div className="space-y-3 mt-2">
+                  <p>Share your idea below and our AI will analyze its potential through multiple lenses:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Market fit analysis and demand prediction</li>
+                    <li>Target audience profiling and size estimation</li>
+                    <li>Competitive landscape analysis</li>
+                    <li>Revenue model suggestions and business strategy</li>
+                    <li>Technical feasibility assessment</li>
+                    <li>Detailed bootstrapping guide and launch strategy</li>
+                  </ul>
+                  <p className="font-medium text-violet-600 dark:text-violet-400 pt-2">
+                    Stop wondering if your idea has potential—get actionable insights now!
+                  </p>
+                </div>
               </CardDescription>
             </CardHeader>
             <CardContent>
