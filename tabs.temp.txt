@@ -1,0 +1,20 @@
+<!-- Delete these unused tabs and update Vibe Check UI -->
+<!-- Replace value tab -->
+<TabsContent value="value" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+  <!-- Value Tab Content -->
+</TabsContent>
+
+<!-- Replace regulatory tab -->
+<TabsContent value="regulatory" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+  <!-- Regulatory Content -->
+</TabsContent>
+
+<!-- Replace roadmap tab -->
+<TabsContent value="roadmap" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+  <!-- Roadmap Content -->
+</TabsContent>
+
+<!-- Replace partnerships tab -->
+<TabsContent value="partnerships" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+  <!-- Partnerships Content -->
+</TabsContent>

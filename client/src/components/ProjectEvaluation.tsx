@@ -509,22 +509,6 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     </TabsTrigger>
                     
                     <TabsTrigger 
-                      value="business" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <PieChartIcon className="h-4 w-4 mr-1.5" />
-                      <span>Business</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="risks" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <ShieldIcon className="h-4 w-4 mr-1.5" />
-                      <span>Risks</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
                       value="technical" 
                       className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
                     >
@@ -533,27 +517,11 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     </TabsTrigger>
                     
                     <TabsTrigger 
-                      value="adjacent-ideas" 
+                      value="business" 
                       className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
                     >
-                      <ArrowRight className="h-4 w-4 mr-1.5" />
-                      <span>Adjacent Ideas</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="launch" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <RocketIcon className="h-4 w-4 mr-1.5" />
-                      <span>Launch</span>
-                    </TabsTrigger>
-                    
-                    <TabsTrigger 
-                      value="customers" 
-                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
-                    >
-                      <UsersIcon className="h-4 w-4 mr-1.5" />
-                      <span>Customers</span>
+                      <PieChartIcon className="h-4 w-4 mr-1.5" />
+                      <span>Business</span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
@@ -565,11 +533,51 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     </TabsTrigger>
                     
                     <TabsTrigger 
+                      value="risks" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <ShieldIcon className="h-4 w-4 mr-1.5" />
+                      <span>Risks</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="customers" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <UsersIcon className="h-4 w-4 mr-1.5" />
+                      <span>Customers</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="launch" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <RocketIcon className="h-4 w-4 mr-1.5" />
+                      <span>Launch</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
                       value="bootstrapping" 
                       className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
                     >
                       <WrenchIcon className="h-4 w-4 mr-1.5" />
                       <span>Bootstrapping</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="adjacent-ideas" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <ArrowRight className="h-4 w-4 mr-1.5" />
+                      <span>Adjacent Ideas</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="competitive" 
+                      className="px-4 py-2.5 text-sm flex-shrink-0 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-medium border-2 border-transparent data-[state=active]:border-primary/30 rounded-md"
+                    >
+                      <TrendingUpIcon className="h-4 w-4 mr-1.5" />
+                      <span>Competitive</span>
                     </TabsTrigger>
                   </TabsList>
               </div>
@@ -839,11 +847,11 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 </div>
               </TabsContent>
               
-              <TabsContent value="competition" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
+              <TabsContent value="competitive" className="mt-0 space-y-6 animate-in fade-in-50 duration-300">
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-full">
-                      <BarChart4Icon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      <TrendingUpIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                     </div>
                     <h3 className="font-semibold text-lg">Competitive Landscape</h3>
                   </div>
@@ -853,11 +861,13 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                     evaluation.competitiveLandscape.competitors.length > 0 && (
                     <div className="space-y-4 my-4">
                       {evaluation.competitiveLandscape.competitors.map((competitor: any, index: number) => (
-                        <div key={index} className="p-3 border rounded-md">
-                          <h4 className="font-medium mb-1">{competitor.name}</h4>
-                          <p className="text-sm">
-                            <span className="font-medium">Differentiation:</span> {competitor.differentiation}
-                          </p>
+                        <div key={index} className="p-4 bg-muted/50 border rounded-md hover:bg-muted/70 transition-colors">
+                          <h4 className="font-medium mb-2 text-primary/80">{competitor.name}</h4>
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">
+                              <span className="font-medium text-foreground">Differentiation:</span> {competitor.differentiation}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
