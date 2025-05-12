@@ -428,19 +428,7 @@ export class AIService {
     technicalFeasibility: string;
     regulatoryConsiderations: string;
     partnershipOpportunities: { partners: string[] };
-    competitiveLandscape: {
-      competitors: Array<{
-        name: string;
-        differentiation: string;
-        strengths?: string[];
-        weaknesses?: string[];
-        marketPosition?: string;
-        pricingStrategy?: string;
-      }>;
-      marketPositioning?: string;
-      differentiationStrategy?: string;
-      competitiveAdvantages?: string[];
-    };
+    competitiveLandscape: { competitors: Array<{ name: string; differentiation: string }> };
     implementationRoadmap?: { 
       phases: Array<{ 
         timeframe: string; 
@@ -747,21 +735,7 @@ export class AIService {
           partners: Array.isArray(result.partnershipOpportunities?.partners) ? result.partnershipOpportunities.partners : []
         },
         competitiveLandscape: {
-          competitors: Array.isArray(result.competitiveLandscape?.competitors) 
-            ? result.competitiveLandscape.competitors.map((competitor: any) => ({
-              name: competitor.name || '',
-              differentiation: competitor.differentiation || '',
-              strengths: Array.isArray(competitor.strengths) ? competitor.strengths : undefined,
-              weaknesses: Array.isArray(competitor.weaknesses) ? competitor.weaknesses : undefined,
-              marketPosition: competitor.marketPosition || undefined,
-              pricingStrategy: competitor.pricingStrategy || undefined
-            }))
-            : [],
-          marketPositioning: result.competitiveLandscape?.marketPositioning || undefined,
-          differentiationStrategy: result.competitiveLandscape?.differentiationStrategy || undefined,
-          competitiveAdvantages: Array.isArray(result.competitiveLandscape?.competitiveAdvantages) 
-            ? result.competitiveLandscape.competitiveAdvantages 
-            : undefined
+          competitors: Array.isArray(result.competitiveLandscape?.competitors) ? result.competitiveLandscape.competitors : []
         },
         implementationRoadmap: result.implementationRoadmap && {
           phases: Array.isArray(result.implementationRoadmap?.phases) 
@@ -830,14 +804,9 @@ export class AIService {
           competitors: [
             {
               name: "Error",
-              differentiation: "Could not generate competitive landscape due to API error.",
-              strengths: ["Unable to analyze competitor strengths due to API error"],
-              weaknesses: ["Unable to analyze competitor weaknesses due to API error"]
+              differentiation: "Could not generate competitive landscape due to API error."
             }
-          ],
-          marketPositioning: "Could not generate market positioning analysis due to API error.",
-          differentiationStrategy: "Could not generate differentiation strategy due to API error.",
-          competitiveAdvantages: ["Could not identify competitive advantages due to API error"]
+          ]
         },
         implementationRoadmap: {
           phases: [

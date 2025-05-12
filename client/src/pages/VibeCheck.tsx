@@ -440,13 +440,106 @@ export default function VibeCheck() {
                 <CardDescription>Your position among competitors</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {evaluationResult.competitiveLandscape.competitors.map((competitor: any, index: number) => (
-                    <div key={index} className="border-b pb-4 last:border-b-0">
-                      <h4 className="font-medium mb-1">{competitor.name}</h4>
-                      <p className="text-sm text-muted-foreground">{competitor.differentiation}</p>
-                    </div>
-                  ))}
+                {/* Market Positioning Overview - if available */}
+                {evaluationResult.competitiveLandscape.marketPositioning && (
+                  <div className="mb-6 bg-muted/30 p-4 rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">Market Positioning</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {evaluationResult.competitiveLandscape.marketPositioning}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Competitive Advantages - if available */}
+                {evaluationResult.competitiveLandscape.competitiveAdvantages && evaluationResult.competitiveLandscape.competitiveAdvantages.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-3">Your Competitive Advantages</h3>
+                    <ul className="space-y-2">
+                      {evaluationResult.competitiveLandscape.competitiveAdvantages.map((advantage: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 font-medium text-sm mt-0.5">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm">{advantage}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Differentiation Strategy - if available */}
+                {evaluationResult.competitiveLandscape.differentiationStrategy && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-2">Differentiation Strategy</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {evaluationResult.competitiveLandscape.differentiationStrategy}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Competitors Section */}
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-4">Competitor Analysis</h3>
+                  <div className="space-y-6">
+                    {evaluationResult.competitiveLandscape.competitors.map((competitor: any, index: number) => (
+                      <div key={index} className="border rounded-lg p-4 shadow-sm">
+                        <h4 className="font-medium text-lg mb-2 flex items-center">
+                          <span className="mr-2">{competitor.name}</span> 
+                          {competitor.marketPosition && (
+                            <span className="text-xs font-normal px-2 py-1 rounded-full bg-primary/10 text-primary">
+                              {competitor.marketPosition}
+                            </span>
+                          )}
+                        </h4>
+                        
+                        {/* Main differentiation */}
+                        <div className="mb-3">
+                          <p className="text-sm text-muted-foreground">{competitor.differentiation}</p>
+                        </div>
+                        
+                        {/* Strengths and Weaknesses in two columns if available */}
+                        {(competitor.strengths || competitor.weaknesses) && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            {competitor.strengths && competitor.strengths.length > 0 && (
+                              <div>
+                                <h5 className="text-sm font-medium mb-2 text-green-700">Strengths</h5>
+                                <ul className="text-sm space-y-1">
+                                  {competitor.strengths.map((strength: string, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-2">
+                                      <span className="text-green-500 mt-1">•</span>
+                                      <span>{strength}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {competitor.weaknesses && competitor.weaknesses.length > 0 && (
+                              <div>
+                                <h5 className="text-sm font-medium mb-2 text-amber-700">Weaknesses</h5>
+                                <ul className="text-sm space-y-1">
+                                  {competitor.weaknesses.map((weakness: string, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-2">
+                                      <span className="text-amber-500 mt-1">•</span>
+                                      <span>{weakness}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Pricing Strategy if available */}
+                        {competitor.pricingStrategy && (
+                          <div className="mt-3 pt-3 border-t">
+                            <h5 className="text-sm font-medium mb-1">Pricing Strategy</h5>
+                            <p className="text-sm text-muted-foreground">{competitor.pricingStrategy}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
