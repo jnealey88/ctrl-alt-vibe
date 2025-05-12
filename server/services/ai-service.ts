@@ -551,6 +551,96 @@ export class AIService {
         }`;
         break;
         
+      case 'adjacentIdeas':
+        sectionPrompt = `
+        Provide innovative adjacent ideas and alternatives to this project concept:
+        
+        1. Adjacent Ideas:
+           - Identify 3-5 related concepts that could potentially outperform the original idea with detailed descriptions and specific advantages
+           - For each related concept, provide a clear implementation complexity assessment
+           - Suggest 3-5 natural extensions that could be added to the core idea to enhance its value proposition
+           - For each natural extension, explain the synergies with the original concept and provide a realistic timeline for implementation
+           - List 5-7 alternative approaches to solving the same problem with different technologies, business models, or target audiences
+        `;
+        
+        exampleStructure = `
+        {
+          "adjacentIdeas": {
+            "relatedConcepts": [
+              {
+                "name": "Related Concept 1",
+                "description": "Detailed description of the related concept",
+                "potentialAdvantages": [
+                  "Specific advantage 1",
+                  "Specific advantage 2",
+                  "Specific advantage 3"
+                ],
+                "implementationComplexity": "Assessment of implementation difficulty"
+              },
+              {
+                "name": "Related Concept 2",
+                "description": "Detailed description of the related concept",
+                "potentialAdvantages": [
+                  "Specific advantage 1",
+                  "Specific advantage 2",
+                  "Specific advantage 3"
+                ],
+                "implementationComplexity": "Assessment of implementation difficulty"
+              },
+              {
+                "name": "Related Concept 3",
+                "description": "Detailed description of the related concept",
+                "potentialAdvantages": [
+                  "Specific advantage 1",
+                  "Specific advantage 2",
+                  "Specific advantage 3"
+                ],
+                "implementationComplexity": "Assessment of implementation difficulty"
+              }
+            ],
+            "naturalExtensions": [
+              {
+                "name": "Natural Extension 1",
+                "description": "Detailed description of the extension",
+                "synergies": [
+                  "Specific synergy with core idea 1",
+                  "Specific synergy with core idea 2",
+                  "Specific synergy with core idea 3"
+                ],
+                "timelineToImplement": "Realistic implementation timeline"
+              },
+              {
+                "name": "Natural Extension 2",
+                "description": "Detailed description of the extension",
+                "synergies": [
+                  "Specific synergy with core idea 1",
+                  "Specific synergy with core idea 2",
+                  "Specific synergy with core idea 3"
+                ],
+                "timelineToImplement": "Realistic implementation timeline"
+              },
+              {
+                "name": "Natural Extension 3",
+                "description": "Detailed description of the extension",
+                "synergies": [
+                  "Specific synergy with core idea 1",
+                  "Specific synergy with core idea 2",
+                  "Specific synergy with core idea 3"
+                ],
+                "timelineToImplement": "Realistic implementation timeline"
+              }
+            ],
+            "alternativeApproaches": [
+              "Detailed alternative approach 1",
+              "Detailed alternative approach 2",
+              "Detailed alternative approach 3",
+              "Detailed alternative approach 4",
+              "Detailed alternative approach 5"
+            ]
+          }
+        }`;
+        break;
+        
       case 'technicalAndRegulatory':
         sectionPrompt = `
         Provide a comprehensive technical and regulatory analysis for this project with:
