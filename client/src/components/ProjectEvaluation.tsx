@@ -267,7 +267,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
       console.error('Error generating Vibe Check:', error);
       toast({
         title: 'Error',
-        description: 'Could not connect to the Vibe Check service',
+        description: 'Could not connect to the Vibe Check service. Please try again later.',
         variant: 'destructive',
       });
     } finally {
@@ -360,7 +360,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
             )}
             
             <p className="text-xs text-center text-muted-foreground italic max-w-md">
-              Powered by OpenAI's GPT-4o model for accurate and insightful business analysis
+              Powered by OpenAI's GPT-4o model for accurate and insightful Vibe Check analysis
             </p>
           </CardContent>
         </Card>
@@ -440,7 +440,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl font-semibold">
-                Comprehensive Evaluation
+                Comprehensive Vibe Check
               </CardTitle>
               {(isOwner || isAdmin) && (
                 <div className="flex flex-col items-end gap-1">
