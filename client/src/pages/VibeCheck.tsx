@@ -564,6 +564,12 @@ function VibeCheckForm() {
             >
               <HandHelping className="h-4 w-4" /> Bootstrapping
             </TabsTrigger>
+            <TabsTrigger
+              value="adjacent-ideas"
+              className="flex items-center gap-1"
+            >
+              <ArrowRight className="h-4 w-4" /> Adjacent Ideas
+            </TabsTrigger>
           </TabsList>
 
           {/* Market Fit Tab */}
@@ -1368,6 +1374,132 @@ function VibeCheckForm() {
                           <span>{milestone}</span>
                         </li>
                       ),
+                    )}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Adjacent Ideas Tab */}
+          <TabsContent value="adjacent-ideas" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Adjacent Ideas & Alternatives</CardTitle>
+                <CardDescription>
+                  Related concepts and extensions that could enhance or outperform the core idea
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Related Concepts */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">
+                    Related Concepts
+                  </h3>
+                  <div className="space-y-4">
+                    {evaluationResult?.adjacentIdeas?.relatedConcepts?.map(
+                      (concept: any, index: number) => (
+                        <div key={index} className="border border-border rounded-lg p-4">
+                          <h4 className="text-md font-semibold mb-2 flex items-center">
+                            <div className="bg-primary/10 text-primary h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
+                              <span className="text-xs">{index + 1}</span>
+                            </div>
+                            {concept.name}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {concept.description}
+                          </p>
+                          <div className="mb-2">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Potential Advantages:
+                            </span>
+                            <ul className="mt-1 space-y-1">
+                              {concept.potentialAdvantages?.map((advantage: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm">
+                                  <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                  </div>
+                                  <span>{advantage}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Implementation Complexity:
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {concept.implementationComplexity}
+                            </Badge>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Natural Extensions */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">
+                    Natural Extensions
+                  </h3>
+                  <div className="space-y-4">
+                    {evaluationResult?.adjacentIdeas?.naturalExtensions?.map(
+                      (extension: any, index: number) => (
+                        <div key={index} className="border border-border rounded-lg p-4">
+                          <h4 className="text-md font-semibold mb-2 flex items-center">
+                            <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mr-2">
+                              <span className="text-xs">{index + 1}</span>
+                            </div>
+                            {extension.name}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {extension.description}
+                          </p>
+                          <div className="mb-3">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Synergies with Core Idea:
+                            </span>
+                            <ul className="mt-1 space-y-1">
+                              {extension.synergies?.map((synergy: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm">
+                                  <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <ArrowRight className="h-3 w-3" />
+                                  </div>
+                                  <span>{synergy}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Implementation Timeline:
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {extension.timelineToImplement}
+                            </Badge>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Alternative Approaches */}
+                <div>
+                  <h3 className="text-lg font-medium mb-3">
+                    Alternative Approaches
+                  </h3>
+                  <ul className="space-y-2">
+                    {evaluationResult?.adjacentIdeas?.alternativeApproaches?.map(
+                      (approach: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs">{index + 1}</span>
+                          </div>
+                          <span>{approach}</span>
+                        </li>
+                      )
                     )}
                   </ul>
                 </div>
