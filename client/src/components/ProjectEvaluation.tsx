@@ -290,7 +290,7 @@ export default function ProjectEvaluation({ projectId, isOwner, isAdminUser = fa
                 <BarChart3Icon className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <CardTitle>AI-Powered Evaluation</CardTitle>
+                <CardTitle>AI-Powered Vibe Check</CardTitle>
                 <CardDescription>Get valuable insights into your project's business potential</CardDescription>
               </div>
             </div>
