@@ -22,6 +22,7 @@ import BlogEditor from "@/pages/BlogEditor";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
 import VibeCheck from "@/pages/VibeCheck";
+import SharedVibeCheck from "@/pages/SharedVibeCheck";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Accessibility from "@/pages/Accessibility";
@@ -69,6 +70,7 @@ function Router() {
           <ProtectedRoute path="/blog/edit/:id" component={BlogEditor} />
           <Route path="/blog/:slug" component={BlogPostPage} />
           <Route path="/blog" component={BlogPage} />
+          <Route path="/vibe-check/share/:shareId" component={SharedVibeCheck} />
           <Route path="/vibe-check" component={VibeCheck} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/privacy" component={PrivacyPolicy} />
