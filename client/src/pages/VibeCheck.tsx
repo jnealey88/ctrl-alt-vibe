@@ -136,12 +136,16 @@ function VibeCheckForm() {
     try {
       // Execute reCAPTCHA and get token
       if (!executeRecaptcha) {
+        console.error("reCAPTCHA hook not available");
         throw new Error("reCAPTCHA not available");
       }
       
+      console.log("Executing reCAPTCHA verification...");
       const recaptchaToken = await executeRecaptcha('vibe_check_submission');
+      console.log("reCAPTCHA token received:", recaptchaToken ? "Token received" : "No token received");
       
       if (!recaptchaToken) {
+        console.error("Failed to get reCAPTCHA token");
         throw new Error("Failed to get reCAPTCHA token");
       }
       
@@ -1585,5 +1589,26 @@ function VibeCheckForm() {
         )}
       </div>
     </div>
+  );
+}
+
+// Wrap the form with Google reCAPTCHA provider
+export default function VibeCheck() {
+  // Use reCAPTCHA site key directly
+  const reCaptchaKey = "6Lf2fjcrAAAAACLa3kDH0gU1eRSsRdBjd7zzSeZg";
+  
+  console.log("Using reCAPTCHA site key");
+  
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={reCaptchaKey}
+      scriptProps={{
+        async: true,
+        defer: true,
+        appendTo: 'head',
+      }}
+    >
+      <VibeCheckForm />
+    </GoogleReCaptchaProvider>
   );
 }

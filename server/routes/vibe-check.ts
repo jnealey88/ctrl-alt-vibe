@@ -12,6 +12,34 @@ function generateShareId(): string {
   return crypto.randomBytes(12).toString('hex');
 }
 
+// Verify Google reCAPTCHA token
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  try {
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    
+    if (!secretKey) {
+      console.error('RECAPTCHA_SECRET_KEY is not defined');
+      return false;
+    }
+    
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+    
+    const data = await response.json();
+    console.log('reCAPTCHA verification response:', data);
+    
+    return data.success === true && data.score >= 0.5; // Use threshold of 0.5 for verification
+  } catch (error) {
+    console.error('Error verifying reCAPTCHA:', error);
+    return false;
+  }
+}
+
 // Transform function to convert the old evaluation structure to the new one with bootstrapping
 function transformEvaluationResponse(evaluation: any): any {
   // Make a copy of the evaluation to avoid modifying the original
@@ -124,7 +152,8 @@ export function registerVibeCheckRoutes(app: Express) {
 const vibeCheckRequestSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   websiteUrl: z.string().url().optional().or(z.literal('')),
-  projectDescription: z.string().min(10, 'Project description must be at least 10 characters long')
+  projectDescription: z.string().min(10, 'Project description must be at least 10 characters long'),
+  recaptchaToken: z.string().min(1, 'reCAPTCHA token is required')
   // desiredVibe field removed as it's not needed for vibe check
 });
 
@@ -137,6 +166,16 @@ vibeCheckRouter.post('/', async (req: Request, res: Response) => {
     
     // Validate the request
     const validatedData = vibeCheckRequestSchema.parse(req.body);
+    
+    // Verify reCAPTCHA token
+    const isRecaptchaValid = await verifyRecaptcha(validatedData.recaptchaToken);
+    
+    if (!isRecaptchaValid) {
+      console.log('reCAPTCHA verification failed');
+      return res.status(400).json({ error: 'reCAPTCHA verification failed. Please try again.' });
+    }
+    
+    console.log('reCAPTCHA verification passed');
     
     // Generate the vibe check evaluation
     console.log('Generating vibe check evaluation...');
