@@ -175,7 +175,7 @@ const Home = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <SEO
-        title="Your Professional AI Coding Portfolio | Vibe Coded Projects"
+        title="Your Professional AI Vibe Coding Portfolio | Ctrl Alt Vibe"
         description="Build a standout portfolio of your vibe coded projects to showcase your AI development skills to potential employers. Create a professional profile that gets you noticed."
         keywords={seoKeywords}
       />
