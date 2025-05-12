@@ -20,14 +20,13 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Save, ArrowLeft, Info, Image as ImageIcon, Plus, Eye } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Quill editor components (using v2.0)
-import ReactQuill from 'react-quill';
-import 'quill/dist/quill.snow.css';
-// Note: Using Quill 2.0 with improved table handling
+// Quill editor components (using wrapped component)
+import QuillEditor from '@/components/QuillEditor';
+// We don't need to import 'quill/dist/quill.snow.css' as it's included in the QuillEditor component
 
 const BlogEditor = () => {
-  // Set up ref for Quill editor (Quill 2.0 approach)
-  const quillRef = useRef<ReactQuill>(null);
+  // Set up ref for Quill editor
+  const quillRef = useRef<any>(null);
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const [_, setLocation] = useLocation();
