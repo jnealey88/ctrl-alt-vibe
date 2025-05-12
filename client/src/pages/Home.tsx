@@ -232,7 +232,7 @@ const Home = () => {
         <div className="grid md:grid-cols-2 items-center">
           {/* Left side - Content */}
           <div className="p-8 md:p-10 flex flex-col justify-center">
-            <div className="inline-block bg-violet-100 dark:bg-violet-900/30 p-2 rounded-full mb-4">
+            <div className="inline-block bg-white dark:bg-violet-900/30 p-2 rounded-full mb-4 w-10">
               <Brain className="h-6 w-6 text-violet-600 dark:text-violet-400" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-slate-900 dark:text-white">
