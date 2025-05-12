@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -71,6 +71,22 @@ export default function VibeCheck() {
   const [isShowingResults, setIsShowingResults] = useState(false);
   const [vibeCheckId, setVibeCheckId] = useState<number | null>(null);
 
+  // Load saved vibe check results from session storage on component mount
+  useEffect(() => {
+    try {
+      const savedVibeCheck = sessionStorage.getItem("savedVibeCheck");
+      if (savedVibeCheck) {
+        const { evaluation, id } = JSON.parse(savedVibeCheck);
+        setEvaluationResult(evaluation);
+        setVibeCheckId(id);
+        setIsShowingResults(true);
+        console.log("Loaded vibe check from session storage");
+      }
+    } catch (error) {
+      console.error("Error loading vibe check from session storage:", error);
+    }
+  }, []);
+
   // Initialize the form
   const form = useForm<VibeCheckFormValues>({
     resolver: zodResolver(vibeCheckFormSchema),
@@ -124,6 +140,17 @@ export default function VibeCheck() {
       setVibeCheckId(result.vibeCheckId);
       setIsShowingResults(true);
       
+      // Save vibe check results to session storage
+      try {
+        sessionStorage.setItem("savedVibeCheck", JSON.stringify({
+          evaluation: result.evaluation,
+          id: result.vibeCheckId
+        }));
+        console.log("Saved vibe check to session storage");
+      } catch (error) {
+        console.error("Error saving vibe check to session storage:", error);
+      }
+      
       // Ensure we're at the top of the page when showing results
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -153,6 +180,33 @@ export default function VibeCheck() {
       
       // Redirect to auth page
       window.location.href = '/auth';
+    }
+  };
+  
+  // Reset vibe check and clear session storage
+  const resetVibeCheck = () => {
+    try {
+      // Clear session storage
+      sessionStorage.removeItem("savedVibeCheck");
+      
+      // Reset state
+      setEvaluationResult(null);
+      setVibeCheckId(null);
+      setIsShowingResults(false);
+      setActiveTab("market-fit");
+      
+      // Reset form
+      form.reset();
+      
+      toast({
+        title: "Vibe Check Reset",
+        description: "You can now start a new vibe check",
+      });
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error("Error resetting vibe check:", error);
     }
   };
   
@@ -248,10 +302,20 @@ export default function VibeCheck() {
             <h2 className="text-2xl font-bold mb-2">Vibe Check Results</h2>
             <p className="text-muted-foreground text-sm">AI-powered comprehensive business evaluation</p>
           </div>
-          <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
-            <span className="text-xs text-muted-foreground mb-1">Vibe Score</span>
-            <span className="text-3xl font-bold text-primary">{evaluationResult.fitScore}</span>
-            <span className="text-xs text-muted-foreground">out of 100</span>
+          <div className="flex space-x-4 items-center">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={resetVibeCheck}
+              className="text-xs"
+            >
+              Try Another Idea
+            </Button>
+            <div className="flex flex-col items-center bg-gradient-to-br from-primary/10 to-primary/5 p-3 rounded-lg border shadow-sm">
+              <span className="text-xs text-muted-foreground mb-1">Vibe Score</span>
+              <span className="text-3xl font-bold text-primary">{evaluationResult.fitScore}</span>
+              <span className="text-xs text-muted-foreground">out of 100</span>
+            </div>
           </div>
         </div>
 
