@@ -146,6 +146,17 @@ function transformEvaluationResponse(evaluation: any): any {
 export function registerVibeCheckRoutes(app: Express) {
   console.log('Registering vibe check routes');
   app.use('/api/vibe-check', vibeCheckRouter);
+
+  // Add a route to get the total vibe check count outside the router for direct access
+  app.get('/api/vibe-check-count', async (req: Request, res: Response) => {
+    try {
+      const result = await db.select().from(vibeChecks);
+      return res.json({ count: result.length });
+    } catch (error: any) {
+      console.error('Error getting vibe check count:', error);
+      return res.status(500).json({ error: 'Failed to get vibe check count' });
+    }
+  });
 }
 
 // Schema for validating vibe check requests
