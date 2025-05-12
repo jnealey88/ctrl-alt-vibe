@@ -7,6 +7,11 @@ import { storage } from '../storage';
 import { eq, SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 
+// Generate a unique share ID for vibe checks
+function generateShareId(): string {
+  return crypto.randomBytes(12).toString('hex');
+}
+
 // Transform function to convert the old evaluation structure to the new one with bootstrapping
 function transformEvaluationResponse(evaluation: any): any {
   // Make a copy of the evaluation to avoid modifying the original
@@ -146,21 +151,31 @@ vibeCheckRouter.post('/', async (req: Request, res: Response) => {
     
     console.log('Vibe check evaluation generated successfully');
     
+    // Generate a unique share ID
+    const shareId = generateShareId();
+    
     // Save the vibe check to database
     const [vibeCheck] = await db.insert(vibeChecks).values({
       email: validatedData.email || null,
       websiteUrl: validatedData.websiteUrl || null,
       projectDescription: validatedData.projectDescription,
       desiredVibe: validatedData.desiredVibe || null,
-      evaluation: evaluation
+      evaluation: evaluation,
+      shareId: shareId,
+      isPublic: true // Make all vibe checks publicly shareable by default
     }).returning();
     
-    console.log(`Vibe check saved with ID: ${vibeCheck.id}`);
+    console.log(`Vibe check saved with ID: ${vibeCheck.id} and shareId: ${shareId}`);
     
-    // Return the vibe check evaluation and the ID
+    // Generate the share URL
+    const shareUrl = `${req.protocol}://${req.get('host')}/vibe-check/share/${shareId}`;
+    
+    // Return the vibe check evaluation, ID, and share URL
     return res.status(201).json({
       vibeCheckId: vibeCheck.id,
-      evaluation: evaluation
+      evaluation: evaluation,
+      shareId: shareId,
+      shareUrl: shareUrl
     });
     
   } catch (error: any) {
@@ -202,6 +217,46 @@ vibeCheckRouter.get('/:id', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error retrieving vibe check:', error);
     return res.status(500).json({ error: 'Failed to retrieve vibe check' });
+  }
+});
+
+// Get a vibe check by share ID
+vibeCheckRouter.get('/share/:shareId', async (req: Request, res: Response) => {
+  try {
+    const { shareId } = req.params;
+    
+    if (!shareId || shareId.length < 5) { // Basic validation for share ID
+      return res.status(400).json({ error: 'Invalid share ID' });
+    }
+    
+    // Look up the Vibe Check by shareId
+    const [vibeCheck] = await db.select().from(vibeChecks).where(eq(vibeChecks.shareId, shareId));
+    
+    if (!vibeCheck) {
+      return res.status(404).json({ error: 'Shared Vibe Check not found' });
+    }
+    
+    if (!vibeCheck.isPublic) {
+      return res.status(403).json({ error: 'This Vibe Check is not publicly shared' });
+    }
+    
+    // Transform the evaluation to ensure it has bootstrappingGuide
+    if (vibeCheck.evaluation) {
+      vibeCheck.evaluation = transformEvaluationResponse(vibeCheck.evaluation);
+    }
+    
+    // Return the public information needed to render the shared version
+    return res.json({
+      id: vibeCheck.id,
+      shareId: vibeCheck.shareId,
+      projectDescription: vibeCheck.projectDescription,
+      desiredVibe: vibeCheck.desiredVibe,
+      evaluation: vibeCheck.evaluation,
+      createdAt: vibeCheck.createdAt
+    });
+  } catch (error: any) {
+    console.error('Error retrieving shared vibe check:', error);
+    return res.status(500).json({ error: 'Failed to retrieve shared vibe check' });
   }
 });
 
