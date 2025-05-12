@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
-import { cva } from "class-variance-authority"
+import { cva, type VariantProps } from "class-variance-authority"
 import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -46,7 +46,8 @@ const navigationMenuTriggerStyle = cva(
 
 const NavigationMenuTrigger = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
+  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger> &
+    VariantProps<typeof navigationMenuTriggerStyle>
 >(({ className, children, ...props }, ref) => (
   <NavigationMenuPrimitive.Trigger
     ref={ref}
